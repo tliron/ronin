@@ -1,12 +1,12 @@
-Ronin
+Rōnin
 =====
 
 A straightforward but powerful build system based on [Ninja](https://ninja-build.org/) and Python,
 suitable for projects both big and small.
 
 "Based on Python" means that not only is it written in Python, but also it uses Python as the DSL
-for build scripts. Many build systems invent their own DSLs, but Ronin intentionally builds on a
-language that already exists. Note that you _don't_ need to be an expert in Python to use Ronin,
+for build scripts. Many build systems invent their own DSLs, but Rōnin intentionally builds on a
+language that already exists. Note that you _don't_ need to be an expert in Python to use Rōnin,
 but the power is there if you need it.
 
 Guiding lights:
@@ -39,7 +39,7 @@ FAQ
   costs outweigh the benefits. Making a new language is not trivial. Making a _robust_ language
   could take years of effort. Python is here right now, with a huge ecosystem of libraries and
   tools. Yes, it introduces a learning curve, but getting familiar with Python is useful for so
-  many practical reasons beyond writing build scripts for Ronin. That said, if someone wants to
+  many practical reasons beyond writing build scripts for Rōnin. That said, if someone wants to
   contribute a simple DSL as an optional extra, we will consider!
 * _Why require Ninja, a binary, instead of building everything in 100% Python?_ Because it's silly
   to reinvent wheels, especially when the wheels are so good. Ninja is a one-trick-pony that does
@@ -51,9 +51,10 @@ FAQ
 Similar Projects
 ----------------
 
-* [Meson](http://mesonbuild.com/): another Python frontend for Ninja, very high-level, fairly easy
-  to use
-* [Craftr](https://github.com/craftr-build/craftr): another Python frontend for Ninja, more
-  low-level than Meson, but also more complicated to use 
-* [CMake](https://cmake.org/): can work as a frontend for Ninja
-* [Waf](https://waf.io/): a big Python build system (and platform for build systems)
+* [Meson](http://mesonbuild.com/): "Meson is an open source build system meant to be both extremely
+  fast, and, even more importantly, as user friendly as possible."
+* [Craftr](https://github.com/craftr-build/craftr): "Craftr is a meta build system based on Python 3
+   scripts which produces Ninja build manifests."
+* [CMake Ninja Generator](https://cmake.org/cmake/help/v3.0/generator/Ninja.html): "Generates
+  build.ninja files (experimental)."
+* [Waf](https://waf.io/): "The meta build system."
