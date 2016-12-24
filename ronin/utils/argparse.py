@@ -1,4 +1,6 @@
 
+from __future__ import absolute_import # so we can import 'argparse'
+
 from argparse import ArgumentParser as BaseArgumentParser
 
 class ArgumentParser(BaseArgumentParser):

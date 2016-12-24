@@ -1,5 +1,5 @@
 
-from .utils import stringify, stringify_unique, join_stringify_lambda
+from .utils.strings import stringify, stringify_unique, join_stringify_lambda
 from cStringIO import StringIO
 
 class Command(object):
@@ -11,6 +11,7 @@ class Command(object):
     
     def __init__(self):
         self.command = None
+        self.output_extension = 'output'
         self.depfile = False
         self.deps = None
 

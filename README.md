@@ -14,7 +14,7 @@ Guiding lights:
 1. **Powerful does not have to mean hard to use**: _optional_ auto-configuration with sensible,
    _overridable_ defaults: detect `ccache`, support `pkg-config`, etc.
 2. **Complex does not have to mean complicated**: handle cross-compilation and other
-   multi-configuration builds as single projects with minimal duplication of effort.
+   multi-configuration builds in a single script with minimal duplication of effort.
 
 Design principles:
 
@@ -28,13 +28,24 @@ Design principles:
    plain Python program with no unnecessary cleverness. The generated Ninja script looks like
    something you could have created manually.
 
+Quickstart
+----------
+
+To install the development snapshot (until we have proper releases):
+
+    sudo -H pip install git+https://github.com/tliron/ronin.git 
+
+For your `build.py` build script, copy from one of the [examples](examples) to start.
+
+More documentation coming soon!
+
 FAQ
 ---
 
 * _Do we really need another build system?_ Yes. The other existing ones have convoluted
   architectures, impossible to opt-out-from automatic features, or are otherwise hostile to
   straightforward hacking. After so much wasted time fighting build systems to make them work for
-  you, the time comes to roll out a new one.
+  us, the time came to roll out a new one that does it right.
 * _Python is too hard. Why not create a simpler DSL?_ Others have done it, and it seems that the
   costs outweigh the benefits. Making a new language is not trivial. Making a _robust_ language
   could take years of effort. Python is here right now, with a huge ecosystem of libraries and
@@ -42,7 +53,7 @@ FAQ
   many practical reasons beyond writing build scripts for Rōnin. That said, if someone wants to
   contribute a simple DSL as an optional extra, we will consider!
 * _Why require Ninja, a binary, instead of building everything in 100% Python?_ Because it's silly
-  to reinvent wheels, especially when the wheels are so good. Ninja is a one-trick-pony that does
+  to reinvent wheels, especially when the wheels are so good. Ninja is a one-trick pony that does
   its job extremely well. But it's just too low-level for most users, hence the need for a frontend.
 * _Why not Python 3?_ Many, many deployed systems are still locked in Python 2 for various reasons.
   We want to be able to build on them.

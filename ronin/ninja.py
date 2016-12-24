@@ -1,9 +1,13 @@
 
 from .contexts import current_context
-from .utils import build_path, stringify, which
+from .utils.paths import build_path, change_extension
+from .utils.strings import stringify
+from .utils.platform import which
+from .utils.collections import dedup
 from cStringIO import StringIO
 from os import makedirs
 from subprocess import check_call, CalledProcessError
+from datetime import datetime
 import sys
 
 def configure_ninja(ctx, command='ninja', file_name='build.ninja', columns=100):
@@ -28,33 +32,99 @@ class NinjaFile(object):
             io.close()
         return v
     
-    def write_line(self, io, line=''):
-        #ctx.ninja_file_columns
-        io.write('%s\n' % line)
+    def pathify(self, value):
+        return value.replace(' ', '$ ')
     
-    def write(self, io):
-        for rule_name, rule in self._project.rules.iteritems():
-            self.write_line(io)
-            self.write_line(io, 'rule %s' % rule_name)
-            description = stringify(rule.description)
-            if description is not None:
-                self.write_line(io, '  description = %s' % description)
-            self.write_line(io, '  command = %s' % rule.command)
-            if rule.command.depfile:
-                self.write_line(io, '  depfile = $out.d')
+    def write_line(self, io, line=''):
+        with current_context() as ctx:
+            columns = ctx.get('ninja_file_columns')
+        if columns is not None:
+            while line is not None:
+                if len(line) > columns - 1:
+                    remainder = line[columns - 1:]
+                    line = line[:columns - 1]
+                    io.write('%s$\n' % line)
+                    line = remainder
+                else:
+                    io.write('%s\n' % line)
+                    line = None
+        else:
+            io.write('%s\n' % line)
+        
+    def write_rule(self, io, rule_name, rule, all_outputs={}):
+        if rule_name in all_outputs:
+            return
+
+        if rule.source:
+            self.write_rule(io, rule.source, self._project.rules[rule.source], all_outputs)
+        
+        rule_outputs = []
+        all_outputs[rule_name] = rule_outputs
+        
+        name = rule_name.replace(' ', '_')
+
+        self.write_line(io)
+        self.write_line(io, 'rule %s' % name)
+        
+        description = stringify(rule.description)
+        if description is not None:
+            self.write_line(io, '  description = %s' % description)
+        self.write_line(io, '  command = %s' % rule.command)
+        
+        if rule.command.depfile:
+            self.write_line(io, '  depfile = $out.d')
+            
             deps = stringify(rule.command.deps)
             if deps is not None:
                 self.write_line(io, '  deps = %s' % deps)
-            if rule.inputs:
-                with current_context() as ctx:
-                    inputs = [build_path(ctx.get('input_path'), v) for v in rule.inputs]
-                    output = ctx.get('binary_path')
-                    if output is None:
-                        output = build_path(self.base_path, ctx.get('binary_path_relative'))
-                    output = build_path(output, rule.output)
-                self.write_line(io)
-                self.write_line(io, 'build %s: %s %s' % (output, rule_name, ' '.join(inputs)))
 
+        with current_context() as ctx:
+            input_base = ctx.get('input_path')
+
+            object_base = ctx.get('object_path')
+            if object_base is None:
+                object_base = build_path(self.base_path, ctx.get('object_path_relative'))
+            
+            binary_base = ctx.get('binary_path')
+            if binary_base is None:
+                binary_base = build_path(self.base_path, ctx.get('binary_path_relative'))
+            
+        if rule.output:
+            output = build_path(binary_base, rule.output)
+        else:
+            output = None
+
+        inputs = [build_path(input_base, v) for v in rule.inputs]
+        if rule.source:
+            inputs += all_outputs[rule.source]
+        inputs = dedup(inputs)
+
+        if output:
+            # Single build
+            self.write_line(io)
+            if inputs:
+                self.write_line(io, 'build %s: %s %s' % (self.pathify(output), name, ' '.join([self.pathify(v) for v in inputs])))
+            else:
+                self.write_line(io, 'build %s: %s' % (self.pathify(output), name))
+            rule_outputs.append(output)
+        elif rule.inputs:
+            # Multiple builds
+            self.write_line(io)
+            
+            prefix_length = len(input_base) + 1
+            extension = stringify(rule.command.output_extension)
+            outputs = [build_path(object_base, change_extension(v[prefix_length:], extension)) for v in inputs]
+            
+            for index, output in enumerate(outputs):
+                self.write_line(io, 'build %s: %s %s' % (self.pathify(output), name, self.pathify(inputs[index])))
+                rule_outputs.append(output)
+    
+    def write(self, io):
+        self.write_line(io, '# Ninja file for %s' % self._project)
+        self.write_line(io, '# Generated by Ronin on %s' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
+        for rule_name, rule in self._project.rules.iteritems():
+            self.write_rule(io, rule_name, rule)
+                
     @property
     def base_path(self):
         with current_context() as ctx:

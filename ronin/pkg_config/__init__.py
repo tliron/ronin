@@ -1,7 +1,8 @@
 
 from ..libraries import Library
 from ..contexts import current_context
-from ..utils import stringify, which
+from ..utils.strings import stringify
+from ..utils.platform import which
 import os, pkgconfig
 
 def configure_pkg_config(ctx, command='pkg-config', path=None):

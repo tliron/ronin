@@ -2,15 +2,12 @@
 from ..commands import CommandWithArguments
 from ..contexts import current_context
 from ..libraries import Libraries
-from ..utils import build_path, stringify, stringify_unique, join_stringify_lambda, which
+from ..utils.strings import stringify, stringify_unique, join_stringify_lambda
+from ..utils.paths import build_path
+from ..utils.platform import which
 
 def configure_gcc(ctx, command='gcc', ccache=True):
-    if ccache:
-        ctx.gcc_command = which('/usr/lib/ccache/%s' % command)
-        if ctx.gcc_command is None:
-            ctx.gcc_command = which(command)
-    else:
-        ctx.gcc_command = which(command)
+    ctx.gcc_command = _gcc_command(command, ccache)
 
 class GccCommand(CommandWithArguments):
     """
@@ -19,7 +16,7 @@ class GccCommand(CommandWithArguments):
     
     def __init__(self):
         super(GccCommand, self).__init__()
-        self.command = lambda ctx: ctx.get('gcc_command', 'gcc')
+        self.command = lambda ctx: ctx.get('gcc_command', _gcc_command())
         self.command_types = ()
         self.linker_arguments = []
         self.deps = 'gcc'
@@ -57,6 +54,9 @@ class GccCommand(CommandWithArguments):
     
     def set_machine(self, value):
         self.add_argument(lambda _: '-m%s' % stringify(value))
+
+    def set_machine_bits(self, project):
+        self.set_machine(lambda _: '32' if stringify(project.variant).endswith('32') else '64')
 
     def set_machine_tune(self, value):
         self.add_argument(lambda _: '-mtune=%s' % stringify(value))
@@ -96,9 +96,11 @@ class GccCommand(CommandWithArguments):
 
     def create_shared_library(self):
         self.add_argument('-shared')
+        self.output_extension = 'so'
 
     def create_static_library(self):
         self.add_argument('-static')
+        self.output_extension = 'a'
 
     def use_ld(self, value):
         self.add_argument(lambda _: '-fuse-ld=%s' % stringify(value))
@@ -154,6 +156,7 @@ class GccCompile(GccMakefile):
     def __init__(self):
         super(GccCompile, self).__init__()
         self.command_types = ('compile',)
+        self.output_extension = 'o'
         self.compile_only()
         with current_context() as ctx:
             if getattr(ctx, 'debug', False):
@@ -167,3 +170,12 @@ class GccLink(GccCommand):
     def __init__(self):
         super(GccLink, self).__init__()
         self.command_types = ('link',)
+
+def _gcc_command(command='gcc', ccache=True):
+    if ccache:
+        r = which('/usr/lib/ccache/%s' % command)
+        if r is None:
+            r = which(command)
+    else:
+        r = which(command)
+    return r

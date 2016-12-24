@@ -7,45 +7,41 @@
 #
 # Source: https://developer.gnome.org/gtk3/stable/gtk-getting-started.html
 #
-# This improves on build1.py by adding explicit configuration of all utilities. 
+# Requirements: sudo apt install libgtk-3-dev
+#
+# This adds on build1.py by separating the compile and link phases. 
 #
 
-from ronin import configure_build
-from ronin.cli import build_cli
-from ronin.contexts import new_context
-from ronin.gcc import configure_gcc, GccBuild
-from ronin.pkg_config import configure_pkg_config, Package
+from ronin.cli import cli
+from ronin.contexts import new_build_context
+from ronin.gcc import GccCompile, GccLink
+from ronin.pkg_config import Package
 from ronin.projects import Project
-from ronin.ninja import configure_ninja
 from ronin.rules import Rule
-from ronin.utils import base_path, glob
+from ronin.utils.paths import glob
 
-with new_context() as ctx:
-    configure_build(ctx,
-                    base_path(__file__),
-                    output_path_relative='build',
-                    binary_path_relative='bin',
-                    debug=True)
-    configure_ninja(ctx,
-                    command='ninja',
-                    file_name='build.ninja',
-                    columns=100)
-    configure_gcc(ctx,
-                  command='gcc',
-                  ccache=True)
-    configure_pkg_config(ctx,
-                         command='pkg-config',
-                         path=None)
-
+with new_build_context() as ctx:
     p = Project('example_1')
+
+    libraries = [Package('gtk+-3.0')]
     
-    c = GccBuild()
-    c.add_libraries(Package('gtk+-3.0'))
+    # Compile
+    
+    c = GccCompile()
+    c.add_libraries(*libraries)
     
     r = Rule(c)
-    r.inputs = glob('*.c')
-    r.output = 'example_1'
+    r.inputs = glob('src/*.c')
+    p.rules['object'] = r
+
+    # Link
     
+    c = GccLink()
+    c.add_libraries(*libraries)
+    
+    r = Rule(c)
+    r.source = 'object'
+    r.output = 'example_1'
     p.rules['executable'] = r
     
-    build_cli(p)
+    cli(p)

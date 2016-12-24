@@ -1,23 +1,42 @@
 
-from .arguments import ArgumentParser as BaseArgumentParser
+from .contexts import new_context
 from .ninja import NinjaFile
+from .utils.argparse import ArgumentParser as BaseArgumentParser
 import sys
 
 class ArgumentParser(BaseArgumentParser):
-    def __init__(self, project):
-        super(ArgumentParser, self).__init__(description='Build %s' % project, prog='build.py')
-        self.add_argument('operation', nargs='?', default='build', help='operation (build, generate)')
-        self.add_argument('--variant', help='variant (defaults to host platform)')
+    def __init__(self, projects):
+        super(ArgumentParser, self).__init__(description='Build %s' % ', '.join([str(v) for v in projects]), prog='build.py')
+        self.add_argument('operation', nargs='?', default='build', help='operation ("build", "generate", "run")')
+        self.add_argument('--variant', help='override default project variant (defaults to host platform, e.g. "linux64")')
+        self.add_argument('--context', nargs='*', help='set a value in the context')
 
-def build_cli(project):
-    args, _ = ArgumentParser(project).parse_known_args()
+def cli(*projects):
+    """
+    Run the Ronin CLI on one or more projects.
     
-    if args.operation == 'build':
-        ninja_file = NinjaFile(project)
-        ninja_file.delegate()
-    if args.operation == 'generate':
-        ninja_file = NinjaFile(project)
-        ninja_file.generate()
-    else:
-        print 'ronin: unsupported operation: %s' % args.operation
-        sys.exit(1)
+    :param projects: :class:`Project` instances
+    """
+    
+    
+    args, _ = ArgumentParser(projects).parse_known_args()
+    
+    with new_context() as ctx:
+        if args.variant:
+            ctx.platform_variant = args.variant
+            
+        if args.operation == 'build':
+            for project in projects:
+                ninja_file = NinjaFile(project)
+                r = ninja_file.run()
+                if r != 0:
+                    sys.exit(r)
+        if args.operation == 'generate':
+            for project in projects:
+                ninja_file = NinjaFile(project)
+                ninja_file.generate()
+        if args.operation == 'run':
+            pass
+        else:
+            print "ronin: Unsupported operation: '%s'" % args.operation
+            sys.exit(1)

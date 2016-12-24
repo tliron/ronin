@@ -3,6 +3,16 @@ import threading
 
 _thread_locals = threading.local()
 
+def new_build_context(*args, **kwargs):
+    """
+    Creates a new context and calls :code:`configure_build` on it.
+    """
+    
+    from .configuration import configure_build
+    ctx = new_context()
+    configure_build(ctx, *args, frame=2, **kwargs)
+    return ctx
+
 def new_context():
     """
     Creates a new context.
@@ -10,12 +20,8 @@ def new_context():
     If there already is a context in this thread, our new context will be a child of that context.
     """
     
-    context = Context.peek_thread_local()
-    if context is None:
-        context = Context()
-    else:
-        context = Context(context)
-    return context
+    ctx = Context.peek_thread_local()
+    return Context(ctx)
 
 def current_context():
     """
@@ -25,10 +31,10 @@ def current_context():
     The context will be treated as immutable.
     """
 
-    context = Context.peek_thread_local()
-    if context is None:
+    ctx = Context.peek_thread_local()
+    if ctx is None:
         raise NoContextException()
-    return Context(context, True)
+    return Context(ctx, True)
 
 class Context(object):
     """
