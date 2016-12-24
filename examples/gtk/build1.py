@@ -15,21 +15,16 @@
 from ronin.cli import cli
 from ronin.contexts import new_build_context
 from ronin.gcc import GccBuild
+from ronin.phases import Phase
 from ronin.pkg_config import Package
 from ronin.projects import Project
-from ronin.rules import Rule
 from ronin.utils.paths import glob
 
 with new_build_context() as ctx:
-    p = Project('example_1')
+    project = Project('GTK+ Hello World')
     
-    c = GccBuild()
-    c.add_libraries(Package('gtk+-3.0'))
+    build = Phase(GccBuild(), inputs=glob('src/*.c'), output='example_1')
+    build.command.add_libraries(Package('gtk+-3.0'))
+    project.phases['executable'] = build
     
-    r = Rule(c)
-    r.inputs = glob('src/*.c')
-    r.output = 'example_1'
-    
-    p.rules['executable'] = r
-    
-    cli(p)
+    cli(project)

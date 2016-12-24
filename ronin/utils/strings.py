@@ -2,8 +2,8 @@
 from .collections import dedup
 from ..contexts import current_context
 
-def stringify_list(value):
-    return [stringify(v) for v in value]
+def stringify_list(values):
+    return [stringify(v) for v in values]
 
 def stringify(value):
     if value is None:
@@ -20,4 +20,4 @@ def stringify_unique(values):
     return dedup(values)
 
 def join_stringify_lambda(values, separator=' '):
-    return lambda _: separator.join([stringify(v) for v in values])
+    return lambda _: separator.join(stringify_list(values))

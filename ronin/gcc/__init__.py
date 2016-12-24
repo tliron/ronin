@@ -6,6 +6,8 @@ from ..utils.strings import stringify, stringify_unique, join_stringify_lambda
 from ..utils.paths import build_path
 from ..utils.platform import which
 
+DEFAULT_CCACHE_PATH = '/usr/lib/ccache'
+
 def configure_gcc(ctx, command='gcc', ccache=True):
     ctx.gcc_command = _gcc_command(command, ccache)
 
@@ -21,7 +23,7 @@ class GccCommand(CommandWithArguments):
         self.linker_arguments = []
         self.deps = 'gcc'
         self.add_argument('$in')
-        self.add_argument('-o', '$out')
+        self.set_output('$out')
 
     def write(self, io):
         super(GccCommand, self).write(io)
@@ -107,12 +109,6 @@ class GccCommand(CommandWithArguments):
 
     # Makefile
     
-    def _makefile(self, value, arg=None):
-        args = [lambda _: '-M%s' % stringify(value)]
-        if arg is not None:
-            args.append(arg)
-        self.add_argument(*args)
-
     def create_makefile(self):
         self._makefile('D') # does not imply "-E"
 
@@ -125,18 +121,24 @@ class GccCommand(CommandWithArguments):
     def set_makefile_path(self, value):
         self._makefile('F', value)
 
-class GccMakefile(GccCommand):
+    def _makefile(self, value, arg=None):
+        args = [lambda _: '-M%s' % stringify(value)]
+        if arg is not None:
+            args.append(arg)
+        self.add_argument(*args)
+
+class GccWithMakefile(GccCommand):
     """
     Base class for gcc commands that also create a makefile.
     """
     
     def __init__(self):
-        super(GccMakefile, self).__init__()
+        super(GccWithMakefile, self).__init__()
         self.depfile = True
         self.create_makefile_ignore_system()
         self.set_makefile_path('$out.d')
 
-class GccBuild(GccMakefile):
+class GccBuild(GccWithMakefile):
     """
     gcc command supporting both compilation and linking phases.
     """
@@ -145,10 +147,10 @@ class GccBuild(GccMakefile):
         super(GccBuild, self).__init__()
         self.command_types = ('compile', 'link')
         with current_context() as ctx:
-            if getattr(ctx, 'debug', False):
+            if ctx.get('debug', False):
                 self.enable_debug()
 
-class GccCompile(GccMakefile):
+class GccCompile(GccWithMakefile):
     """
     gcc command supporting compilation phase only.
     """
@@ -159,7 +161,7 @@ class GccCompile(GccMakefile):
         self.output_extension = 'o'
         self.compile_only()
         with current_context() as ctx:
-            if getattr(ctx, 'debug', False):
+            if ctx.get('debug', False):
                 self.enable_debug()
 
 class GccLink(GccCommand):
@@ -173,9 +175,11 @@ class GccLink(GccCommand):
 
 def _gcc_command(command='gcc', ccache=True):
     if ccache:
-        r = which('/usr/lib/ccache/%s' % command)
-        if r is None:
-            r = which(command)
+        with current_context() as ctx:
+            ccache_path = ctx.get('ccache_path', DEFAULT_CCACHE_PATH)
+            r = which(build_path(ccache_path, command))
+            if r is None:
+                r = which(command)
     else:
         r = which(command)
     return r

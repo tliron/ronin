@@ -5,25 +5,22 @@
 #
 # build.py
 #
+# To test, try "--variant linux64" or "--variant linux32" when building.
+#
 
 from ronin.cli import cli
 from ronin.contexts import new_build_context
 from ronin.gcc import GccBuild
+from ronin.phases import Phase
 from ronin.projects import Project
-from ronin.rules import Rule
 from ronin.utils.paths import glob
 
 with new_build_context() as ctx:
-
-    p = Project('size')
+    project = Project('size')
     
-    c = GccBuild()
-    c.set_machine_bits(p)
+    build = Phase(GccBuild(), output='size')
+    build.command.set_machine_bits(project)
+    build.inputs = glob('src/*.c')
+    project.phases['build'] = build
     
-    r = Rule(c)
-    r.inputs = glob('src/*.c')
-    r.output = 'size'
-    
-    p.rules['executable'] = r
-    
-    cli(p)
+    cli(project)

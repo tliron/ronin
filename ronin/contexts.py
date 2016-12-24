@@ -1,4 +1,6 @@
 
+from cStringIO import StringIO
+from collections import OrderedDict
 import threading
 
 _thread_locals = threading.local()
@@ -20,7 +22,7 @@ def new_context():
     If there already is a context in this thread, our new context will be a child of that context.
     """
     
-    ctx = Context.peek_thread_local()
+    ctx = Context._peek_thread_local()
     return Context(ctx)
 
 def current_context():
@@ -31,7 +33,7 @@ def current_context():
     The context will be treated as immutable.
     """
 
-    ctx = Context.peek_thread_local()
+    ctx = Context._peek_thread_local()
     if ctx is None:
         raise NoContextException()
     return Context(ctx, True)
@@ -50,28 +52,42 @@ class Context(object):
     LOCAL = ('_parent', '_immutable')
     
     def __init__(self, parent=None, immutable=False):
+        if parent and not isinstance(parent, Context):
+            raise AttributeError('not a Context')
+
         self._parent = parent
         self._immutable = immutable
+    
+    def __str__(self):
+        io = StringIO()
+        try:
+            self.write(io)
+            v = io.getvalue()
+        finally:
+            io.close()
+        return v
 
     def get(self, name, default=None):
         try:
             return getattr(self, name)
         except NotInContextException:
             return default
+    
+    def write(self, io):
+        for k, v in self._all.iteritems():
+            io.write('%s=%s\n' % (k, v))
 
-    @staticmethod
-    def peek_thread_local():
-        """
-        Gets the context attached to the current thread if there is one, which will be the top
-        context on the stack.
-        """
+    @property
+    def _all(self):
+        r = OrderedDict()
+        if self._parent:
+            r.update(self._parent._all)
+        for k, v in sorted(vars(self).items()):
+            if k not in Context.LOCAL:
+                r[k] = v
+        return r
 
-        try:
-            return _thread_locals.ronin_context_stack.peek()
-        except AttributeError:
-            return None
-
-    def push_thread_local(self):
+    def _push_thread_local(self):
         """
         Attaches this context to the current thread by pushing it on the stack.
         """
@@ -83,12 +99,37 @@ class Context(object):
             _thread_locals.ronin_context_stack = stack
         stack.push(self)
 
+    @staticmethod
+    def _peek_thread_local():
+        """
+        Gets the context attached to the current thread if there is one, which will be the top
+        context on the stack.
+        """
+
+        try:
+            return _thread_locals.ronin_context_stack.peek()
+        except AttributeError:
+            return None
+
+    @staticmethod
+    def _pop_thread_local():
+        """
+        Removes the context attached to the current thread if there is one, which will be the top
+        context on the stack.
+        """
+        
+        try:
+            _thread_locals.ronin_context_stack.pop()
+        except AttributeError:
+            return None
+
+
     def __enter__(self):
-        self.push_thread_local()
+        self._push_thread_local()
         return self
     
     def __exit__(self, type, value, traceback):
-        _thread_locals.ronin_context_stack.pop()
+        self._pop_thread_local()
 
     def __getattr__(self, name):
         if name in Context.LOCAL:
@@ -112,23 +153,6 @@ class Context(object):
 
         super(Context, self).__setattr__(name, value)
 
-class _ContextStack(object):
-    """
-    Manages a stack of :class:`Context` instances.
-    """
-    
-    def __init__(self):
-        self._stack = []
-    
-    def push(self, context):
-        self._stack.append(context)
-    
-    def peek(self):
-        return self._stack[-1] if len(self._stack) else None
-
-    def pop(self):
-        return self._stack.pop() if len(self._stack) else None
-
 class ContextException(Exception):
     """
     Base class for context excpetions.
@@ -148,3 +172,20 @@ class NotInContextException(ContextException):
 class ImmutableContextException(ContextException):
     def __init__(self, message=None):
         super(ImmutableContextException, self).__init__(message)
+
+class _ContextStack(object):
+    """
+    Manages a stack of :class:`Context` instances.
+    """
+    
+    def __init__(self):
+        self._stack = []
+    
+    def push(self, context):
+        self._stack.append(context)
+    
+    def peek(self):
+        return self._stack[-1] if len(self._stack) else None
+
+    def pop(self):
+        return self._stack.pop() if len(self._stack) else None

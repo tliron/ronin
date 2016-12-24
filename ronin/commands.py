@@ -1,5 +1,5 @@
 
-from .utils.strings import stringify, stringify_unique, join_stringify_lambda
+from .utils.strings import stringify, join_stringify_lambda
 from cStringIO import StringIO
 
 class Command(object):
@@ -35,25 +35,27 @@ class CommandWithArguments(Command):
     def __init__(self):
         super(CommandWithArguments, self).__init__()
         self._arguments = []
-        self._remove_arguments = []
 
     def write(self, io):
         super(CommandWithArguments, self).write(io)
-        if self._arguments:
-            arguments = stringify_unique(self._arguments)
-            remove_arguments = stringify_unique(self._remove_arguments)
-            arguments = [v for v in arguments if v not in remove_arguments]
-            if arguments:
-                io.write(' ')
-                io.write(' '.join(arguments))
+        arguments = []
+        for flag, argument in self._arguments:
+            argument = stringify(argument)
+            if flag:
+                arguments.append(argument)
+            else:
+                arguments.remove(argument)
+        if arguments:
+            io.write(' ')
+            io.write(' '.join(arguments))
 
     def add_argument(self, *value):
-        self._argument(self._arguments, *value)
+        self._argument(True, *value)
 
     def remove_argument(self, *value):
-        self._argument(self._remove_arguments, *value)
+        self._argument(False, *value)
 
-    def _argument(self, arguments, *value):
+    def _argument(self, flag, *value):
         l = len(value)
         if l == 0:
             return
@@ -61,4 +63,4 @@ class CommandWithArguments(Command):
             value = value[0]
         else:
             value = join_stringify_lambda(value)
-        arguments.append(value)
+        self._arguments.append((flag, value))

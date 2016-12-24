@@ -17,26 +17,30 @@ class Package(Library):
     
     def __init__(self, name, pkg_config_path=None):
         super(Package, self).__init__()
-        self._name = name
-        self._pkg_config_path = pkg_config_path
+        self.name = name
+        self.pkg_config_path = pkg_config_path
         self._data = None
 
-    def add_to_compile(self, command):
+    def add_to_command_compile(self, command):
         self._parse()
-        if 'include_dirs' in self._data:
-            for path in self._data['include_dirs']:
+        include_dirs = self._data.get('include_dirs')
+        if include_dirs:
+            for path in include_dirs:
                 command.add_include_path(path)
-        if 'define_macros' in self._data:
-            for define in self._data['define_macros']:
+        define_macros = self._data.get('define_macros')
+        if define_macros:
+            for define in define_macros:
                 command.define_symbol(define)
 
-    def add_to_link(self, command):
+    def add_to_command_link(self, command):
         self._parse()
-        if 'library_dirs' in self._data:
-            for path in self._data['library_dirs']:
+        library_dirs = self._data.get('library_dirs')
+        if library_dirs:
+            for path in library_dirs:
                 command.add_library_path(path)
-        if 'libraries' in self._data:
-            for library in self._data['libraries']:
+        libraries = self._data.get('libraries')
+        if libraries:
+            for library in libraries:
                 command.add_library(library)
 
     def _parse(self):
@@ -46,11 +50,9 @@ class Package(Library):
             pkg_config_command = stringify(ctx.get('pkg_config_command'))
             if pkg_config_command is not None:
                 os.environ['PKG_CONFIG'] = pkg_config_command
-            pkg_config_path = stringify(self._pkg_config_path)
+            pkg_config_path = stringify(self.pkg_config_path)
+            if pkg_config_path is None:
+                pkg_config_path = stringify(ctx.get('pkg_config_path'))
             if pkg_config_path is not None:
                 os.environ['PKG_CONFIG_PATH'] = pkg_config_path
-            else:
-                pkg_config_path = stringify(ctx.get('pkg_config_path'))
-                if pkg_config_path is not None:
-                    os.environ['PKG_CONFIG_PATH'] = pkg_config_path
-            self._data = pkgconfig.parse(self._name)
+            self._data = pkgconfig.parse(self.name)
