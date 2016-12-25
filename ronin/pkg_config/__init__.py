@@ -47,11 +47,7 @@ class Package(Library):
     def _parse(self, *flags):
         with current_context() as ctx:
             default = os.environ.get('PKG_CONFIG', DEFAULT_COMMAND)
-            
-            pkg_config_command = stringify(ctx.fallback(self.command, 'pkg_config_command', default))
-            if pkg_config_command is not None:
-                pkg_config_command = which(pkg_config_command)
-                
+            pkg_config_command = which(ctx.fallback(self.command, 'pkg_config_command', default), True)
             pkg_config_path = stringify(ctx.fallback(self.path, 'pkg_config_path'))
             if pkg_config_path is not None:
                 os.environ['PKG_CONFIG_PATH'] = pkg_config_path
@@ -60,4 +56,9 @@ class Package(Library):
         for flag in flags:
             args.append(flag)
         args.append(self.name)
-        return UNESCAPED_STRING_RE.split(check_output(args).strip())
+ 
+        try:
+            output = check_output(args).strip()
+            return UNESCAPED_STRING_RE.split(output)
+        except:
+            raise Exception('failed to run: %s' % ' '.join(args))

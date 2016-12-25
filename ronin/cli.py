@@ -1,7 +1,9 @@
 
 from .contexts import new_context
+from .projects import Project
 from .ninja import NinjaFile
 from .utils.argparse import ArgumentParser
+from .utils.types import verify_type
 import sys, os, inspect
 
 def cli(*projects, **kwargs):
@@ -37,6 +39,8 @@ def cli(*projects, **kwargs):
         for operation in args.operation:
             if operation in ('build', 'clean', 'ninja'):
                 for project in projects:
+                    verify_type(project, Project)
+                                        
                     print "ronin: %s" % project
                     ninja_file = NinjaFile(project)
     

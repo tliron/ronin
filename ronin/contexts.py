@@ -1,4 +1,5 @@
 
+from .utils.types import verify_type
 from cStringIO import StringIO
 from collections import OrderedDict
 import threading
@@ -56,9 +57,8 @@ class Context(object):
     LOCAL = ('_parent', '_immutable')
     
     def __init__(self, parent=None, immutable=False):
-        if parent and not isinstance(parent, Context):
-            raise AttributeError('not a Context')
-
+        if parent:
+            verify_type(parent, Context)
         self._parent = parent
         self._immutable = immutable
     
@@ -137,7 +137,7 @@ class Context(object):
         self._push_thread_local()
         return self
     
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, the_type, value, traceback):
         self._pop_thread_local()
 
     def __getattr__(self, name):

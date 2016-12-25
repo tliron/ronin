@@ -1,6 +1,4 @@
 
-from inspect import isclass
-
 class Library(object):
     """
     Base class for libraries.
@@ -33,26 +31,3 @@ class ExplicitLibrary(Library):
             command.add_library_path(path)
         for library in self.libraries:
             command.add_library(library)
-
-class Libraries(object):
-    """
-    Manages a list of libraries, which can be either subclasses of :class:`Library` or instances
-    of subclasses.
-    """
-    
-    def __init__(self, libraries):
-        for library in libraries:
-            if isclass(library):
-                if not issubclass(library, Library):
-                    raise AttributeError('not a subclass of %s: %s' % (Library.__name__, library.__name__))
-            else:
-                if not isinstance(library, Library):
-                    raise AttributeError('not an instance of %s: %s' % (Library.__name__, library.__class__.__name__))
-        
-        self._libraries = libraries
-    
-    def add_to_command(self, command):
-        for library in self._libraries:
-            if isclass(library):
-                library = library()
-            library.add_to_command(command)

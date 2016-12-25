@@ -18,11 +18,13 @@ def host_bits():
     machine = platform.machine() # i386, x86_64, AMD64
     return 64 if machine.endswith('64') else 32
 
-def which(value):
+def which(value, exception=False):
     value = stringify(value)
     try:
         return check_output(['which', value]).strip()
     except CalledProcessError:
+        if exception:
+            raise Exception('could not find %s' % value)
         return None
 
 # See: https://docs.python.org/2/library/sys.html#sys.platform

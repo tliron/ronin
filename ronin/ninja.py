@@ -1,10 +1,12 @@
 
 from .contexts import current_context
 from .phases import Phase
+from .projects import Project
 from .utils.paths import join_path, change_extension
 from .utils.strings import stringify
 from .utils.platform import which
 from .utils.collections import dedup
+from .utils.types import verify_type
 from cStringIO import StringIO
 from os import makedirs
 from subprocess import check_call, CalledProcessError
@@ -32,6 +34,7 @@ class NinjaFile(object):
     """
     
     def __init__(self, project, command=None, file_name=None, columns=None, strict=None):
+        verify_type(project, Project)
         self._project = project
         self.command = None
         self.file_name = file_name
@@ -74,7 +77,7 @@ class NinjaFile(object):
         self.generate()
         path = self.path
         with current_context() as ctx:
-            command = which(ctx.fallback(self.command, 'ninja_command', 'ninja'))
+            command = which(ctx.fallback(self.command, 'ninja_command', 'ninja'), True)
             verbose = ctx.get('verbose', False)
         args = [command, '-f', path]
         if verbose:
@@ -224,7 +227,7 @@ class _Writer(object):
     def __enter__(self):
         return self
     
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, the_type, value, traceback):
         pass
     
     def line(self, line='', indent=0):

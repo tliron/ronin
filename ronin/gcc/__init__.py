@@ -1,11 +1,11 @@
 
 from ..commands import CommandWithLibraries
 from ..contexts import current_context
-from ..libraries import Libraries
+from ..projects import Project
 from ..utils.strings import stringify, stringify_unique, bool_stringify, join_stringify_lambda
 from ..utils.paths import join_path
 from ..utils.platform import which
-from audioop import cross
+from ..utils.types import verify_type
 
 DEFAULT_COMMAND = 'gcc'
 DEFAULT_CCACHE_PATH = '/usr/lib/ccache'
@@ -60,6 +60,7 @@ class GccCommand(CommandWithLibraries):
         self.set_output('$out')
         self.crosscompile = crosscompile
         if crosscompile is not None:
+            verify_type(crosscompile, Project)
             self.command = gcc_crosscompile_command(crosscompile, command)
             self.set_machine_bits(crosscompile)
         else:
@@ -102,6 +103,7 @@ class GccCommand(CommandWithLibraries):
         self.add_argument(lambda _: '-m%s' % stringify(value))
 
     def set_machine_bits(self, project):
+        verify_type(project, Project)
         self.set_machine(lambda _: '32' if stringify(project.variant).endswith('32') else '64')
 
     def set_machine_tune(self, value):
@@ -228,4 +230,4 @@ def _gcc_which(command, ccache):
         r = which(join_path(ccache_path, command))
         if r is not None:
             return r
-    return which(command)
+    return which(command, True)

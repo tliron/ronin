@@ -34,12 +34,18 @@ class SDL(Library):
 
     def _parse(self, flags):
         with current_context() as ctx:
-            sdl_config_command = which(ctx.fallback(self.command, 'sdl_config_command', DEFAULT_COMMAND))
+            sdl_config_command = which(ctx.fallback(self.command, 'sdl_config_command', DEFAULT_COMMAND), True)
             sdl_config_prefix = stringify(ctx.fallback(self.prefix, 'sdl_config_prefix'))
             sdl_config_exec_prefix = stringify(ctx.fallback(self.exec_prefix, 'sdl_config_exec_prefix'))
+        
         args = [sdl_config_command, flags]
         if sdl_config_prefix is not None:
             args.append('--prefix=%s' % sdl_config_prefix)
         if sdl_config_exec_prefix is not None:
             args.append('--exec-prefix=%s' % sdl_config_exec_prefix)
-        return UNESCAPED_STRING_RE.split(check_output(args).strip())
+        
+        try:
+            output = check_output(args).strip()
+            return UNESCAPED_STRING_RE.split(output)
+        except:
+            raise Exception('failed to run: %s' % ' '.join(args))

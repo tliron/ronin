@@ -1,7 +1,9 @@
 
-from .libraries import Libraries
+from .libraries import Library
 from .utils.strings import stringify, join_stringify_lambda
+from .utils.types import verify_type_or_subclass
 from cStringIO import StringIO
+from inspect import isclass
 
 class Command(object):
     """
@@ -78,5 +80,10 @@ class CommandWithLibraries(CommandWithArguments):
         self.libraries = []
 
     def write(self, io):
-        Libraries(self.libraries).add_to_command(self)
+        for library in self.libraries:
+            verify_type_or_subclass(library, Library)
+            if isclass(library):
+                library = library()
+            library.add_to_command(self)
+        
         super(CommandWithLibraries, self).write(io)
