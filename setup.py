@@ -18,7 +18,6 @@ setup(
     author_email='tal.liron@gmail.com',
     
     url='https://github.com/tliron/ronin',
-    #download_url='',
 
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -27,9 +26,6 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Topic :: Software Development :: Libraries :: Python Modules'],
+        'Topic :: Software Development :: Build Tools'],
 
-    packages=['ronin'],
-    
-    install_requires=[
-        'pkgconfig==1.2.2'])
+    packages=['ronin'])

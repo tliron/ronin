@@ -5,6 +5,8 @@
 #
 # build.py
 #
+# Requirements: sudo apt install gcc ccache
+#
 # To test, try "--variant linux64" or "--variant linux32" when building.
 #
 

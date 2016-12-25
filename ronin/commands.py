@@ -1,8 +1,6 @@
 
-from .contexts import current_context
 from .libraries import Libraries
 from .utils.strings import stringify, join_stringify_lambda
-from .utils.platform import which
 from cStringIO import StringIO
 
 class Command(object):
@@ -81,18 +79,3 @@ class CommandWithLibraries(CommandWithArguments):
     def write(self, io):
         Libraries(self.libraries).add_to_command(self)
         super(CommandWithLibraries, self).write(io)
-
-def configure_copy(ctx, command=None):
-    with current_context(False) as ctx:
-        ctx.cp_command = command
-
-class Copy(CommandWithArguments):
-    """
-    Copy command.
-    """
-    
-    def __init__(self, command=None):
-        super(Copy, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'cp_command', 'cp'))
-        self.add_argument('$in')
-        self.add_argument('$out')

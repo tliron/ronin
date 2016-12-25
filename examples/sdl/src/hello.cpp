@@ -17,8 +17,8 @@ int main(int, char**){
 		return 1;
 	}
 
-	//Now create a window with title "Hello World" at 100, 100 on the screen with w:640 h:480 and show it
-	SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 640, 480, SDL_WINDOW_SHOWN);
+	//Now create a window with title "Hello World" at 100, 100 on the screen with w:500 h:150 and show it
+	SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 500, 150, SDL_WINDOW_SHOWN);
 	//Make sure creating our window went ok
 	if (win == nullptr){
 		std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;

@@ -1,7 +1,7 @@
 
 from ..contexts import current_context
 from ..libraries import Library
-from ..utils.strings import stringify, bool_stringify
+from ..utils.strings import stringify, bool_stringify, UNESCAPED_STRING_RE
 from ..utils.platform import which
 from subprocess import check_output
 
@@ -42,4 +42,4 @@ class SDL(Library):
             args.append('--prefix=%s' % sdl_config_prefix)
         if sdl_config_exec_prefix is not None:
             args.append('--exec-prefix=%s' % sdl_config_exec_prefix)
-        return check_output(args).split()
+        return UNESCAPED_STRING_RE.split(check_output(args).strip())

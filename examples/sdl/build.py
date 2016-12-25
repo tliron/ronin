@@ -7,18 +7,18 @@
 #
 # Source: https://github.com/Twinklebear/TwinklebearDev-Lessons/blob/master/Lesson1/src/main.cpp
 #
-# Requirements: sudo apt install libsdl2-dev
+# Requirements: sudo apt install gcc ccache libsdl2-dev
 #
-# Simple example of using SDL. Note that instead of using SDL() we could also have used
-# pkg_config.Package('sdl2'). The difference is that SDL() uses the sdl2-config utility, which
-# is more specialized than pkg-config.
+# Simple example of using SDL. Note that instead of using sdl_config.SDL() we could also have used
+# pkg_config.Package('sdl2'). The difference is that sdl_config.SDL() uses the sdl2-config utility,
+# which is more specialized than pkg-config.
 #
 # The script also supports linking SDL as a static library if you specify "--context static true"
 # in the command line.
 #
 
 from ronin.cli import cli
-from ronin.commands import Copy
+from ronin.copy import Copy
 from ronin.contexts import new_build_context
 from ronin.gcc import GccBuild
 from ronin.phases import Phase

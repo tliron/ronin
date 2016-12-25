@@ -1,6 +1,9 @@
 
 from .collections import dedup
 from ..contexts import current_context
+import re
+
+UNESCAPED_STRING_RE = re.compile(r'(?<!\\) ')
 
 def stringify_list(values):
     return [stringify(v) for v in values]

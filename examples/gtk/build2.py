@@ -7,7 +7,7 @@
 #
 # Source: https://developer.gnome.org/gtk3/stable/gtk-getting-started.html
 #
-# Requirements: sudo apt install libgtk-3-dev
+# Requirements: sudo apt install gcc ccache libgtk-3-dev
 #
 # This adds on build1.py by separating the compile and link phases.
 #
