@@ -167,9 +167,14 @@ class NinjaFile(object):
             inputs += all_phase_outputs[inputs_from_name]
         inputs = dedup(inputs)
 
+        # Extension
+        extension = stringify(phase.command.output_extension)
+
         if output:
             # Single output
             w.line()
+            
+            output = change_extension(output, extension)
             if inputs:
                 w.line('build %s: %s %s' % (_Writer.pathify(output), rule_name, ' '.join([_Writer.pathify(v) for v in inputs])))
             else:
@@ -180,7 +185,6 @@ class NinjaFile(object):
             w.line()
             
             prefix_length = len(input_base) + 1
-            extension = stringify(phase.command.output_extension)
             outputs = [join_path(output_base, change_extension(v[prefix_length:], extension)) for v in inputs]
             
             for index, output in enumerate(outputs):

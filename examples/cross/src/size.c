@@ -2,6 +2,6 @@
 
 int main()
 {
-    printf("Size of long: %zu\n", sizeof(long));
+    printf("Size of long: %lu\n", (unsigned long) sizeof(long));
     return 0;
 }

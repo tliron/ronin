@@ -74,6 +74,7 @@ class CommandWithLibraries(CommandWithArguments):
 
     def __init__(self):
         super(CommandWithLibraries, self).__init__()
+        self.command_types = []
         self.libraries = []
 
     def write(self, io):

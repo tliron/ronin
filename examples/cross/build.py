@@ -5,9 +5,9 @@
 #
 # build.py
 #
-# Requirements: sudo apt install gcc ccache
+# Requirements: sudo apt install gcc ccache gcc-multilib mingw-w64
 #
-# To test, try "--variant linux64" or "--variant linux32" when building.
+# To test, try "--variant linux64", "--variant linux32", "--variant win64", "--variant win32".
 #
 
 from ronin.cli import cli
@@ -20,8 +20,7 @@ from ronin.utils.paths import glob
 with new_build_context() as ctx:
     project = Project('size')
     
-    build = Phase(GccBuild(), output='size')
-    build.command.set_machine_bits(project)
+    build = Phase(GccBuild(crosscompile=project), output='size')
     build.inputs = glob('src/*.c')
     project.phases['build'] = build
     

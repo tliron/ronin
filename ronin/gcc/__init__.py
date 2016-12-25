@@ -2,32 +2,69 @@
 from ..commands import CommandWithLibraries
 from ..contexts import current_context
 from ..libraries import Libraries
-from ..utils.strings import stringify, stringify_unique, join_stringify_lambda
+from ..utils.strings import stringify, stringify_unique, bool_stringify, join_stringify_lambda
 from ..utils.paths import join_path
 from ..utils.platform import which
+from audioop import cross
 
 DEFAULT_COMMAND = 'gcc'
 DEFAULT_CCACHE_PATH = '/usr/lib/ccache'
+
+CROSSCOMPILE_COMMAND_PREFIXES = {
+    'linux64': 'x86_64-linux-gnu-',
+    'linux32': 'x86_64-linux-gnu-', #'i686-linux-gnu-',
+    'win64': 'x86_64-w64-mingw32-',
+    'win32': 'i686-w64-mingw32-'}
 
 def configure_gcc(command=None, ccache=None, ccache_path=None):
     with current_context(False) as ctx:
         ctx.gcc_command = command
         ctx.gcc_ccache = ccache
-        ctx.ccache_path = ccache_path
+        ctx.gcc_ccache_path = ccache_path
+
+def gcc_crosscompile_command(project, command=None):
+    def closure(ctx, project, command):
+        if command is None:
+            command = DEFAULT_COMMAND
+        command = stringify(command)
+        variant = stringify(project.variant)
+        return '%s%s' % (CROSSCOMPILE_COMMAND_PREFIXES.get(variant, ''), command)
+    return lambda ctx: closure(ctx, project, command)
+
+def gcc_crosscompile_executable_extension(project):
+    def closure(ctx, project):
+        variant = stringify(project.variant)
+        if variant in ('win64', 'win32'):
+            return 'exe'
+        return None
+    return lambda ctx: closure(ctx, project)
+
+def gcc_crosscompile_shared_library_extension(project):
+    def closure(ctx, project):
+        variant = stringify(project.variant)
+        if variant in ('win64', 'win32'):
+            return 'dll'
+        return 'so'
+    return lambda ctx: closure(ctx, project)
 
 class GccCommand(CommandWithLibraries):
     """
     Base class for `gcc <https://gcc.gnu.org/>`__ commands.
     """
     
-    def __init__(self, command=None, ccache=True):
+    def __init__(self, command=None, ccache=True, crosscompile=None):
         super(GccCommand, self).__init__()
-        self.command = lambda ctx: _gcc_which(ctx.fallback(command, 'gcc_command', DEFAULT_COMMAND), ctx.fallback(ccache, 'gcc_cache', True))
-        self.command_types = ()
         self.linker_arguments = []
         self.deps = 'gcc'
         self.add_argument('$in')
         self.set_output('$out')
+        self.crosscompile = crosscompile
+        if crosscompile is not None:
+            self.command = gcc_crosscompile_command(crosscompile, command)
+            self.set_machine_bits(crosscompile)
+        else:
+            self.command = lambda ctx: _gcc_which(ctx.fallback(command, 'gcc_command', DEFAULT_COMMAND),
+                                                  ctx.fallback(ccache, 'gcc_cache', True))
 
     def write(self, io):
         super(GccCommand, self).write(io)
@@ -101,7 +138,10 @@ class GccCommand(CommandWithLibraries):
 
     def create_shared_library(self):
         self.add_argument('-shared')
-        self.output_extension = 'so'
+        if self.crosscompile is not None:
+            self.output_extension = gcc_crosscompile_shared_library_extension(self.crosscompile)
+        else:
+            self.output_extension = 'so'
 
     def create_static_library(self):
         self.add_argument('-static')
@@ -135,8 +175,8 @@ class GccWithMakefile(GccCommand):
     Base class for gcc commands that also create a makefile.
     """
     
-    def __init__(self, command=None, ccache=True):
-        super(GccWithMakefile, self).__init__(command, ccache)
+    def __init__(self, command=None, ccache=True, crosscompile=None):
+        super(GccWithMakefile, self).__init__(command, ccache, crosscompile)
         self.depfile = True
         self.create_makefile_ignore_system()
         self.set_makefile_path('$out.d')
@@ -146,9 +186,11 @@ class GccBuild(GccWithMakefile):
     gcc command supporting both compilation and linking phases.
     """
     
-    def __init__(self, command=None, ccache=True):
-        super(GccBuild, self).__init__(command, ccache)
-        self.command_types = ('compile', 'link')
+    def __init__(self, command=None, ccache=True, crosscompile=None):
+        super(GccBuild, self).__init__(command, ccache, crosscompile)
+        self.command_types = ['compile', 'link']
+        if crosscompile is not None:
+            self.output_extension = gcc_crosscompile_executable_extension(crosscompile)
         with current_context() as ctx:
             if ctx.get('debug', False):
                 self.enable_debug()
@@ -158,9 +200,9 @@ class GccCompile(GccWithMakefile):
     gcc command supporting compilation phase only.
     """
 
-    def __init__(self, command=None, ccache=True):
-        super(GccCompile, self).__init__(command, ccache)
-        self.command_types = ('compile',)
+    def __init__(self, command=None, ccache=True, crosscompile=None):
+        super(GccCompile, self).__init__(command, ccache, crosscompile)
+        self.command_types = ['compile']
         self.output_type = 'object'
         self.output_extension = 'o'
         self.compile_only()
@@ -173,15 +215,16 @@ class GccLink(GccCommand):
     gcc command supporting linking phase only.
     """
 
-    def __init__(self, command=None, ccache=True):
-        super(GccLink, self).__init__(command, ccache)
-        self.command_types = ('link',)
+    def __init__(self, command=None, ccache=True, crosscompile=None):
+        super(GccLink, self).__init__(command, ccache, crosscompile)
+        self.command_types = ['link']
 
 def _gcc_which(command, ccache):
     command = stringify(command)
+    ccache = bool_stringify(ccache)
     if ccache:
         with current_context() as ctx:
-            ccache_path = ctx.get('ccache_path', DEFAULT_CCACHE_PATH)
+            ccache_path = stringify(ctx.get('gcc_ccache_path', DEFAULT_CCACHE_PATH))
         r = which(join_path(ccache_path, command))
         if r is not None:
             return r
