@@ -17,8 +17,8 @@ setup(
     author='Tal Liron',
     author_email='tal.liron@gmail.com',
     
-    url='http://',
-    download_url='https://',
+    url='https://github.com/tliron/ronin',
+    #download_url='',
 
     classifiers=[
         'Development Status :: 4 - Beta',

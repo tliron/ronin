@@ -40,7 +40,7 @@ class Libraries(object):
     of subclasses.
     """
     
-    def __init__(self, *libraries):
+    def __init__(self, libraries):
         for library in libraries:
             if isclass(library):
                 if not issubclass(library, Library):

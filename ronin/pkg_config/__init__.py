@@ -1,13 +1,14 @@
 
-from ..libraries import Library
 from ..contexts import current_context
+from ..libraries import Library
 from ..utils.strings import stringify
 from ..utils.platform import which
 import os, pkgconfig
 
-def configure_pkg_config(ctx, command='pkg-config', path=None):
-    ctx.pkg_config_command = which(command)
-    ctx.pkg_config_path = path
+def configure_pkg_config(command=None, path=None):
+    with current_context(False) as ctx:
+        ctx.pkg_config_command = command
+        ctx.pkg_config_path = path
 
 class Package(Library):
     """
@@ -15,10 +16,11 @@ class Package(Library):
     /Software/pkg-config/>__ tool.
     """
     
-    def __init__(self, name, pkg_config_path=None):
+    def __init__(self, name, command=None, path=None):
         super(Package, self).__init__()
         self.name = name
-        self.pkg_config_path = pkg_config_path
+        self.command = command
+        self.path = path
         self._data = None
 
     def add_to_command_compile(self, command):
@@ -46,13 +48,15 @@ class Package(Library):
     def _parse(self):
         if self._data is not None:
             return
+        
         with current_context() as ctx:
-            pkg_config_command = stringify(ctx.get('pkg_config_command'))
+            pkg_config_command = stringify(ctx.fallback(self.command, 'pkg_config_command'))
             if pkg_config_command is not None:
+                pkg_config_command = which(pkg_config_command)
                 os.environ['PKG_CONFIG'] = pkg_config_command
-            pkg_config_path = stringify(self.pkg_config_path)
-            if pkg_config_path is None:
-                pkg_config_path = stringify(ctx.get('pkg_config_path'))
+                
+            pkg_config_path = stringify(ctx.fallback(self.path, 'pkg_config_path'))
             if pkg_config_path is not None:
                 os.environ['PKG_CONFIG_PATH'] = pkg_config_path
-            self._data = pkgconfig.parse(self.name)
+            
+        self._data = pkgconfig.parse(self.name)

@@ -1,24 +1,28 @@
 
-from ..commands import CommandWithArguments
+from ..commands import CommandWithLibraries
 from ..contexts import current_context
 from ..libraries import Libraries
 from ..utils.strings import stringify, stringify_unique, join_stringify_lambda
-from ..utils.paths import build_path
+from ..utils.paths import join_path
 from ..utils.platform import which
 
+DEFAULT_COMMAND = 'gcc'
 DEFAULT_CCACHE_PATH = '/usr/lib/ccache'
 
-def configure_gcc(ctx, command='gcc', ccache=True):
-    ctx.gcc_command = _gcc_command(command, ccache)
+def configure_gcc(command=None, ccache=None, ccache_path=None):
+    with current_context(False) as ctx:
+        ctx.gcc_command = command
+        ctx.gcc_ccache = ccache
+        ctx.ccache_path = ccache_path
 
-class GccCommand(CommandWithArguments):
+class GccCommand(CommandWithLibraries):
     """
     Base class for `gcc <https://gcc.gnu.org/>`__ commands.
     """
     
-    def __init__(self):
+    def __init__(self, command=None, ccache=True):
         super(GccCommand, self).__init__()
-        self.command = lambda ctx: ctx.get('gcc_command', _gcc_command())
+        self.command = lambda ctx: _gcc_which(ctx.fallback(command, 'gcc_command', DEFAULT_COMMAND), ctx.fallback(ccache, 'gcc_cache', True))
         self.command_types = ()
         self.linker_arguments = []
         self.deps = 'gcc'
@@ -40,13 +44,13 @@ class GccCommand(CommandWithArguments):
         self.add_argument('-c')
     
     def add_include_path(self, *value):
-        self.add_argument(lambda _: '-I%s' % build_path(*value))
+        self.add_argument(lambda _: '-I%s' % join_path(*value))
 
     def standard(self, value):
         self.add_argument(lambda _: '-std=%s' % stringify(value))
 
     def define_symbol(self, name, value=None):
-        if value is None:
+        if (value is None) or (value == ''):
             self.add_argument(lambda _: '-D%s' % stringify(name))
         else:
             self.add_argument(lambda _: '-D%s=%s' % (stringify(name), stringify(value)))
@@ -78,14 +82,10 @@ class GccCommand(CommandWithArguments):
     def enable_threads(self):
         self.add_argument('-pthreads')
     
-    def add_libraries(self, *libraries):
-        libraries = Libraries(*libraries)
-        libraries.add_to_command(self)
-
     # Linker
 
     def add_library_path(self, *value):
-        self.add_argument(lambda _: '-L%s' % build_path(*value))
+        self.add_argument(lambda _: '-L%s' % join_path(*value))
 
     def add_library(self, value):
         self.add_argument(lambda _: '-l%s' % stringify(value))
@@ -135,8 +135,8 @@ class GccWithMakefile(GccCommand):
     Base class for gcc commands that also create a makefile.
     """
     
-    def __init__(self):
-        super(GccWithMakefile, self).__init__()
+    def __init__(self, command=None, ccache=True):
+        super(GccWithMakefile, self).__init__(command, ccache)
         self.depfile = True
         self.create_makefile_ignore_system()
         self.set_makefile_path('$out.d')
@@ -146,8 +146,8 @@ class GccBuild(GccWithMakefile):
     gcc command supporting both compilation and linking phases.
     """
     
-    def __init__(self):
-        super(GccBuild, self).__init__()
+    def __init__(self, command=None, ccache=True):
+        super(GccBuild, self).__init__(command, ccache)
         self.command_types = ('compile', 'link')
         with current_context() as ctx:
             if ctx.get('debug', False):
@@ -158,9 +158,10 @@ class GccCompile(GccWithMakefile):
     gcc command supporting compilation phase only.
     """
 
-    def __init__(self):
-        super(GccCompile, self).__init__()
+    def __init__(self, command=None, ccache=True):
+        super(GccCompile, self).__init__(command, ccache)
         self.command_types = ('compile',)
+        self.output_type = 'object'
         self.output_extension = 'o'
         self.compile_only()
         with current_context() as ctx:
@@ -172,17 +173,16 @@ class GccLink(GccCommand):
     gcc command supporting linking phase only.
     """
 
-    def __init__(self):
-        super(GccLink, self).__init__()
+    def __init__(self, command=None, ccache=True):
+        super(GccLink, self).__init__(command, ccache)
         self.command_types = ('link',)
 
-def _gcc_command(command='gcc', ccache=True):
+def _gcc_which(command, ccache):
+    command = stringify(command)
     if ccache:
         with current_context() as ctx:
             ccache_path = ctx.get('ccache_path', DEFAULT_CCACHE_PATH)
-            r = which(build_path(ccache_path, command))
-            if r is None:
-                r = which(command)
-    else:
-        r = which(command)
-    return r
+        r = which(join_path(ccache_path, command))
+        if r is not None:
+            return r
+    return which(command)

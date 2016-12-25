@@ -26,17 +26,16 @@ with new_build_context(root_path=base_path(__file__),
                        binary_path_relative='bin',
                        object_path_relative='obj') as ctx:
 
-    configure_ninja(ctx,
-                    command='ninja',
+    configure_ninja(command='ninja',
                     file_name='build.ninja',
-                    columns=100)
+                    columns=100,
+                    strict=False)
     
-    configure_gcc(ctx,
-                  command='gcc',
-                  ccache=True)
+    configure_gcc(command='gcc',
+                  ccache=True,
+                  ccache_path='/usr/lib/ccache')
     
-    configure_pkg_config(ctx,
-                         command='pkg-config',
+    configure_pkg_config(command='pkg-config',
                          path=None)
 
     project = Project('GTK+ Hello World')
@@ -45,14 +44,14 @@ with new_build_context(root_path=base_path(__file__),
     # Compile
     compile = Phase()
     compile.command = GccCompile()
-    compile.command.add_libraries(*libraries)
+    compile.command.libraries += libraries
     compile.inputs = glob('src/*.c')
     project.phases['compile'] = compile
 
     # Link
     link = Phase()
     link.command = GccLink()
-    link.command.add_libraries(*libraries)
+    link.command.libraries += libraries
     link.inputs_from.append('compile')
     link.output = 'example_1'
     project.phases['link'] = link

@@ -26,12 +26,12 @@ with new_build_context() as ctx:
     
     # Compile
     compile = Phase(GccCompile(), inputs=glob('src/*.c'))
-    compile.command.add_libraries(*libraries)
+    compile.command.libraries += libraries
     project.phases['compile'] = compile
 
     # Link
     link = Phase(GccLink(), inputs_from=[compile], output='example_1')
-    link.command.add_libraries(*libraries)
+    link.command.libraries += libraries
     project.phases['link'] = link
     
     cli(project)

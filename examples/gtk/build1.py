@@ -24,7 +24,7 @@ with new_build_context() as ctx:
     project = Project('GTK+ Hello World')
     
     build = Phase(GccBuild(), inputs=glob('src/*.c'), output='example_1')
-    build.command.add_libraries(Package('gtk+-3.0'))
-    project.phases['executable'] = build
+    build.command.libraries.append(Package('gtk+-3.0'))
+    project.phases['build'] = build
     
     cli(project)

@@ -31,9 +31,15 @@ Design principles:
 Quickstart
 ----------
 
-To install the development snapshot (until we have proper releases):
+To install the development snapshot of Rōnin (until we have proper releases):
 
-    sudo -H pip install git+https://github.com/tliron/ronin.git 
+    sudo -H pip install git+https://github.com/tliron/ronin.git
+
+Since Ninja is just one small self-contained executable, it's easiest to download the
+[latest release](https://github.com/ninja-build/ninja/releases). Just make sure it's in your
+execution path. Otherwise, on Debian/Ubuntu:
+
+    sudo apt install ninja-build 
 
 For your `build.py` build script, copy from one of the [examples](examples) to start.
 

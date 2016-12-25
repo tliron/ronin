@@ -12,7 +12,11 @@ def new_build_context(*args, **kwargs):
     
     from .configuration import configure_build
     ctx = new_context()
-    configure_build(ctx, *args, frame=2, **kwargs)
+    ctx._push_thread_local()
+    try:
+        configure_build(*args, frame=2, **kwargs)
+    finally:
+        Context._pop_thread_local()
     return ctx
 
 def new_context():
@@ -25,18 +29,18 @@ def new_context():
     ctx = Context._peek_thread_local()
     return Context(ctx)
 
-def current_context():
+def current_context(immutable=True):
     """
     Uses the current context if there is one. If there is none, raises a
     :class:`NoContextException`.
     
-    The context will be treated as immutable.
+    By default, the context will be treated as immutable.
     """
 
     ctx = Context._peek_thread_local()
     if ctx is None:
         raise NoContextException()
-    return Context(ctx, True)
+    return Context(ctx, True) if immutable else ctx
 
 class Context(object):
     """
@@ -72,6 +76,11 @@ class Context(object):
             return getattr(self, name)
         except NotInContextException:
             return default
+
+    def fallback(self, value, name, default=None):
+        if value is None:
+            return self.get(name, default)
+        return value
     
     def write(self, io):
         for k, v in self._all.iteritems():

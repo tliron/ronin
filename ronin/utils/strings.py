@@ -15,6 +15,18 @@ def stringify(value):
     else:
         return str(value)
 
+def bool_stringify(value):
+    if value is None:
+        return False
+    elif hasattr(value, '__call__'):
+        with current_context() as ctx:
+            value = value(ctx)
+        return bool_stringify(value)
+    else:
+        if isinstance(value, bool):
+            return value
+        return str(value).lower() == 'true'
+
 def stringify_unique(values):
     values = stringify_list(values)
     return dedup(values)
