@@ -1,3 +1,16 @@
+# Copyright 2016-2017 Tal Liron
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from ..contexts import current_context
 from ..libraries import Library
@@ -15,6 +28,14 @@ def configure_sdl_config(command=None, static=None, prefix=None, exec_prefix=Non
         ctx.sdl_config_exec_prefix = exec_prefix
 
 class SDL(Library):
+    """
+    The `SDL <https://www.libsdl.org/>`__ library, configured using the `sdl2-config` tool that
+    comes with SDL's development distribution.
+    
+    Note that you should also be able to use :code:`pkg-config` to configure SDL. However, this tool
+    offers some special options you might need.
+    """
+    
     def __init__(self, command=None, static=None, prefix=None, exec_prefix=None):
         super(SDL, self).__init__()
         self.command = command
@@ -22,11 +43,11 @@ class SDL(Library):
         self.prefix = prefix
         self.exec_prefix = exec_prefix
 
-    def add_to_command_compile(self, command):
+    def add_to_command_gcc_compile(self, command):
         for flag in self._parse('--cflags'):
             command.add_argument(flag)
 
-    def add_to_command_link(self, command):
+    def add_to_command_gcc_link(self, command):
         with current_context() as ctx:
             sdl_config_static = bool_stringify(ctx.fallback(self.static, 'sdl_config_static', False))
         for flag in self._parse('--static-libs' if sdl_config_static else '--libs'):

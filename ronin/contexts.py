@@ -1,3 +1,16 @@
+# Copyright 2016-2017 Tal Liron
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from .utils.types import verify_type
 from cStringIO import StringIO
@@ -72,12 +85,24 @@ class Context(object):
         return v
 
     def get(self, name, default=None):
+        """
+        Gets a value from the context or :code:`default` if the undefined.
+        
+        Note that if the value is defined as is :code:`None`, then :code:`None` is returned
+        and :code:`default`!
+        """
+        
         try:
             return getattr(self, name)
         except NotInContextException:
             return default
 
     def fallback(self, value, name, default=None):
+        """
+        If the value is not :code:`None`, returns it. If it is :code:`None`, works identically
+        to :code:`get`.
+        """
+        
         if value is None:
             return self.get(name, default)
         return value

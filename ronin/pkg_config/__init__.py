@@ -1,3 +1,16 @@
+# Copyright 2016-2017 Tal Liron
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from ..contexts import current_context
 from ..libraries import Library
@@ -16,7 +29,7 @@ def configure_pkg_config(command=None, path=None):
 class Package(Library):
     """
     A library that is configured by the external `pkg-config <https://www.freedesktop.org/wiki
-    /Software/pkg-config/>__ tool.
+    /Software/pkg-config/>`__ tool.
     """
     
     def __init__(self, name, command=None, path=None, static=None):
@@ -26,7 +39,7 @@ class Package(Library):
         self.path = path
         self.static = static
 
-    def add_to_command_compile(self, command):
+    def add_to_command_gcc_compile(self, command):
         for value in self._parse('--cflags'):
             if value.startswith('-I'):
                 command.add_include_path(value[2:])
@@ -34,7 +47,7 @@ class Package(Library):
                 k, v = value[2:].split('=', 2)
                 command.define_symbol(k, v)
 
-    def add_to_command_link(self, command):
+    def add_to_command_gcc_link(self, command):
         flags = ['--libs']
         if self.static:
             flags.append('--static')

@@ -1,17 +1,31 @@
+# Copyright 2016-2017 Tal Liron
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from .utils.platform import host_variant
 from .utils.strings import stringify
 
 class Project(object):
     """
-    An interrelated set of build rules.
+    An interrelated set of build phases.
     """
     
-    def __init__(self, name=None, version=None, variant=None, rules=None):
+    def __init__(self, name, file_name=None, version=None, variant=None, phases=None):
         self.name = name
+        self.file_name = file_name
         self.version = version
         self.variant = variant or (lambda ctx: ctx.get('platform_variant', host_variant()))
-        self.phases = rules or {}
+        self.phases = phases or {}
 
     def __str__(self):
         name = stringify(self.name)

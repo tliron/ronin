@@ -22,6 +22,7 @@ from ronin.ninja import configure_ninja
 from ronin.utils.paths import base_path, glob
 
 with new_build_context(root_path=base_path(__file__),
+                       input_path_relative=None,
                        output_path_relative='build',
                        binary_path_relative='bin',
                        object_path_relative='obj') as ctx:

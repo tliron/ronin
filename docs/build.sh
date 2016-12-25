@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2016-2017 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import # so we can import 'collections'
+set -e
 
-from collections import OrderedDict
+HERE=$(dirname "$(readlink -f "$0")")
+BUILD="$HERE/build"
 
-def dedup(values):
-    return list(OrderedDict.fromkeys(values))
+rm -rf "$BUILD"
+
+pip install --upgrade --requirement "$HERE/requirements.txt"
+sphinx-build -b html "$HERE" "$BUILD"

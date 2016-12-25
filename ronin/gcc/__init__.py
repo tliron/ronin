@@ -1,3 +1,16 @@
+# Copyright 2016-2017 Tal Liron
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from ..commands import CommandWithLibraries
 from ..contexts import current_context
@@ -6,6 +19,7 @@ from ..utils.strings import stringify, stringify_unique, bool_stringify, join_st
 from ..utils.paths import join_path
 from ..utils.platform import which
 from ..utils.types import verify_type
+import os
 
 DEFAULT_COMMAND = 'gcc'
 DEFAULT_CCACHE_PATH = '/usr/lib/ccache'
@@ -128,6 +142,15 @@ class GccCommand(CommandWithLibraries):
 
     def add_library(self, value):
         self.add_argument(lambda _: '-l%s' % stringify(value))
+    
+    def add_result_library(self, value):
+        if value.endswith('.so'):
+            value = value[:-3]
+            dir, file = os.path.split(value)
+            if file.startswith('lib'):
+                file = file[3:]
+                self.add_library_path(dir)
+                self.add_library(file)
 
     def add_linker_argument(self, value):
         self.linker_arguments.append(value)
@@ -137,9 +160,13 @@ class GccCommand(CommandWithLibraries):
 
     def undefine(self, value):
         self.add_argument('-u', value)
+        
+    def pic(self):
+        self.add_argument('-fPIC')
 
     def create_shared_library(self):
         self.add_argument('-shared')
+        self.pic()
         if self.crosscompile is not None:
             self.output_extension = gcc_crosscompile_shared_library_extension(self.crosscompile)
         else:
@@ -151,6 +178,12 @@ class GccCommand(CommandWithLibraries):
 
     def use_ld(self, value):
         self.add_argument(lambda _: '-fuse-ld=%s' % stringify(value))
+
+    def rpath(self, value):
+        self.add_linker_argument(lambda _: "-rpath,'%s'" % stringify(value))
+
+    def rpath_origin(self):
+        self.rpath('$$ORIGIN')
 
     # Makefile
     
@@ -190,7 +223,7 @@ class GccBuild(GccWithMakefile):
     
     def __init__(self, command=None, ccache=True, crosscompile=None):
         super(GccBuild, self).__init__(command, ccache, crosscompile)
-        self.command_types = ['compile', 'link']
+        self.command_types = ['gcc_compile', 'gcc_link']
         if crosscompile is not None:
             self.output_extension = gcc_crosscompile_executable_extension(crosscompile)
         with current_context() as ctx:
@@ -204,7 +237,7 @@ class GccCompile(GccWithMakefile):
 
     def __init__(self, command=None, ccache=True, crosscompile=None):
         super(GccCompile, self).__init__(command, ccache, crosscompile)
-        self.command_types = ['compile']
+        self.command_types = ['gcc_compile']
         self.output_type = 'object'
         self.output_extension = 'o'
         self.compile_only()
@@ -219,7 +252,7 @@ class GccLink(GccCommand):
 
     def __init__(self, command=None, ccache=True, crosscompile=None):
         super(GccLink, self).__init__(command, ccache, crosscompile)
-        self.command_types = ['link']
+        self.command_types = ['gcc_link']
 
 def _gcc_which(command, ccache):
     command = stringify(command)

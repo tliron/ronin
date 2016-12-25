@@ -12,9 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import # so we can import 'collections'
-
-from collections import OrderedDict
-
-def dedup(values):
-    return list(OrderedDict.fromkeys(values))
+Sphinx==1.5.1
+sphinx_rtd_theme==0.1.10a0
