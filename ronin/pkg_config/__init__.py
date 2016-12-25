@@ -29,8 +29,8 @@ class Package(Library):
                 command.add_include_path(path)
         define_macros = self._data.get('define_macros')
         if define_macros:
-            for define in define_macros:
-                command.define_symbol(define)
+            for define, value in define_macros:
+                command.define_symbol(define, value)
 
     def add_to_command_link(self, command):
         self._parse()

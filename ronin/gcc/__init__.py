@@ -45,8 +45,11 @@ class GccCommand(CommandWithArguments):
     def standard(self, value):
         self.add_argument(lambda _: '-std=%s' % stringify(value))
 
-    def define_symbol(self, value):
-        self.add_argument(lambda _: '-D%s' % stringify(value))
+    def define_symbol(self, name, value=None):
+        if value is None:
+            self.add_argument(lambda _: '-D%s' % stringify(name))
+        else:
+            self.add_argument(lambda _: '-D%s=%s' % (stringify(name), stringify(value)))
 
     def enable_warning(self, value='all'):
         self.add_argument(lambda _: '-W%s' % stringify(value))

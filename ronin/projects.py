@@ -25,3 +25,10 @@ class Project(object):
             return '%s (%s)' % (name, variant)
         else:
             return name
+
+    def get_phase_name(self, phase):
+        for k, v in self.phases.iteritems():
+            if v is phase:
+                return k
+        return None
+        

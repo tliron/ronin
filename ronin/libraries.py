@@ -25,8 +25,8 @@ class ExplicitLibrary(Library):
     def add_to_command_compile(self, command):
         for path in self.include_paths:
             command.add_include_path(path)
-        for define in self.defines:
-            command.define_symbol(define)
+        for define, value in self.defines:
+            command.define_symbol(define, value)
 
     def add_to_command_link(self, command):
         for path in self.library_paths:
