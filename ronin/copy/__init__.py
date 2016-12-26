@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..commands import CommandWithArguments
+from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
 
@@ -20,7 +20,7 @@ def configure_copy(ctx, command=None):
     with current_context(False) as ctx:
         ctx.cp_command = command
 
-class Copy(CommandWithArguments):
+class Copy(ExecutorWithArguments):
     """
     Copy command.
     """
@@ -28,5 +28,5 @@ class Copy(CommandWithArguments):
     def __init__(self, command=None):
         super(Copy, self).__init__()
         self.command = lambda ctx: which(ctx.fallback(command, 'cp_command', 'cp'), True)
-        self.add_argument('$in')
-        self.add_argument('$out')
+        self.add_argument_unfiltered('$in')
+        self.add_argument_unfiltered('$out')

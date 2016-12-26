@@ -23,11 +23,6 @@
 
 .. automodule:: ronin.cli
 
-:mod:`ronin.commands`
-*********************
-
-.. automodule:: ronin.commands
-
 :mod:`ronin.configuration`
 **************************
 
@@ -37,6 +32,11 @@
 *********************
 
 .. automodule:: ronin.contexts
+
+:mod:`ronin.executors`
+**********************
+
+.. automodule:: ronin.executors
 
 :mod:`ronin.libraries`
 **********************

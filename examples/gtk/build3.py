@@ -44,15 +44,15 @@ with new_build_context(root_path=base_path(__file__),
     
     # Compile
     compile = Phase()
-    compile.command = GccCompile()
-    compile.command.libraries += libraries
+    compile.executor = GccCompile()
+    compile.executor.libraries += libraries
     compile.inputs = glob('src/*.c')
     project.phases['compile'] = compile
 
     # Link
     link = Phase()
-    link.command = GccLink()
-    link.command.libraries += libraries
+    link.executor = GccLink()
+    link.executor.libraries += libraries
     link.inputs_from.append('compile')
     link.output = 'example_1'
     project.phases['link'] = link

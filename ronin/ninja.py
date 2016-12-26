@@ -13,8 +13,9 @@
 # limitations under the License.
 
 from .contexts import current_context
-from .phases import Phase
 from .projects import Project
+from .phases import Phase
+from .executors import Executor
 from .utils.paths import join_path, change_extension
 from .utils.strings import stringify
 from .utils.platform import which
@@ -103,7 +104,7 @@ class NinjaFile(object):
 
     def clean(self):
         with current_context() as ctx:
-            results = ctx.get('_results')
+            results = ctx.get('_phase_results')
             if results is not None:
                 results[self._project] = None
         path = self.path
@@ -146,7 +147,7 @@ class NinjaFile(object):
         phase_outputs = []
         all_phase_outputs[phase_name] = phase_outputs
         with current_context() as ctx:
-            results = ctx.get('_results')
+            results = ctx.get('_phase_results')
         if results is not None:
             phase_results = results.get(phase)
             if phase_results is None:
@@ -157,27 +158,33 @@ class NinjaFile(object):
         
         rule_name = phase_name.replace(' ', '_')
 
+        # Rule
         w.line()
         w.line('rule %s' % rule_name)
         
+        # Description
         description = stringify(phase.description)
         if description is not None:
             w.line('description = %s' % description, 1)
 
-        w.line('command = %s' % phase.command, 1)
+        # Command
+        verify_type(phase.executor, Executor)
+        command = phase.executor.command_as_str(_escape)
+        w.line('command = %s' % command, 1)
         
-        if phase.command.depfile:
-            w.line('depfile = $out.d', 1)
-            
-            deps = stringify(phase.command.deps)
-            if deps is not None:
-                w.line('deps = %s' % deps, 1)
+        # Deps
+        deps_file = stringify(phase.executor._deps_file)
+        if deps_file:
+            w.line('depfile = %s' % deps_file, 1)
+            deps_type = stringify(phase.executor._deps_type)
+            if deps_type:
+                w.line('deps = %s' % deps_type, 1)
 
         # Paths
         with current_context() as ctx:
             input_base = ctx.get('input_path')
             
-            output_type = phase.command.output_type
+            output_type = phase.executor.output_type
             if output_type == 'object':
                 output_base = ctx.get('object_path')
                 if output_base is None:
@@ -200,7 +207,7 @@ class NinjaFile(object):
         inputs = dedup(inputs)
 
         # Extension
-        extension = stringify(phase.command.output_extension)
+        extension = stringify(phase.executor.output_extension)
 
         if output:
             # Single output
@@ -208,9 +215,9 @@ class NinjaFile(object):
             
             output = change_extension(output, extension)
             if inputs:
-                w.line('build %s: %s %s' % (_Writer.pathify(output), rule_name, ' '.join([_Writer.pathify(v) for v in inputs])))
+                w.line('build %s: %s %s' % (_pathify(output), rule_name, ' '.join([_pathify(v) for v in inputs])))
             else:
-                w.line('build %s: %s' % (_Writer.pathify(output), rule_name))
+                w.line('build %s: %s' % (_pathify(output), rule_name))
             phase_outputs.append(output)
             if phase_results is not None:
                 phase_results.append(output)
@@ -222,7 +229,7 @@ class NinjaFile(object):
             outputs = [join_path(output_base, change_extension(v[prefix_length:], extension)) for v in inputs]
             
             for index, output in enumerate(outputs):
-                w.line('build %s: %s %s' % (_Writer.pathify(output), rule_name, _Writer.pathify(inputs[index])))
+                w.line('build %s: %s %s' % (_pathify(output), rule_name, _pathify(inputs[index])))
                 phase_outputs.append(output)
                 if phase_results is not None:
                     phase_results.append(output)
@@ -250,6 +257,14 @@ class NinjaFile(object):
 
 _MINIMUM_COLUMNS = 30 # lesser than this can lead to breakage
 _INDENT = '  '
+
+def _escape(value):
+    value = stringify(value)
+    return value.replace('$', '$$')
+
+def _pathify(value):
+    value = stringify(value)
+    return value.replace('$ ', '$$ ').replace(' ', '$ ').replace(':', '$:')
 
 class _Writer(object):
     def __init__(self, io, columns, strict):
@@ -316,16 +331,6 @@ class _Writer(object):
             lines = wrap(line, width, break_long_words=self._strict, break_on_hyphens=False)
             for line in lines:
                 self._io.write('# %s\n' % line)
-
-    @staticmethod
-    def pathify(value):
-        value = stringify(value)
-        return value.replace('$ ', '$$ ').replace(' ', '$ ').replace(':', '$:')
-
-    @staticmethod
-    def escape(value):
-        value = stringify(value)
-        return value.replace('$', '$$')
 
     @staticmethod        
     def _is_unescaped(line, i):

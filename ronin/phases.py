@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .commands import Command
+from .executors import Executor
 from .utils.types import verify_type
 
 class Phase(object):
@@ -20,10 +20,10 @@ class Phase(object):
     A build phase.
     """
     
-    def __init__(self, command=None, description=None, inputs=None, inputs_from=None, output=None):
-        if command:
-            verify_type(command, Command)
-        self.command = command
+    def __init__(self, executor=None, description=None, inputs=None, inputs_from=None, output=None):
+        if executor:
+            verify_type(executor, Executor)
+        self.executor = executor
         self.description = description
         self.inputs = inputs or []
         self.inputs_from = inputs_from or []

@@ -109,7 +109,8 @@ class Context(object):
     
     def write(self, io):
         for k, v in self._all.iteritems():
-            io.write('%s=%s\n' % (k, v))
+            if not k.startswith('_'):
+                io.write('%s=%s\n' % (k, v))
 
     @property
     def _all(self):

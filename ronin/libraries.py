@@ -63,7 +63,7 @@ class ResultsLibrary(Library):
     
     def add_to_command_gcc_link(self, command):
         with current_context() as ctx:
-            results = ctx.get('_results')
+            results = ctx.get('_phase_results')
         if results is None:
             return
         results = results.get(self._phase)

@@ -18,27 +18,28 @@ from .utils.types import verify_type_or_subclass
 from cStringIO import StringIO
 from inspect import isclass
 
-class Command(object):
+class Executor(object):
     """
-    Base class for commands.
-    
-    Commands represent rules for a Ninja file.
+    Base class for executors.
     """
     
     def __init__(self):
         self.command = None
         self.output_extension = None
         self.output_type = 'binary'
-        self.depfile = False
-        self.deps = None
+        self.hooks = []
+        self._deps_file = None
+        self._deps_type = None
 
-    def write(self, io):
-        io.write(stringify(self.command)) 
-
-    def __str__(self):
+    def write_command(self, io, filter=None):
+        for hook in self.hooks:
+            hook(self)
+        io.write(stringify(self.command))
+    
+    def command_as_str(self, filter=None):
         io = StringIO()
         try:
-            self.write(io)
+            self.write_command(io, filter)
             v = io.getvalue()
         finally:
             io.close()
@@ -47,21 +48,23 @@ class Command(object):
     def add_result_library(self, value):
         pass
 
-class CommandWithArguments(Command):
+class ExecutorWithArguments(Executor):
     """
-    Base class for commands with arguments.
+    Base class for executors with arguments.
     """
 
     def __init__(self):
-        super(CommandWithArguments, self).__init__()
+        super(ExecutorWithArguments, self).__init__()
         self._arguments = []
 
-    def write(self, io):
-        super(CommandWithArguments, self).write(io)
+    def write_command(self, io, filter=None):
+        super(ExecutorWithArguments, self).write_command(io, filter)
         arguments = []
-        for flag, argument in self._arguments:
+        for append, to_filter, argument in self._arguments:
             argument = stringify(argument)
-            if flag:
+            if to_filter and filter:
+                argument = filter(argument)
+            if append:
                 arguments.append(argument)
             else:
                 arguments.remove(argument)
@@ -70,12 +73,18 @@ class CommandWithArguments(Command):
             io.write(' '.join(arguments))
 
     def add_argument(self, *value):
-        self._argument(True, *value)
+        self._argument(True, True, *value)
+
+    def add_argument_unfiltered(self, *value):
+        self._argument(True, False, *value)
 
     def remove_argument(self, *value):
-        self._argument(False, *value)
+        self._argument(False, True, *value)
 
-    def _argument(self, flag, *value):
+    def remove_argument_unfiltered(self, *value):
+        self._argument(False, False, *value)
+
+    def _argument(self, append, to_filter, *value):
         l = len(value)
         if l == 0:
             return
@@ -83,23 +92,22 @@ class CommandWithArguments(Command):
             value = value[0]
         else:
             value = join_stringify_lambda(value)
-        self._arguments.append((flag, value))
+        self._arguments.append((append, to_filter, value))
 
-class CommandWithLibraries(CommandWithArguments):
+def libraries_hook(cmd):
+    for library in cmd.libraries:
+        verify_type_or_subclass(library, Library)
+        if isclass(library):
+            library = library()
+        library.add_to_command(cmd)
+
+class ExecutorWithLibraries(ExecutorWithArguments):
     """
-    Base class for commands with libraries.
+    Base class for executors with libraries.
     """
 
     def __init__(self):
-        super(CommandWithLibraries, self).__init__()
+        super(ExecutorWithLibraries, self).__init__()
         self.command_types = []
         self.libraries = []
-
-    def write(self, io):
-        for library in self.libraries:
-            verify_type_or_subclass(library, Library)
-            if isclass(library):
-                library = library()
-            library.add_to_command(self)
-        
-        super(CommandWithLibraries, self).write(io)
+        self.hooks.append(libraries_hook)

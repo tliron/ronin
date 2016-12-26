@@ -22,14 +22,14 @@ from ronin.utils.paths import glob, input_path
 with new_build_context() as ctx:
     library = Project('Multi-Project: Library', file_name='library')
     build_library = Phase(GccBuild(), inputs=glob('src/foo/*.c'), output='libfoo')
-    build_library.command.create_shared_library()
+    build_library.executor.create_shared_library()
     library.phases['build'] = build_library
     
     main = Project('Multi-Project: Main', file_name='main')
     build_main = Phase(GccBuild(), inputs=glob('src/main/*.c'), output='main')
-    build_main.command.add_include_path(input_path('src/foo'))
-    build_main.command.libraries.append(ResultsLibrary(build_library))
-    build_main.command.rpath_origin() # allows loading the .so file from executable's directory
+    build_main.executor.add_include_path(input_path('src/foo'))
+    build_main.executor.libraries.append(ResultsLibrary(build_library))
+    build_main.executor.linker_rpath_origin() # allows loading the .so file from executable's directory
     main.phases['build'] = build_main
     
     cli(library, main)

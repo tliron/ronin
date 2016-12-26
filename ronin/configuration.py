@@ -29,4 +29,4 @@ def configure_build(root_path=None,
         ctx.output_path = join_path(root_path, output_path_relative or 'build')
         ctx.binary_path_relative = binary_path_relative or 'bin'
         ctx.object_path_relative = object_path_relative or 'obj'
-        ctx._results = {}
+        ctx._phase_results = {}
