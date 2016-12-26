@@ -22,16 +22,21 @@ from ronin.utils.paths import glob
 
 with new_build_context() as ctx:
     project = Project('GTK+ Hello World')
-    libraries = [Package('gtk+-3.0')]
+    extensions = [Package('gtk+-3.0')]
     
     # Compile
-    compile = Phase(GccCompile(), inputs=glob('src/*.c'))
-    compile.executor.libraries += libraries
-    project.phases['compile'] = compile
+    compile = Phase(GccCompile(),
+                    inputs=glob('src/*.c'),
+                    extensions=extensions,
+                    output='example_1')
 
     # Link
-    link = Phase(GccLink(), inputs_from=[compile], output='example_1')
-    link.executor.libraries += libraries
+    link = Phase(GccLink(),
+                 inputs_from=[compile],
+                 extensions=extensions,
+                 output='example_1')
+
+    project.phases['compile'] = compile
     project.phases['link'] = link
     
     cli(project)

@@ -31,12 +31,16 @@ with new_build_context() as ctx:
     
     project = Project('SDL Hello World')
     
-    build = Phase(GccBuild('g++'), inputs=glob('src/*.cpp'), output='hello')
+    build = Phase(GccBuild('g++'),
+                  inputs=glob('src/*.cpp'),
+                  extensions=[SDL(static=lambda ctx: ctx.static)],
+                  output='hello')
     build.executor.standard('c++0x')
-    build.executor.libraries.append(SDL(static=lambda ctx: ctx.static))
+
+    resource = Phase(Copy(),
+                     inputs=glob('res/*'))
+
     project.phases['build'] = build
-    
-    resource = Phase(Copy(), inputs=glob('res/*'))
     project.phases['resource'] = resource
     
     cli(project)

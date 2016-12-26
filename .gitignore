@@ -8,8 +8,6 @@ env/
 out/
 dist/
 
-**/cubism/
-
 .tox/
 .coverage
 

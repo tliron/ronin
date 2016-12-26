@@ -19,9 +19,6 @@ from ronin.utils.paths import glob
 
 with new_build_context() as ctx:
     project = Project('size')
-    
-    build = Phase(GccBuild(crosscompile=project), output='size')
-    build.inputs = glob('src/*.c')
+    build = Phase(GccBuild(crosscompile=project), inputs=glob('src/*.c'), output='size')
     project.phases['build'] = build
-    
     cli(project)

@@ -40,21 +40,22 @@ with new_build_context(root_path=base_path(__file__),
                          path=None)
 
     project = Project('GTK+ Hello World')
-    libraries = [Package('gtk+-3.0')]
+    extensions = [Package('gtk+-3.0')]
     
     # Compile
     compile = Phase()
     compile.executor = GccCompile()
-    compile.executor.libraries += libraries
     compile.inputs = glob('src/*.c')
-    project.phases['compile'] = compile
+    compile.extensions += extensions
 
     # Link
     link = Phase()
     link.executor = GccLink()
-    link.executor.libraries += libraries
     link.inputs_from.append('compile')
+    link.extensions += extensions
     link.output = 'example_1'
+
+    project.phases['compile'] = compile
     project.phases['link'] = link
     
     cli(project)

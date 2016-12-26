@@ -46,14 +46,17 @@ def cli(*projects, **kwargs):
                 v = args.context[i + 1]
                 setattr(ctx, k, v)
 
+        for project in projects:
+            verify_type(project, Project)
+            for hook in project.hooks:
+                hook(project)
+
         if ctx.verbose:
             sys.stdout.write(str(ctx))
 
         for operation in args.operation:
             if operation in ('build', 'clean', 'ninja'):
                 for project in projects:
-                    verify_type(project, Project)
-                                        
                     print "ronin: %s" % project
                     ninja_file = NinjaFile(project)
     

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from ..contexts import current_context
-from ..libraries import Library
+from ..extensions import Extension
 from ..utils.strings import stringify, bool_stringify, UNESCAPED_STRING_RE
 from ..utils.platform import which
 from subprocess import check_output
@@ -27,7 +27,7 @@ def configure_sdl_config(command=None, static=None, prefix=None, exec_prefix=Non
         ctx.sdl_config_prefix = prefix
         ctx.sdl_config_exec_prefix = exec_prefix
 
-class SDL(Library):
+class SDL(Extension):
     """
     The `SDL <https://www.libsdl.org/>`__ library, configured using the `sdl2-config` tool that
     comes with SDL's development distribution.
@@ -43,15 +43,15 @@ class SDL(Library):
         self.prefix = prefix
         self.exec_prefix = exec_prefix
 
-    def add_to_command_gcc_compile(self, command):
+    def add_to_executor_gcc_compile(self, executor):
         for flag in self._parse('--cflags'):
-            command.add_argument(flag)
+            executor.add_argument(flag)
 
-    def add_to_command_gcc_link(self, command):
+    def add_to_executor_gcc_link(self, executor):
         with current_context() as ctx:
             sdl_config_static = bool_stringify(ctx.fallback(self.static, 'sdl_config_static', False))
         for flag in self._parse('--static-libs' if sdl_config_static else '--libs'):
-            command.add_argument(flag)
+            executor.add_argument(flag)
 
     def _parse(self, flags):
         with current_context() as ctx:

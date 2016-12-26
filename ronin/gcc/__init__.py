@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..executors import ExecutorWithLibraries
+from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..projects import Project
 from ..utils.strings import stringify, stringify_list, bool_stringify, join_stringify_lambda
@@ -72,12 +72,12 @@ def crosscompile_shared_library_extension(project):
         return 'so'
     return lambda ctx: closure(ctx, project)
 
-def debug_hook(cmd):
+def debug_hook(executor):
     with current_context() as ctx:
         if ctx.get('debug', False):
-            cmd.enable_debug()
+            executor.enable_debug()
 
-class GccExecutor(ExecutorWithLibraries):
+class GccExecutor(ExecutorWithArguments):
     """
     Base class for `gcc <https://gcc.gnu.org/>`__ executors.
     
@@ -156,7 +156,7 @@ class GccExecutor(ExecutorWithLibraries):
     def add_library(self, value):
         self.add_argument(lambda _: '-l%s' % stringify(value))
     
-    def add_result_library(self, value):
+    def add_result(self, value):
         if value.endswith('.so'):
             value = value[:-3]
             dir, file = os.path.split(value)
@@ -196,7 +196,6 @@ class GccExecutor(ExecutorWithLibraries):
         
     def create_shared_library(self):
         self.add_argument('-shared')
-        self.pic()
         if self.crosscompile is not None:
             self.output_extension = crosscompile_shared_library_extension(self.crosscompile)
         else:

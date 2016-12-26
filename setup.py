@@ -42,4 +42,7 @@ setup(
         'Programming Language :: Python',
         'Topic :: Software Development :: Build Tools'],
 
-    packages=['ronin'])
+    packages=['ronin'],
+    
+    install_requires=[
+        'glob2==0.5'])

@@ -7,29 +7,32 @@
 #
 # Requirements: sudo apt install gcc ccache
 #
-# Shows a single script building multiple projects: a shared library, plus an executable that
-# uses that library.
+# Shows a single script building multiple projects: a shared library, plus an executable that uses
+# that library.
 #
 
 from ronin.cli import cli
 from ronin.contexts import new_build_context
 from ronin.gcc import GccBuild
-from ronin.libraries import ResultsLibrary
+from ronin.extensions import ResultsExtension
 from ronin.phases import Phase
 from ronin.projects import Project
 from ronin.utils.paths import glob, input_path
 
 with new_build_context() as ctx:
-    library = Project('Multi-Project: Library', file_name='library')
+    # Extension
+    library = Project('Multi-Project: Extension', file_name='library')
     build_library = Phase(GccBuild(), inputs=glob('src/foo/*.c'), output='libfoo')
     build_library.executor.create_shared_library()
+    build_library.executor.pic()
     library.phases['build'] = build_library
     
+    # Main
     main = Project('Multi-Project: Main', file_name='main')
-    build_main = Phase(GccBuild(), inputs=glob('src/main/*.c'), output='main')
+    build_main = Phase(GccBuild(), inputs=glob('src/main/*.c'),
+                       extensions=[ResultsExtension(build_library)], output='main')
     build_main.executor.add_include_path(input_path('src/foo'))
-    build_main.executor.libraries.append(ResultsLibrary(build_library))
-    build_main.executor.linker_rpath_origin() # allows loading the .so file from executable's directory
+    build_main.executor.linker_rpath_origin() # to load the .so file from executable's directory
     main.phases['build'] = build_main
     
     cli(library, main)

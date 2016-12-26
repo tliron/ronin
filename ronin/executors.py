@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .libraries import Library
 from .utils.strings import stringify, join_stringify_lambda
-from .utils.types import verify_type_or_subclass
 from cStringIO import StringIO
-from inspect import isclass
 
 class Executor(object):
     """
@@ -25,6 +22,7 @@ class Executor(object):
     
     def __init__(self):
         self.command = None
+        self.command_types = []
         self.output_extension = None
         self.output_type = 'binary'
         self.hooks = []
@@ -45,7 +43,7 @@ class Executor(object):
             io.close()
         return v
 
-    def add_result_library(self, value):
+    def add_result(self, value):
         pass
 
 class ExecutorWithArguments(Executor):
@@ -65,7 +63,8 @@ class ExecutorWithArguments(Executor):
             if to_filter and filter:
                 argument = filter(argument)
             if append:
-                arguments.append(argument)
+                if argument not in arguments:
+                    arguments.append(argument)
             else:
                 arguments.remove(argument)
         if arguments:
@@ -93,21 +92,3 @@ class ExecutorWithArguments(Executor):
         else:
             value = join_stringify_lambda(value)
         self._arguments.append((append, to_filter, value))
-
-def libraries_hook(cmd):
-    for library in cmd.libraries:
-        verify_type_or_subclass(library, Library)
-        if isclass(library):
-            library = library()
-        library.add_to_command(cmd)
-
-class ExecutorWithLibraries(ExecutorWithArguments):
-    """
-    Base class for executors with libraries.
-    """
-
-    def __init__(self):
-        super(ExecutorWithLibraries, self).__init__()
-        self.command_types = []
-        self.libraries = []
-        self.hooks.append(libraries_hook)

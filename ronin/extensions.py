@@ -15,53 +15,60 @@
 from .contexts import current_context
 from .utils.types import verify_type
 
-class Library(object):
+class Extension(object):
     """
-    Base class for libraries.
+    Base class for extensions.
     """
-    
-    def add_to_command(self, command):
-        for command_type in command.command_types:
-            fn = getattr(self, 'add_to_command_%s' % command_type, None)
-            if fn:
-                fn(command)
 
-class ExplicitLibrary(Library):
+    def add_to_phase(self, phase):
+        pass
+    
+    def add_to_executor(self, executor):
+        for command_type in executor.command_types:
+            fn = getattr(self, 'add_to_executor_%s' % command_type, None)
+            if fn:
+                fn(executor)
+
+class ExplicitExtension(Extension):
     """
-    A library with explicitly stated data.
+    An extension with explicitly stated data.
     """
     
-    def __init__(self, include_paths=None, defines=None, library_paths=None, libraries=None):
-        super(ExplicitLibrary, self).__init__()
+    def __init__(self, inputs=[], include_paths=None, defines=None, library_paths=None, libraries=None):
+        super(ExplicitExtension, self).__init__()
+        self.inputs = inputs or []
         self.include_paths = include_paths or []
         self.defines = defines or []
         self.library_paths = library_paths or []
         self.libraries = libraries or []
 
-    def add_to_command_gcc_compile(self, command):
+    def add_to_phase(self, phase):
+        phase.inputs += self.inputs
+
+    def add_to_executor_gcc_compile(self, executor):
         for path in self.include_paths:
-            command.add_include_path(path)
+            executor.add_include_path(path)
         for define, value in self.defines:
-            command.define_symbol(define, value)
+            executor.define_symbol(define, value)
 
-    def add_to_command_gcc_link(self, command):
+    def add_to_executor_gcc_link(self, executor):
         for path in self.library_paths:
-            command.add_library_path(path)
+            executor.add_library_path(path)
         for library in self.libraries:
-            command.add_library(library)
+            executor.add_library(library)
 
-class ResultsLibrary(Library):
+class ResultsExtension(Extension):
     """
-    A library that pulls results from a build phase.
+    An extension that adds results from another build phase.
     """
     
     def __init__(self, phase):
-        super(ResultsLibrary, self).__init__()
+        super(ResultsExtension, self).__init__()
         from .phases import Phase 
         verify_type(phase, Phase)
         self._phase = phase
     
-    def add_to_command_gcc_link(self, command):
+    def add_to_executor_gcc_link(self, executor):
         with current_context() as ctx:
             results = ctx.get('_phase_results')
         if results is None:
@@ -70,4 +77,4 @@ class ResultsLibrary(Library):
         if results is None:
             return
         for result in results:
-            command.add_result_library(result)
+            executor.add_result(result)

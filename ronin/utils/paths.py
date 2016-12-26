@@ -14,11 +14,13 @@
 
 from .strings import stringify, stringify_list
 from ..contexts import current_context
-from glob import glob as _glob
+from glob2 import glob as _glob
 import os
 
 def join_path(*values):
     values = stringify_list(values)
+    def fix(v):
+        return v[1:] if v.startswith(os.pathsep) else v
     values = [v for v in values if v is not None]
     return os.path.join(*values)
 

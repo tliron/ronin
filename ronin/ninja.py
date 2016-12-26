@@ -169,7 +169,7 @@ class NinjaFile(object):
 
         # Command
         verify_type(phase.executor, Executor)
-        command = phase.executor.command_as_str(_escape)
+        command = phase.command_as_str(_escape)
         w.line('command = %s' % command, 1)
         
         # Deps

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from ..contexts import current_context
-from ..libraries import Library
+from ..extensions import Extension
 from ..utils.strings import stringify, UNESCAPED_STRING_RE
 from ..utils.platform import which
 from subprocess import check_output
@@ -26,7 +26,7 @@ def configure_pkg_config(command=None, path=None):
         ctx.pkg_config_command = command
         ctx.pkg_config_path = path
 
-class Package(Library):
+class Package(Extension):
     """
     A library that is configured by the external `pkg-config <https://www.freedesktop.org/wiki
     /Software/pkg-config/>`__ tool.
@@ -39,23 +39,27 @@ class Package(Library):
         self.path = path
         self.static = static
 
-    def add_to_command_gcc_compile(self, command):
+    def add_to_executor_gcc_compile(self, executor):
         for value in self._parse('--cflags'):
             if value.startswith('-I'):
-                command.add_include_path(value[2:])
+                executor.add_include_path(value[2:])
             elif value.startswith('-D'):
-                k, v = value[2:].split('=', 2)
-                command.define_symbol(k, v)
+                value = value[2:] 
+                if '=' in value: 
+                    k, v = value.split('=', 2)
+                    executor.define_symbol(k, v)
+                else:
+                    executor.define_symbol(value)
 
-    def add_to_command_gcc_link(self, command):
+    def add_to_executor_gcc_link(self, executor):
         flags = ['--libs']
         if self.static:
             flags.append('--static')
         for value in self._parse(*flags):
             if value.startswith('-L'):
-                command.add_library_path(value[2:])
+                executor.add_library_path(value[2:])
             elif value.startswith('-l'):
-                command.add_library(value[2:])
+                executor.add_library(value[2:])
 
     def _parse(self, *flags):
         with current_context() as ctx:
