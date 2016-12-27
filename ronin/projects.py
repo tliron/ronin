@@ -26,7 +26,7 @@ class Project(object):
         self.version = version
         self.phases = phases or {}
         self.hooks = []
-        self._variant = variant or (lambda ctx: ctx.get('platform_variant', host_platform()))
+        self._variant = variant or (lambda ctx: ctx.get('project_variant', host_platform()))
 
     def __str__(self):
         name = stringify(self.name)
@@ -44,6 +44,14 @@ class Project(object):
     @property
     def variant(self):
         return stringify(self._variant)
+    
+    @property
+    def is_windows(self):
+        return self.variant in ('win64', 'win32')
+
+    @property
+    def is_linux(self):
+        return self.variant in ('linux64', 'linux32')
 
     def get_phase_name(self, phase):
         for k, v in self.phases.iteritems():

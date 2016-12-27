@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .utils.strings import stringify, join_stringify_lambda
+from .utils.strings import stringify, join_later
 from cStringIO import StringIO
 
 class Executor(object):
@@ -91,5 +91,5 @@ class ExecutorWithArguments(Executor):
         elif l == 1:
             value = value[0]
         else:
-            value = join_stringify_lambda(value)
+            value = join_later(value)
         self._arguments.append((append, to_filter, value))

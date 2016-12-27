@@ -15,8 +15,8 @@
 from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..projects import Project
-from ..utils.strings import stringify, stringify_list, bool_stringify, interpolate_stringify_lambda, join_stringify_lambda
-from ..utils.paths import join_path, join_path_lambda
+from ..utils.strings import stringify, stringify_list, bool_stringify, interpolate_later, join_later
+from ..utils.paths import join_path, join_path_later
 from ..utils.platform import which, platform_command, platform_executable_extension, platform_shared_library_extension, platform_shared_library_prefix
 import os
 
@@ -88,34 +88,34 @@ class _GccExecutor(ExecutorWithArguments):
         self.add_argument('-c')
     
     def add_include_path(self, *value):
-        self.add_argument(interpolate_stringify_lambda('-I%s', join_path_lambda(*value)))
+        self.add_argument(interpolate_later('-I%s', join_path_later(*value)))
 
     def standard(self, value):
-        self.add_argument(interpolate_stringify_lambda('-std=%s', value))
+        self.add_argument(interpolate_later('-std=%s', value))
 
     def define(self, name, value=None):
         if value is None:
-            self.add_argument(interpolate_stringify_lambda('-D%s', name))
+            self.add_argument(interpolate_later('-D%s', name))
         else:
-            self.add_argument(interpolate_stringify_lambda('-D%s=%s', name, value))
+            self.add_argument(interpolate_later('-D%s=%s', name, value))
 
     def enable_warning(self, value='all'):
-        self.add_argument(interpolate_stringify_lambda('-W%s', value))
+        self.add_argument(interpolate_later('-W%s', value))
 
     def disable_warning(self, value):
-        self.add_argument(interpolate_stringify_lambda('-Wno-%s', value))
+        self.add_argument(interpolate_later('-Wno-%s', value))
     
     def set_machine(self, value):
-        self.add_argument(interpolate_stringify_lambda('-m%s', value))
+        self.add_argument(interpolate_later('-m%s', value))
 
     def set_machine_tune(self, value):
-        self.add_argument(interpolate_stringify_lambda('-mtune=%s', value))
+        self.add_argument(interpolate_later('-mtune=%s', value))
 
     def set_machine_floating_point(self, value):
-        self.add_argument(interpolate_stringify_lambda('-mfpmath=%s', value))
+        self.add_argument(interpolate_later('-mfpmath=%s', value))
 
     def optimize(self, value):
-        self.add_argument(interpolate_stringify_lambda('-O%s', value))
+        self.add_argument(interpolate_later('-O%s', value))
 
     def enable_debug(self):
         self.add_argument('-g')
@@ -135,13 +135,13 @@ class _GccExecutor(ExecutorWithArguments):
                 self.add_library(file)
 
     def add_library_path(self, *value):
-        self.add_argument(interpolate_stringify_lambda('-L%s', join_path_lambda(*value)))
+        self.add_argument(interpolate_later('-L%s', join_path_later(*value)))
 
     def add_library(self, value):
-        self.add_argument(interpolate_stringify_lambda('-l%s', value))
+        self.add_argument(interpolate_later('-l%s', value))
     
     def use_linker(self, value):
-        self.add_argument(interpolate_stringify_lambda('-fuse-ld=%s', value))
+        self.add_argument(interpolate_later('-fuse-ld=%s', value))
 
     def link_static_only(self):
         self.add_argument('-static')
@@ -158,19 +158,19 @@ class _GccExecutor(ExecutorWithArguments):
             if value is None:
                 self.add_argument('-Xlinker', name)
             else:
-                self.add_argument('-Xlinker', interpolate_stringify_lambda('%s=%s', name, value))
+                self.add_argument('-Xlinker', interpolate_later('%s=%s', name, value))
         else:
             if value is None:
-                self.add_argument(interpolate_stringify_lambda('-Wl,%s', name))
+                self.add_argument(interpolate_later('-Wl,%s', name))
             else:
-                self.add_argument(interpolate_stringify_lambda('-Xl,%s,%s', name, value))
+                self.add_argument(interpolate_later('-Xl,%s,%s', name, value))
     
     def linker_rpath(self, value):
         """
         Add a directory to the runtime library search path.
         """
         
-        self.add_linker_argument('-rpath', interpolate_stringify_lambda("'%s'", value))
+        self.add_linker_argument('-rpath', interpolate_later("'%s'", value))
 
     def linker_rpath_origin(self):
         self.linker_rpath('$ORIGIN')
@@ -194,7 +194,7 @@ class _GccExecutor(ExecutorWithArguments):
         self.add_argument('-s')
 
     def linker_exclude_symbols(self, *values):
-        self.add_linker_argument('-exclude-symbols', join_stringify_lambda(values, ','))
+        self.add_linker_argument('-exclude-symbols', join_later(values, ','))
         
     def create_shared_library(self):
         self.add_argument('-shared')
@@ -225,9 +225,9 @@ class _GccExecutor(ExecutorWithArguments):
 
     def _makefile(self, value, arg=None):
         if arg is not None:
-            self.add_argument(interpolate_stringify_lambda('-M%s', value), arg)
+            self.add_argument(interpolate_later('-M%s', value), arg)
         else:
-            self.add_argument(interpolate_stringify_lambda('-M%s', value))
+            self.add_argument(interpolate_later('-M%s', value))
 
 class _GccWithMakefile(_GccExecutor):
     """

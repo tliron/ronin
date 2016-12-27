@@ -26,7 +26,7 @@ def join_path(*segments):
         segments = [segments[0]] + [fix(v) for v in segments[1:]]
     return os.path.join(*segments)
 
-def join_path_lambda(*segments):
+def join_path_later(*segments):
     return lambda _: join_path(*segments)
 
 def base_path(path):

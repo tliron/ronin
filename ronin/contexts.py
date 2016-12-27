@@ -28,7 +28,7 @@ def new_build_context(*args, **kwargs):
     ctx = new_context()
     ctx._push_thread_local()
     try:
-        configure_build(*args, frame=2, **kwargs)
+        configure_build(*args, frame=3, **kwargs)
     finally:
         Context._pop_thread_local()
     return ctx

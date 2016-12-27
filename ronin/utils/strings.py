@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .collections import dedup
 from ..contexts import current_context
 import re
 
@@ -43,11 +42,10 @@ def bool_stringify(value):
             return value
         return str(value).lower() == 'true'
 
-def stringify_unique(values):
-    values = stringify_list(values)
-    return dedup(values)
+def join_later(values, separator=' '):
+    return lambda _: separator.join(stringify_list(values))
 
-def interpolate_stringify_lambda(format, *args):
+def interpolate_later(format, *args):
     def closure(format, args):
         args = stringify_list(args)
         if None in args:
@@ -55,6 +53,3 @@ def interpolate_stringify_lambda(format, *args):
         format = stringify(format)
         return format % tuple(stringify_list(args))
     return lambda _: closure(format, args) 
-
-def join_stringify_lambda(values, separator=' '):
-    return lambda _: separator.join(stringify_list(values))
