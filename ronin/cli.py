@@ -17,6 +17,8 @@ from .projects import Project
 from .ninja import NinjaFile
 from .utils.argparse import ArgumentParser
 from .utils.types import verify_type
+from .utils.messages import announce, error
+from traceback import print_exc
 import sys, os, inspect
 
 def cli(*projects, **kwargs):
@@ -30,49 +32,56 @@ def cli(*projects, **kwargs):
     args, _ = _ArgumentParser(projects, frame).parse_known_args()
     
     with new_context() as ctx:
-        ctx.debug = args.debug
-        ctx.verbose = args.verbose
+        try:
+            ctx.debug = args.debug
+            ctx.verbose = args.verbose
+                
+            if args.variant:
+                ctx.platform_variant = args.variant
             
-        if args.variant:
-            ctx.platform_variant = args.variant
-        
-        if args.context:
-            l = len(args.context)
-            if l % 2 == 1:
-                print "ronin: Number of '--context' arguments is not even (%d)" % l
-                sys.exit(1)
-            for i in xrange(0, l, 2):
-                k = args.context[i]
-                v = args.context[i + 1]
-                setattr(ctx, k, v)
-
-        for project in projects:
-            verify_type(project, Project)
-            for hook in project.hooks:
-                hook(project)
-
-        if ctx.verbose:
-            sys.stdout.write(str(ctx))
-
-        for operation in args.operation:
-            if operation in ('build', 'clean', 'ninja'):
-                for project in projects:
-                    print "ronin: %s" % project
-                    ninja_file = NinjaFile(project)
+            if args.context:
+                l = len(args.context)
+                if l % 2 == 1:
+                    error("Number of '--context' arguments is not even (%d)" % l)
+                    sys.exit(1)
+                for i in xrange(0, l, 2):
+                    k = args.context[i]
+                    v = args.context[i + 1]
+                    setattr(ctx, k, v)
     
-                    if operation == 'build':
-                        r = ninja_file.build()
-                        if r != 0:
-                            sys.exit(r)
-                    elif operation == 'clean':
-                        r = ninja_file.clean()
-                        if r != 0:
-                            sys.exit(r)
-                    elif operation == 'ninja':
-                        ninja_file.generate()
+            for project in projects:
+                verify_type(project, Project)
+                for hook in project.hooks:
+                    hook(project)
+    
+            if ctx.verbose:
+                sys.stdout.write(str(ctx))
+    
+            for operation in args.operation:
+                if operation in ('build', 'clean', 'ninja'):
+                    for project in projects:
+                        announce('%s' % project)
+                        ninja_file = NinjaFile(project)
+        
+                        if operation == 'build':
+                            r = ninja_file.build()
+                            if r != 0:
+                                sys.exit(r)
+                        elif operation == 'clean':
+                            r = ninja_file.clean()
+                            if r != 0:
+                                sys.exit(r)
+                        elif operation == 'ninja':
+                            ninja_file.generate()
+                else:
+                    error("Unsupported operation: '%s'" % operation)
+                    sys.exit(1)
+        except Exception as ex:
+            if ctx.get('verbose', False):
+                print_exc()
             else:
-                print "ronin: Unsupported operation: '%s'" % operation
-                sys.exit(1)
+                error(ex)
+            sys.exit(1)
 
 class _ArgumentParser(ArgumentParser):
     def __init__(self, projects, frame):

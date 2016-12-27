@@ -34,12 +34,16 @@ class Phase(object):
         self.hooks = []
 
     def command_as_str(self, filter=None):
-        for extension in self.extensions:
-            verify_type_or_subclass(extension, Extension)
-            if isclass(extension):
-                extension = extension()
-            extension.add_to_phase(self)
-            extension.add_to_executor(self.executor)
+        def apply_extensions(extensions):
+            for extension in extensions:
+                verify_type_or_subclass(extension, Extension)
+                if isclass(extension):
+                    extension = extension()
+                extension.apply_to_phase(self)
+                extension.apply_to_executor(self.executor)
+                apply_extensions(extension.extensions)
+        
+        apply_extensions(self.extensions)
 
         for hook in self.hooks:
             hook(self)

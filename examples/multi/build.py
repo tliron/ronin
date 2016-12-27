@@ -21,14 +21,14 @@ from ronin.utils.paths import glob, input_path
 
 with new_build_context() as ctx:
     # Extension
-    library = Project('Multi-Project: Extension', file_name='library')
+    library = Project('Multi-Project Example: Extension', file_name='library')
     build_library = Phase(GccBuild(), inputs=glob('src/foo/*.c'), output='libfoo')
     build_library.executor.create_shared_library()
     build_library.executor.pic()
     library.phases['build'] = build_library
     
     # Main
-    main = Project('Multi-Project: Main', file_name='main')
+    main = Project('Multi-Project Example: Main', file_name='main')
     build_main = Phase(GccBuild(), inputs=glob('src/main/*.c'),
                        extensions=[ResultsExtension(build_library)], output='main')
     build_main.executor.add_include_path(input_path('src/foo'))

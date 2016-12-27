@@ -16,15 +16,35 @@ from ..contexts import current_context
 from ..extensions import Extension
 from ..utils.strings import stringify, UNESCAPED_STRING_RE
 from ..utils.platform import which
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 import os
 
-DEFAULT_COMMAND = 'pkg-config'
+DEFAULT_PKG_CONFIG_COMMAND = 'pkg-config'
 
-def configure_pkg_config(command=None, path=None):
+def configure_pkg_config(command=None,
+                         path=None):
     with current_context(False) as ctx:
         ctx.pkg_config_command = command
         ctx.pkg_config_path = path
+
+def add_cflags_to_executor(executor, args):
+    for value in args:
+        if value.startswith('-I'):
+            executor.add_include_path(value[2:])
+        elif value.startswith('-D'):
+            value = value[2:] 
+            if '=' in value: 
+                k, v = value.split('=', 2)
+                executor.define(k, v)
+            else:
+                executor.define(value)
+
+def add_libs_to_executor(executor, args):
+    for value in args:
+        if value.startswith('-L'):
+            executor.add_library_path(value[2:])
+        elif value.startswith('-l'):
+            executor.add_library(value[2:])
 
 class Package(Extension):
     """
@@ -39,43 +59,35 @@ class Package(Extension):
         self.path = path
         self.static = static
 
-    def add_to_executor_gcc_compile(self, executor):
-        for value in self._parse('--cflags'):
-            if value.startswith('-I'):
-                executor.add_include_path(value[2:])
-            elif value.startswith('-D'):
-                value = value[2:] 
-                if '=' in value: 
-                    k, v = value.split('=', 2)
-                    executor.define_symbol(k, v)
-                else:
-                    executor.define_symbol(value)
+    def apply_to_executor_gcc_compile(self, executor):
+        add_cflags_to_executor(executor, self._parse('--cflags'))
 
-    def add_to_executor_gcc_link(self, executor):
+    def apply_to_executor_gcc_link(self, executor):
         flags = ['--libs']
         if self.static:
             flags.append('--static')
-        for value in self._parse(*flags):
-            if value.startswith('-L'):
-                executor.add_library_path(value[2:])
-            elif value.startswith('-l'):
-                executor.add_library(value[2:])
+        add_libs_to_executor(executor, self._parse(*flags))
 
     def _parse(self, *flags):
-        with current_context() as ctx:
-            default = os.environ.get('PKG_CONFIG', DEFAULT_COMMAND)
-            pkg_config_command = which(ctx.fallback(self.command, 'pkg_config_command', default), True)
-            pkg_config_path = stringify(ctx.fallback(self.path, 'pkg_config_path'))
-            if pkg_config_path is not None:
-                os.environ['PKG_CONFIG_PATH'] = pkg_config_path
-
-        args = [pkg_config_command]
-        for flag in flags:
-            args.append(flag)
-        args.append(self.name)
- 
+        original_pkg_config_path = os.environ.get('PKG_CONFIG_PATH', None)
         try:
-            output = check_output(args).strip()
-            return UNESCAPED_STRING_RE.split(output)
-        except:
-            raise Exception('failed to run: %s' % ' '.join(args))
+            with current_context() as ctx:
+                default = os.environ.get('PKG_CONFIG', DEFAULT_PKG_CONFIG_COMMAND)
+                pkg_config_command = which(ctx.fallback(self.command, 'pkg_config_command', default), True)
+                pkg_config_path = stringify(ctx.fallback(self.path, 'pkg_config_path'))
+                if pkg_config_path is not None:
+                    os.environ['PKG_CONFIG_PATH'] = pkg_config_path
+    
+            args = [pkg_config_command]
+            for flag in flags:
+                args.append(flag)
+            args.append(self.name)
+     
+            try:
+                output = check_output(args).strip()
+                return UNESCAPED_STRING_RE.split(output)
+            except CalledProcessError:
+                raise Exception("failed to run: '%s'" % ' '.join(args))
+        finally:
+            if original_pkg_config_path is not None:
+                os.environ['PKG_CONFIG_PATH'] = original_pkg_config_path

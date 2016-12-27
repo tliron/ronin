@@ -15,7 +15,7 @@
 from .utils.types import verify_type
 from cStringIO import StringIO
 from collections import OrderedDict
-import threading
+import threading, sys
 
 _thread_locals = threading.local()
 
@@ -106,6 +106,11 @@ class Context(object):
         if value is None:
             return self.get(name, default)
         return value
+    
+    def append_to_import_path(self, name, default=None):
+        path = self.get(name, default)
+        if path is not None:
+            sys.path.append(path)
     
     def write(self, io):
         for k, v in self._all.iteritems():

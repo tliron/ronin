@@ -14,6 +14,7 @@
 
 from .contexts import current_context
 from .utils.paths import join_path, base_path
+from .utils.platform import DEFAULT_WHICH_COMMAND, DEFAULT_PLATFORM_PREFIXES
 import inspect, sys
 
 def configure_build(root_path=None,
@@ -21,6 +22,8 @@ def configure_build(root_path=None,
                     output_path_relative=None,
                     binary_path_relative=None,
                     object_path_relative=None,
+                    which_command=None,
+                    platform_prefixes=None,
                     frame=1):
     with current_context(False) as ctx:
         if root_path is None:
@@ -29,4 +32,8 @@ def configure_build(root_path=None,
         ctx.output_path = join_path(root_path, output_path_relative or 'build')
         ctx.binary_path_relative = binary_path_relative or 'bin'
         ctx.object_path_relative = object_path_relative or 'obj'
+        ctx.which_command = which_command or DEFAULT_WHICH_COMMAND
+        ctx.platform_prefixes = DEFAULT_PLATFORM_PREFIXES.copy()
+        if platform_prefixes:
+            ctx.platform_prefixes.update(platform_prefixes)
         ctx._phase_results = {}

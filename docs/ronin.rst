@@ -38,10 +38,10 @@
 
 .. automodule:: ronin.executors
 
-:mod:`ronin.libraries`
-**********************
+:mod:`ronin.extensions`
+***********************
 
-.. automodule:: ronin.libraries
+.. automodule:: ronin.extensions
 
 :mod:`ronin.ninja`
 ******************

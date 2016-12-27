@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .utils.platform import host_variant
+from .utils.platform import host_platform, platform_executable_extension, platform_shared_library_extension, platform_shared_library_prefix
 from .utils.strings import stringify
 
 class Project(object):
@@ -24,9 +24,9 @@ class Project(object):
         self.name = name
         self.file_name = file_name
         self.version = version
-        self.variant = variant or (lambda ctx: ctx.get('platform_variant', host_variant()))
         self.phases = phases or {}
         self.hooks = []
+        self._variant = variant or (lambda ctx: ctx.get('platform_variant', host_platform()))
 
     def __str__(self):
         name = stringify(self.name)
@@ -41,9 +41,24 @@ class Project(object):
         else:
             return name
 
+    @property
+    def variant(self):
+        return stringify(self._variant)
+
     def get_phase_name(self, phase):
         for k, v in self.phases.iteritems():
             if v is phase:
                 return k
         return None
-        
+
+    @property
+    def executable_extension(self):
+        return platform_executable_extension(self.variant)
+    
+    @property
+    def shared_library_extension(self):
+        return platform_shared_library_extension(self.variant)
+
+    @property
+    def shared_library_prefix(self):
+        return platform_shared_library_prefix(self.variant)

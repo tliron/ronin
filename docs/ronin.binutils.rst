@@ -13,31 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Rōnin
-=====
+`ronin.binutils`
+################
 
-A straightforward but powerful build system based on `Ninja <https://ninja-build.org/>`__ and
-Python, suitable for projects both big and small.
-
-
-Packages
---------
-
-.. toctree::
-   :maxdepth: 2
-
-   ronin
-   ronin.binutils
-   ronin.copy
-   ronin.gcc
-   ronin.pkg_config
-   ronin.sdl_config
-   ronin.utils
-
-
-Indices and Tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. automodule:: ronin.binutils

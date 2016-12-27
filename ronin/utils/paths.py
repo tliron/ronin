@@ -17,32 +17,37 @@ from ..contexts import current_context
 from glob2 import glob as _glob
 import os
 
-def join_path(*values):
-    values = stringify_list(values)
+def join_path(*segments):
+    segments = stringify_list(segments)
+    segments = [v for v in segments if v is not None]
     def fix(v):
-        return v[1:] if v.startswith(os.pathsep) else v
-    values = [v for v in values if v is not None]
-    return os.path.join(*values)
+        return v[1:] if v.startswith(os.sep) else v
+    if len(segments) > 1:
+        segments = [segments[0]] + [fix(v) for v in segments[1:]]
+    return os.path.join(*segments)
 
-def base_path(value):
-    value = stringify(value)
-    return os.path.dirname(os.path.realpath(value))
+def join_path_lambda(*segments):
+    return lambda _: join_path(*segments)
 
-def input_path(value):
+def base_path(path):
+    path = stringify(path)
+    return os.path.dirname(os.path.realpath(path))
+
+def input_path(path):
     with current_context() as ctx:
-        return join_path(ctx.get('input_path'), value)
+        return join_path(ctx.get('input_path'), path)
 
-def glob(value):
-    value = stringify(value)
+def glob(path):
+    path = stringify(path)
     with current_context() as ctx:
-        return _glob(join_path(ctx.get('input_path'), value))
+        return _glob(join_path(ctx.get('input_path'), path))
 
-def change_extension(value, new_extension):
-    value = stringify(value)
+def change_extension(path, new_extension):
+    path = stringify(path)
     new_extension = stringify(new_extension)
     if new_extension is None:
-        return value
-    dot = value.rfind('.')
+        return path
+    dot = path.rfind('.')
     if dot != -1:
-        value = value[:dot]
-    return '%s.%s' % (value, new_extension)
+        path = path[:dot]
+    return '%s.%s' % (path, new_extension)

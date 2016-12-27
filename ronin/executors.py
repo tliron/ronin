@@ -24,6 +24,7 @@ class Executor(object):
         self.command = None
         self.command_types = []
         self.output_extension = None
+        self.output_prefix = None
         self.output_type = 'binary'
         self.hooks = []
         self._deps_file = None

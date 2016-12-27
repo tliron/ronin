@@ -19,13 +19,16 @@ class Extension(object):
     """
     Base class for extensions.
     """
+    
+    def __init__(self):
+        self.extensions = []
 
-    def add_to_phase(self, phase):
+    def apply_to_phase(self, phase):
         pass
     
-    def add_to_executor(self, executor):
+    def apply_to_executor(self, executor):
         for command_type in executor.command_types:
-            fn = getattr(self, 'add_to_executor_%s' % command_type, None)
+            fn = getattr(self, 'apply_to_executor_%s' % command_type, None)
             if fn:
                 fn(executor)
 
@@ -42,16 +45,16 @@ class ExplicitExtension(Extension):
         self.library_paths = library_paths or []
         self.libraries = libraries or []
 
-    def add_to_phase(self, phase):
+    def apply_to_phase(self, phase):
         phase.inputs += self.inputs
 
-    def add_to_executor_gcc_compile(self, executor):
+    def apply_to_executor_gcc_compile(self, executor):
         for path in self.include_paths:
             executor.add_include_path(path)
         for define, value in self.defines:
-            executor.define_symbol(define, value)
+            executor.define(define, value)
 
-    def add_to_executor_gcc_link(self, executor):
+    def apply_to_executor_gcc_link(self, executor):
         for path in self.library_paths:
             executor.add_library_path(path)
         for library in self.libraries:
@@ -68,7 +71,7 @@ class ResultsExtension(Extension):
         verify_type(phase, Phase)
         self._phase = phase
     
-    def add_to_executor_gcc_link(self, executor):
+    def apply_to_executor_gcc_link(self, executor):
         with current_context() as ctx:
             results = ctx.get('_phase_results')
         if results is None:

@@ -15,30 +15,27 @@
 from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..projects import Project
-from ..utils.strings import stringify, stringify_list, bool_stringify, join_stringify_lambda
-from ..utils.paths import join_path
-from ..utils.platform import which
-from ..utils.types import verify_type
+from ..utils.strings import stringify, stringify_list, bool_stringify, interpolate_stringify_lambda, join_stringify_lambda
+from ..utils.paths import join_path, join_path_lambda
+from ..utils.platform import which, platform_command, platform_executable_extension, platform_shared_library_extension, platform_shared_library_prefix
 import os
 
-DEFAULT_COMMAND = 'gcc'
+DEFAULT_GCC_COMMAND = 'gcc'
 DEFAULT_CCACHE_PATH = '/usr/lib/ccache'
 
-CROSSCOMPILE_COMMAND_PREFIXES = {
-    'linux64': 'x86_64-linux-gnu-',
-    'linux32': 'x86_64-linux-gnu-', #'i686-linux-gnu-',
-    'win64': 'x86_64-w64-mingw32-',
-    'win32': 'i686-w64-mingw32-'}
-
-def configure_gcc(command=None, ccache=None, ccache_path=None):
+def configure_gcc(command=None,
+                  ccache=None,
+                  ccache_path=None):
     with current_context(False) as ctx:
-        ctx.gcc_command = command
+        ctx.gcc_command = command or DEFAULT_GCC_COMMAND
         ctx.gcc_ccache = ccache
-        ctx.gcc_ccache_path = ccache_path
+        ctx.gcc_ccache_path = ccache_path or DEFAULT_CCACHE_PATH
 
-def which_gcc(command, ccache):
+def which_gcc(command, ccache, platform):
     command = stringify(command)
     ccache = bool_stringify(ccache)
+    if platform:
+        command = gcc_platform_command(command, platform)
     if ccache:
         with current_context() as ctx:
             ccache_path = stringify(ctx.get('gcc_ccache_path', DEFAULT_CCACHE_PATH))
@@ -47,37 +44,23 @@ def which_gcc(command, ccache):
             return r
     return which(command, True)
 
-def gcc_crosscompile_command(project, command=None):
-    def closure(ctx, project, command):
-        if command is None:
-            command = DEFAULT_COMMAND
-        command = stringify(command)
-        variant = stringify(project.variant)
-        return '%s%s' % (CROSSCOMPILE_COMMAND_PREFIXES.get(variant, ''), command)
-    return lambda ctx: closure(ctx, project, command)
+def gcc_platform_command(command, platform):
+    if isinstance(platform, Project):
+        platform = platform.variant
+    return platform_command(command, platform)
 
-def crosscompile_executable_extension(project):
-    def closure(ctx, project):
-        variant = stringify(project.variant)
-        if variant in ('win64', 'win32'):
-            return 'exe'
-        return None
-    return lambda ctx: closure(ctx, project)
+def gcc_platform_machine_bits(platform):
+    if isinstance(platform, Project):
+        platform = platform.variant
+    platform = stringify(platform)
+    if platform:
+        if platform.endswith('64'):
+            return '64'
+        elif platform.endswith('32'):
+            return '32'
+    return None
 
-def crosscompile_shared_library_extension(project):
-    def closure(ctx, project):
-        variant = stringify(project.variant)
-        if variant in ('win64', 'win32'):
-            return 'dll'
-        return 'so'
-    return lambda ctx: closure(ctx, project)
-
-def debug_hook(executor):
-    with current_context() as ctx:
-        if ctx.get('debug', False):
-            executor.enable_debug()
-
-class GccExecutor(ExecutorWithArguments):
+class _GccExecutor(ExecutorWithArguments):
     """
     Base class for `gcc <https://gcc.gnu.org/>`__ executors.
     
@@ -85,20 +68,19 @@ class GccExecutor(ExecutorWithArguments):
     /gcc-6.3.0/gcc/Option-Summary.html#Option-Summary>`__.
     """
     
-    def __init__(self, command=None, ccache=True, crosscompile=None):
-        super(GccExecutor, self).__init__()
-        self._deps_file = '$out.d'
-        self._deps_type = 'gcc'
-        self.crosscompile = crosscompile
+    def __init__(self, command=None, ccache=True, platform=None):
+        super(_GccExecutor, self).__init__()
+        if platform is not None:
+            self.set_machine(lambda _: gcc_platform_machine_bits(platform))
+        self.command = lambda ctx: which_gcc(ctx.fallback(command, 'gcc_command', DEFAULT_GCC_COMMAND),
+                                             ctx.fallback(ccache, 'gcc_cache', True),
+                                             platform)
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('-o', '$out')
-        if crosscompile is not None:
-            verify_type(crosscompile, Project)
-            self.command = gcc_crosscompile_command(crosscompile, command)
-            self.set_machine_bits(crosscompile)
-        else:
-            self.command = lambda ctx: which_gcc(ctx.fallback(command, 'gcc_command', DEFAULT_COMMAND),
-                                                 ctx.fallback(ccache, 'gcc_cache', True))
+        self._platform = platform
+
+    def use_threads(self):
+        self.add_argument('-pthread') # both compiler flags and linker libraries
 
     # Compiler
     
@@ -106,56 +88,43 @@ class GccExecutor(ExecutorWithArguments):
         self.add_argument('-c')
     
     def add_include_path(self, *value):
-        self.add_argument(lambda _: '-I%s' % join_path(*value))
+        self.add_argument(interpolate_stringify_lambda('-I%s', join_path_lambda(*value)))
 
     def standard(self, value):
-        self.add_argument(lambda _: '-std=%s' % stringify(value))
+        self.add_argument(interpolate_stringify_lambda('-std=%s', value))
 
-    def define_symbol(self, name, value=None):
-        if (value is None) or (value == ''):
-            self.add_argument(lambda _: '-D%s' % stringify(name))
+    def define(self, name, value=None):
+        if value is None:
+            self.add_argument(interpolate_stringify_lambda('-D%s', name))
         else:
-            self.add_argument(lambda _: '-D%s=%s' % (stringify(name), stringify(value)))
+            self.add_argument(interpolate_stringify_lambda('-D%s=%s', name, value))
 
     def enable_warning(self, value='all'):
-        self.add_argument(lambda _: '-W%s' % stringify(value))
+        self.add_argument(interpolate_stringify_lambda('-W%s', value))
 
     def disable_warning(self, value):
-        self.add_argument(lambda _: '-Wno-%s' % stringify(value))
+        self.add_argument(interpolate_stringify_lambda('-Wno-%s', value))
     
     def set_machine(self, value):
-        self.add_argument(lambda _: '-m%s' % stringify(value))
-
-    def set_machine_bits(self, project):
-        verify_type(project, Project)
-        self.set_machine(lambda _: '32' if stringify(project.variant).endswith('32') else '64')
+        self.add_argument(interpolate_stringify_lambda('-m%s', value))
 
     def set_machine_tune(self, value):
-        self.add_argument(lambda _: '-mtune=%s' % stringify(value))
+        self.add_argument(interpolate_stringify_lambda('-mtune=%s', value))
 
     def set_machine_floating_point(self, value):
-        self.add_argument(lambda _: '-mfpmath=%s' % stringify(value))
+        self.add_argument(interpolate_stringify_lambda('-mfpmath=%s', value))
 
     def optimize(self, value):
-        self.add_argument(lambda _: '-O%s' % stringify(value))
+        self.add_argument(interpolate_stringify_lambda('-O%s', value))
 
     def enable_debug(self):
         self.add_argument('-g')
 
-    def enable_threads(self):
-        self.add_argument('-pthreads')
-
-    def pic(self):
-        self.add_argument('-fPIC')
+    def pic(self, uppercase=True):
+        self.add_argument('-fPIC' if uppercase else '-fpic')
     
     # Linker
 
-    def add_library_path(self, *value):
-        self.add_argument(lambda _: '-L%s' % join_path(*value))
-
-    def add_library(self, value):
-        self.add_argument(lambda _: '-l%s' % stringify(value))
-    
     def add_result(self, value):
         if value.endswith('.so'):
             value = value[:-3]
@@ -165,45 +134,80 @@ class GccExecutor(ExecutorWithArguments):
                 self.add_library_path(dir)
                 self.add_library(file)
 
-    def use_linker(self, value):
-        self.add_argument(lambda _: '-fuse-ld=%s' % stringify(value))
+    def add_library_path(self, *value):
+        self.add_argument(interpolate_stringify_lambda('-L%s', join_path_lambda(*value)))
 
-    def add_linker_argument(self, *value):
+    def add_library(self, value):
+        self.add_argument(interpolate_stringify_lambda('-l%s', value))
+    
+    def use_linker(self, value):
+        self.add_argument(interpolate_stringify_lambda('-fuse-ld=%s', value))
+
+    def link_static_only(self):
+        self.add_argument('-static')
+
+    def add_linker_argument(self, name, value=None, xlinker=True):
         """
         Add a command line argument to the linker.
         
-        For options accepted by :code:`ld` see the `documentation <https://sourceware.org/binutils
+        For options accepted by ld see the `documentation <https://sourceware.org/binutils
         /docs-2.27/ld/Options.html>`__
         """
         
-        self.add_argument(lambda _: '-Wl,%s' % ','.join([stringify(v) for v in value]))
+        if xlinker:
+            if value is None:
+                self.add_argument('-Xlinker', name)
+            else:
+                self.add_argument('-Xlinker', interpolate_stringify_lambda('%s=%s', name, value))
+        else:
+            if value is None:
+                self.add_argument(interpolate_stringify_lambda('-Wl,%s', name))
+            else:
+                self.add_argument(interpolate_stringify_lambda('-Xl,%s,%s', name, value))
     
     def linker_rpath(self, value):
         """
         Add a directory to the runtime library search path.
         """
         
-        self.add_linker_argument('-rpath', lambda _: "'%s'" % stringify(value))
+        self.add_linker_argument('-rpath', interpolate_stringify_lambda("'%s'", value))
 
     def linker_rpath_origin(self):
         self.linker_rpath('$ORIGIN')
 
-    def link_dynamic(self):
+    def linker_disable_new_dtags(self):
+        self.add_linker_argument('--disable-new-dtags')
+        
+    def linker_export_all_symbols_dynamically(self):
         self.add_argument('-rdynamic')
 
-    def undefine(self, value):
+    def linker_no_undefined_symbols(self):
+        self.add_linker_argument('--no-undefined')
+
+    def linker_no_undefined_symbols_in_libraries(self):
+        self.add_linker_argument('--no-allow-shlib-undefined')
+    
+    def linker_undefine_symbol(self, value):
         self.add_argument('-u', value)
+
+    def linker_no_symbol_table(self):
+        self.add_argument('-s')
+
+    def linker_exclude_symbols(self, *values):
+        self.add_linker_argument('-exclude-symbols', join_stringify_lambda(values, ','))
         
     def create_shared_library(self):
         self.add_argument('-shared')
-        if self.crosscompile is not None:
-            self.output_extension = crosscompile_shared_library_extension(self.crosscompile)
+        if self._platform is not None:
+            if isinstance(self._platform, Project):
+                self.output_extension = lambda _: self._platform.shared_library_extension
+                self.output_prefix = lambda _: self._platform.shared_library_prefix
+            else:
+                self.output_extension = lambda _: platform_shared_library_extension(self._platform)
+                self.output_prefix = lambda _: platform_shared_library_prefix(self._platform)
         else:
             self.output_extension = 'so'
-
-    def create_static_library(self):
-        self.add_argument('-static')
-        self.output_extension = 'a'
+            self.output_prefix = 'lib'
 
     # Makefile
     
@@ -220,52 +224,67 @@ class GccExecutor(ExecutorWithArguments):
         self._makefile('F', value)
 
     def _makefile(self, value, arg=None):
-        args = [lambda _: '-M%s' % stringify(value)]
         if arg is not None:
-            args.append(arg)
-        self.add_argument(*args)
+            self.add_argument(interpolate_stringify_lambda('-M%s', value), arg)
+        else:
+            self.add_argument(interpolate_stringify_lambda('-M%s', value))
 
-class GccWithMakefile(GccExecutor):
+class _GccWithMakefile(_GccExecutor):
     """
     Base class for gcc executors that also create a makefile.
     """
     
-    def __init__(self, command=None, ccache=True, crosscompile=None):
-        super(GccWithMakefile, self).__init__(command, ccache, crosscompile)
-        self.depfile = True
+    def __init__(self, command=None, ccache=True, platform=None):
+        super(_GccWithMakefile, self).__init__(command, ccache, platform)
         self.create_makefile_ignore_system()
         self.add_argument_unfiltered('-MF', '$out.d') # set_makefile_path
+        self._deps_file = '$out.d'
+        self._deps_type = 'gcc'
 
-class GccBuild(GccWithMakefile):
+class GccBuild(_GccWithMakefile):
     """
     gcc command supporting both compilation and linking phases.
     """
     
-    def __init__(self, command=None, ccache=True, crosscompile=None):
-        super(GccBuild, self).__init__(command, ccache, crosscompile)
+    def __init__(self, command=None, ccache=True, platform=None):
+        super(GccBuild, self).__init__(command, ccache, platform)
         self.command_types = ['gcc_compile', 'gcc_link']
-        if crosscompile is not None:
-            self.output_extension = crosscompile_executable_extension(crosscompile)
-        self.hooks.append(debug_hook)
+        if platform is not None:
+            if isinstance(self._platform, Project):
+                self.output_extension = lambda _: self._platform.executable_extension
+            else:
+                self.output_extension = lambda _: platform_executable_extension(platform)
+        self.hooks.append(_debug_hook)
 
-class GccCompile(GccWithMakefile):
+class GccCompile(_GccWithMakefile):
     """
     gcc command supporting compilation phase only.
     """
 
-    def __init__(self, command=None, ccache=True, crosscompile=None):
-        super(GccCompile, self).__init__(command, ccache, crosscompile)
+    def __init__(self, command=None, ccache=True, platform=None):
+        super(GccCompile, self).__init__(command, ccache, platform)
         self.command_types = ['gcc_compile']
         self.output_type = 'object'
         self.output_extension = 'o'
         self.compile_only()
-        self.hooks.append(debug_hook)
+        self.hooks.append(_debug_hook)
 
-class GccLink(GccExecutor):
+class GccLink(_GccExecutor):
     """
     gcc command supporting linking phase only.
     """
 
-    def __init__(self, command=None, ccache=True, crosscompile=None):
-        super(GccLink, self).__init__(command, ccache, crosscompile)
+    def __init__(self, command=None, ccache=True, platform=None):
+        super(GccLink, self).__init__(command, ccache, platform)
         self.command_types = ['gcc_link']
+        if platform is not None:
+            if isinstance(self._platform, Project):
+                self.output_extension = lambda _: self._platform.executable_extension
+            else:
+                self.output_extension = lambda _: platform_executable_extension(platform)
+
+def _debug_hook(executor):
+    with current_context() as ctx:
+        if ctx.get('debug', False):
+            executor.enable_debug()
+            executor.optimize('g')

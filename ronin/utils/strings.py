@@ -47,5 +47,14 @@ def stringify_unique(values):
     values = stringify_list(values)
     return dedup(values)
 
+def interpolate_stringify_lambda(format, *args):
+    def closure(format, args):
+        args = stringify_list(args)
+        if None in args:
+            return None
+        format = stringify(format)
+        return format % tuple(stringify_list(args))
+    return lambda _: closure(format, args) 
+
 def join_stringify_lambda(values, separator=' '):
     return lambda _: separator.join(stringify_list(values))

@@ -14,13 +14,18 @@
 
 from inspect import isclass
 
+def type_name(the_type):
+    module = str(the_type.__module__)
+    name = str(the_type.__name__)
+    return name if module == '__builtin__' else '%s.%s' % (module, name)
+
 def verify_type(value, the_type):
     if not isinstance(value, the_type):
-        raise AttributeError('not an instance of %s: %s' % (the_type.__name__, value.__class__.__name__)) 
+        raise AttributeError('not an instance of %s: %s' % (type_name(the_type), type_name(type(value)))) 
 
 def verify_subclass(value, the_type):
     if not issubclass(value, the_type):
-        raise AttributeError('not a subclass of %s: %s' % (the_type.__name__, value.__name__))
+        raise AttributeError('not a subclass of %s: %s' % (type_name(the_type), type_name(type(value))))
 
 def verify_type_or_subclass(value, the_type):
     if isclass(value):

@@ -12,17 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from ..pkg_config import add_cflags_to_executor, add_libs_to_executor
 from ..contexts import current_context
 from ..extensions import Extension
 from ..utils.strings import stringify, bool_stringify, UNESCAPED_STRING_RE
 from ..utils.platform import which
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 
-DEFAULT_COMMAND = 'sdl2-config'
+DEFAULT_SDL_CONFIG_COMMAND = 'sdl2-config'
 
-def configure_sdl_config(command=None, static=None, prefix=None, exec_prefix=None):
+def configure_sdl_config(command=None,
+                         static=None,
+                         prefix=None,
+                         exec_prefix=None):
     with current_context(False) as ctx:
-        ctx.sdl_config_command = command
+        ctx.sdl_config_command = command or DEFAULT_SDL_CONFIG_COMMAND
         ctx.sdl_config_static = static
         ctx.sdl_config_prefix = prefix
         ctx.sdl_config_exec_prefix = exec_prefix
@@ -43,19 +47,17 @@ class SDL(Extension):
         self.prefix = prefix
         self.exec_prefix = exec_prefix
 
-    def add_to_executor_gcc_compile(self, executor):
-        for flag in self._parse('--cflags'):
-            executor.add_argument(flag)
+    def apply_to_executor_gcc_compile(self, executor):
+        add_cflags_to_executor(executor, self._parse('--cflags'))
 
-    def add_to_executor_gcc_link(self, executor):
+    def apply_to_executor_gcc_link(self, executor):
         with current_context() as ctx:
             sdl_config_static = bool_stringify(ctx.fallback(self.static, 'sdl_config_static', False))
-        for flag in self._parse('--static-libs' if sdl_config_static else '--libs'):
-            executor.add_argument(flag)
+        add_libs_to_executor(executor, self._parse('--static-libs' if sdl_config_static else '--libs'))
 
     def _parse(self, flags):
         with current_context() as ctx:
-            sdl_config_command = which(ctx.fallback(self.command, 'sdl_config_command', DEFAULT_COMMAND), True)
+            sdl_config_command = which(ctx.fallback(self.command, 'sdl_config_command', DEFAULT_SDL_CONFIG_COMMAND), True)
             sdl_config_prefix = stringify(ctx.fallback(self.prefix, 'sdl_config_prefix'))
             sdl_config_exec_prefix = stringify(ctx.fallback(self.exec_prefix, 'sdl_config_exec_prefix'))
         
@@ -68,5 +70,5 @@ class SDL(Extension):
         try:
             output = check_output(args).strip()
             return UNESCAPED_STRING_RE.split(output)
-        except:
-            raise Exception('failed to run: %s' % ' '.join(args))
+        except CalledProcessError:
+            raise Exception("failed to run: '%s'" % ' '.join(args))

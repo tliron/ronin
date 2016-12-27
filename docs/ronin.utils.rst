@@ -17,3 +17,38 @@
 #############
 
 .. automodule:: ronin.utils
+
+:mod:`ronin.utils.argparse`
+***************************
+
+.. automodule:: ronin.utils.argparse
+
+:mod:`ronin.utils.collections`
+******************************
+
+.. automodule:: ronin.utils.collections
+
+:mod:`ronin.utils.messages`
+***************************
+
+.. automodule:: ronin.utils.messages
+
+:mod:`ronin.utils.paths`
+************************
+
+.. automodule:: ronin.utils.paths
+
+:mod:`ronin.utils.platform`
+***************************
+
+.. automodule:: ronin.utils.platform
+
+:mod:`ronin.utils.strings`
+**************************
+
+.. automodule:: ronin.utils.strings
+
+:mod:`ronin.utils.types`
+************************
+
+.. automodule:: ronin.utils.types
