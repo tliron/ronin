@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .contexts import new_context
+from .contexts import current_context
 from .projects import Project
 from .ninja import NinjaFile
 from .utils.types import verify_type
@@ -27,38 +27,39 @@ def cli(*projects, **kwargs):
     :param projects: :class:`Project` instances
     """
     
-    with new_context() as ctx:
-        try:
-            for project in projects:
-                verify_type(project, Project)
-                for hook in project.hooks:
-                    hook(project)
-    
-            if ctx.verbose:
+    try:
+        for project in projects:
+            verify_type(project, Project)
+            for hook in project.hooks:
+                hook(project)
+
+        with current_context() as ctx:
+            if ctx.get('cli.verbose', False):
                 sys.stdout.write(str(ctx))
+            operations = ctx.cli.args.operation
+
+        for operation in operations:
+            if operation in ('build', 'clean', 'ninja'):
+                for project in projects:
+                    announce('%s' % project)
+                    ninja_file = NinjaFile(project)
     
-            for operation in ctx._args.operation:
-                if operation in ('build', 'clean', 'ninja'):
-                    for project in projects:
-                        announce('%s' % project)
-                        ninja_file = NinjaFile(project)
-        
-                        if operation == 'build':
-                            r = ninja_file.build()
-                            if r != 0:
-                                sys.exit(r)
-                        elif operation == 'clean':
-                            r = ninja_file.clean()
-                            if r != 0:
-                                sys.exit(r)
-                        elif operation == 'ninja':
-                            ninja_file.generate()
-                else:
-                    error("Unsupported operation: '%s'" % operation)
-                    sys.exit(1)
-        except Exception as ex:
-            if ctx.get('verbose', False):
-                print_exc()
+                    if operation == 'build':
+                        r = ninja_file.build()
+                        if r != 0:
+                            sys.exit(r)
+                    elif operation == 'clean':
+                        r = ninja_file.clean()
+                        if r != 0:
+                            sys.exit(r)
+                    elif operation == 'ninja':
+                        ninja_file.generate()
             else:
-                error(ex)
-            sys.exit(1)
+                error("Unsupported operation: '%s'" % operation)
+                sys.exit(1)
+    except Exception as ex:
+        if ctx.get('cli.verbose', False):
+            print_exc()
+        else:
+            error(ex)
+        sys.exit(1)

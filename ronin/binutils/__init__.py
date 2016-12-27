@@ -22,7 +22,7 @@ DEFAULT_WINDRES_COMMAND = 'windres'
 
 def configure_binutils(windres_command=None):
     with current_context(False) as ctx:
-        ctx.windres_command = windres_command or DEFAULT_WINDRES_COMMAND
+        ctx.binutils.windres_command = windres_command or DEFAULT_WINDRES_COMMAND
 
 def which_windres(command, platform):
     command = stringify(command)
@@ -43,7 +43,7 @@ class WindRes(ExecutorWithArguments):
     
     def __init__(self, command=None, extension=None, platform=None):
         super(WindRes, self).__init__()
-        self.command = lambda ctx: which_windres(ctx.fallback(command, 'windres_command', DEFAULT_WINDRES_COMMAND),
+        self.command = lambda ctx: which_windres(ctx.fallback(command, 'binutils.windres_command', DEFAULT_WINDRES_COMMAND),
                                                  platform)
         self.output_type = 'object'
         self.output_extension = extension or 'o'

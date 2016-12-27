@@ -73,7 +73,7 @@ class ResultsExtension(Extension):
     
     def apply_to_executor_gcc_link(self, executor):
         with current_context() as ctx:
-            results = ctx.get('_phase_results')
+            results = ctx.get('build._phase_results')
         if results is None:
             return
         results = results.get(self._phase)

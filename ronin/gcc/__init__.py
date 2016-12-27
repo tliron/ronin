@@ -27,9 +27,9 @@ def configure_gcc(command=None,
                   ccache=None,
                   ccache_path=None):
     with current_context(False) as ctx:
-        ctx.gcc_command = command or DEFAULT_GCC_COMMAND
-        ctx.gcc_ccache = ccache
-        ctx.gcc_ccache_path = ccache_path or DEFAULT_CCACHE_PATH
+        ctx.gcc.command = command or DEFAULT_GCC_COMMAND
+        ctx.gcc.ccache = ccache
+        ctx.gcc.ccache_path = ccache_path or DEFAULT_CCACHE_PATH
 
 def which_gcc(command, ccache, platform):
     command = stringify(command)
@@ -38,7 +38,7 @@ def which_gcc(command, ccache, platform):
         command = gcc_platform_command(command, platform)
     if ccache:
         with current_context() as ctx:
-            ccache_path = stringify(ctx.get('gcc_ccache_path', DEFAULT_CCACHE_PATH))
+            ccache_path = stringify(ctx.get('gcc.ccache_path', DEFAULT_CCACHE_PATH))
         r = which(join_path(ccache_path, command))
         if r is not None:
             return r
@@ -72,8 +72,8 @@ class _GccExecutor(ExecutorWithArguments):
         super(_GccExecutor, self).__init__()
         if platform is not None:
             self.set_machine(lambda _: gcc_platform_machine_bits(platform))
-        self.command = lambda ctx: which_gcc(ctx.fallback(command, 'gcc_command', DEFAULT_GCC_COMMAND),
-                                             ctx.fallback(ccache, 'gcc_cache', True),
+        self.command = lambda ctx: which_gcc(ctx.fallback(command, 'gcc.command', DEFAULT_GCC_COMMAND),
+                                             ctx.fallback(ccache, 'gcc.cache', True),
                                              platform)
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('-o', '$out')
@@ -120,8 +120,8 @@ class _GccExecutor(ExecutorWithArguments):
     def enable_debug(self):
         self.add_argument('-g')
 
-    def pic(self, uppercase=True):
-        self.add_argument('-fPIC' if uppercase else '-fpic')
+    def pic(self, compact=False):
+        self.add_argument('-fpic' if compact else '-fPIC')
     
     # Linker
 
@@ -285,6 +285,6 @@ class GccLink(_GccExecutor):
 
 def _debug_hook(executor):
     with current_context() as ctx:
-        if ctx.get('debug', False):
+        if ctx.get('build.debug', False):
             executor.enable_debug()
             executor.optimize('g')

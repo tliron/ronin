@@ -44,7 +44,7 @@ def which(command, exception=False):
     command = stringify(command)
     try:
         with current_context() as ctx:
-            which_command = ctx.get('which_command', DEFAULT_WHICH_COMMAND)
+            which_command = ctx.get('platform.which_command', DEFAULT_WHICH_COMMAND)
         command = check_output([which_command, command]).strip()
         if not command:
             command = None
@@ -56,7 +56,7 @@ def which(command, exception=False):
 
 def platform_prefixes():
     with current_context() as ctx:
-        return ctx.get('platform_prefixes', DEFAULT_PLATFORM_PREFIXES)
+        return ctx.get('platform.prefixes', DEFAULT_PLATFORM_PREFIXES)
 
 def platform_prefix(platform):
     platform = stringify(platform)

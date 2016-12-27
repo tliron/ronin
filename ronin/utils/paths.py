@@ -35,12 +35,12 @@ def base_path(path):
 
 def input_path(path):
     with current_context() as ctx:
-        return join_path(ctx.get('input_path'), path)
+        return join_path(ctx.get('paths.input'), path)
 
 def glob(path):
     path = stringify(path)
     with current_context() as ctx:
-        return _glob(join_path(ctx.get('input_path'), path))
+        return _glob(join_path(ctx.get('paths.input'), path))
 
 def change_extension(path, new_extension):
     path = stringify(path)

@@ -28,7 +28,7 @@ def new_build_context(*args, **kwargs):
     ctx = new_context()
     ctx._push_thread_local()
     try:
-        configure_build(*args, frame=3, **kwargs)
+        configure_build(*args, frame=2, **kwargs)
     finally:
         Context._pop_thread_local()
     return ctx
@@ -67,22 +67,44 @@ class Context(object):
     modify any of the properties.
     """
     
-    LOCAL = ('_parent', '_immutable')
+    LOCAL = ('_parent', '_immutable', '_namespaces')
     
     def __init__(self, parent=None, immutable=False):
         if parent:
             verify_type(parent, Context)
         self._parent = parent
         self._immutable = immutable
+        self._namespaces = {}
     
     def __str__(self):
         io = StringIO()
         try:
-            self.write(io)
+            self._write(io)
             v = io.getvalue()
         finally:
             io.close()
         return v
+
+    def __enter__(self):
+        self._push_thread_local()
+        return self
+    
+    def __exit__(self, the_type, value, traceback):
+        self._pop_thread_local()
+
+    def __getattr__(self, name):
+        if name in self.LOCAL:
+            raise RuntimeError('context not initialized?')
+        namespace = self._namespaces.get(name)
+        if namespace is None:
+            namespace = _Namespace(name, self)
+            self._namespaces[name] = namespace
+        return namespace
+
+    def __setattr__(self, name, value):
+        if name not in self.LOCAL:
+            raise IncorrectUseOfContextException('namespaces cannot be assigned values: "%s"' % name)
+        super(Context, self).__setattr__(name, value)
 
     def get(self, name, default=None):
         """
@@ -92,8 +114,12 @@ class Context(object):
         and :code:`default`!
         """
         
+        if '.' not in name:
+            return default
+        namespace_name, name = name.split('.', 2)
         try:
-            return getattr(self, name)
+            namespace = getattr(self, namespace_name)
+            return getattr(namespace, name)
         except NotInContextException:
             return default
 
@@ -112,20 +138,20 @@ class Context(object):
         if path is not None:
             sys.path.append(path)
     
-    def write(self, io):
-        for k, v in self._all.iteritems():
-            if not k.startswith('_'):
-                io.write('%s=%s\n' % (k, v))
-
     @property
     def _all(self):
         r = OrderedDict()
         if self._parent:
             r.update(self._parent._all)
-        for k, v in sorted(vars(self).items()):
-            if k not in Context.LOCAL:
-                r[k] = v
+        for namespace_name, namespace in sorted(self._namespaces.items()):
+            for k, v in sorted(namespace._all_local.items()):
+                r['%s.%s' % (namespace_name, k)] = v
         return r
+
+    def _write(self, io):
+        for k, v in self._all.iteritems():
+            if not k.startswith('_'):
+                io.write('%s=%s\n' % (k, v))
 
     def _push_thread_local(self):
         """
@@ -163,36 +189,6 @@ class Context(object):
         except AttributeError:
             return None
 
-
-    def __enter__(self):
-        self._push_thread_local()
-        return self
-    
-    def __exit__(self, the_type, value, traceback):
-        self._pop_thread_local()
-
-    def __getattr__(self, name):
-        if name in Context.LOCAL:
-            raise AttributeError(name)
-
-        if self._parent is None:
-            raise NotInContextException(name)
-
-        return getattr(self._parent, name)
-
-    def __setattr__(self, name, value):
-        if name in Context.LOCAL:
-            super(Context, self).__setattr__(name, value)
-            return
-
-        try:
-            if self._immutable:
-                raise ImmutableContextException()
-        except AttributeError:
-            pass
-
-        super(Context, self).__setattr__(name, value)
-
 class ContextException(Exception):
     """
     Base class for context excpetions.
@@ -212,6 +208,51 @@ class NotInContextException(ContextException):
 class ImmutableContextException(ContextException):
     def __init__(self, message=None):
         super(ImmutableContextException, self).__init__(message)
+
+class IncorrectUseOfContextException(ContextException):
+    def __init__(self, message=None):
+        super(IncorrectUseOfContextException, self).__init__(message)
+
+class _Namespace(object):
+    LOCAL = ('_name', '_context')
+    
+    def __init__(self, name, context):
+        self._name = name
+        self._context = context
+
+    @property
+    def _all(self):
+        r = OrderedDict()
+        if self._context._parent:
+            parent = getattr(self._context._parent, self._name)
+            r.update(parent._all)
+        r.update(self._all_local)
+        return r
+
+    @property
+    def _all_local(self):
+        r = OrderedDict()
+        for k, v in sorted(vars(self).items()):
+            if (k not in self.LOCAL) and (not k.startswith('_')):
+                r[k] = v
+        return r
+
+    def __getattr__(self, name):
+        if name in self.LOCAL:
+            raise RuntimeError('namespace not initialized?')
+        if self._context._parent is None:
+            raise NotInContextException(name)
+        parent = getattr(self._context._parent, self._name)
+        return getattr(parent, name)
+
+    def __setattr__(self, name, value):
+        if name not in self.LOCAL:
+            try:
+                if self._context._immutable:
+                    raise ImmutableContextException()
+            except AttributeError:
+                pass
+        super(_Namespace, self).__setattr__(name, value)
 
 class _ContextStack(object):
     """

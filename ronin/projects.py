@@ -26,7 +26,7 @@ class Project(object):
         self.version = version
         self.phases = phases or {}
         self.hooks = []
-        self._variant = variant or (lambda ctx: ctx.get('project_variant', host_platform()))
+        self._variant = variant or (lambda ctx: ctx.get('projects.default_variant', host_platform()))
 
     def __str__(self):
         name = stringify(self.name)

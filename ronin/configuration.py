@@ -27,45 +27,50 @@ def configure_build(root_path=None,
                     which_command=None,
                     platform_prefixes=None,
                     name=None,
-                    frame=2):
+                    frame=1):
     with current_context(False) as ctx:
-        ctx._args, _ = _ArgumentParser(name, frame).parse_known_args()
-        ctx._phase_results = {}
+        ctx.cli.args, _ = _ArgumentParser(name, frame + 1).parse_known_args()
+        ctx.cli.verbose = ctx.cli.args.verbose
 
-        ctx.debug = ctx._args.debug
-        ctx.verbose = ctx._args.verbose
-            
-        if ctx._args.variant:
-            ctx.project_variant = ctx._args.variant
+        ctx.build.debug = ctx.cli.args.debug
+        ctx.build._phase_results = {}
+
+        if ctx.cli.args.variant:
+            ctx.projects.default_variant = ctx.cli.args.variant
         
-        if ctx._args.set:
-            for value in ctx._args.set:
+        if ctx.cli.args.set:
+            for value in ctx.cli.args.set:
                 if '=' not in value:
-                    error("'--set' argument is not formatted as 'k=v': '%s'" % value)
+                    error("'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
                     sys.exit(1)
-                k, v = value.split('=')
-                setattr(ctx, k, v)
+                k, v = value.split('=', 2)
+                if '.' not in k:
+                    error("'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
+                    sys.exit(1)
+                namespace, k = k.split('.', 2)
+                namespace = getattr(ctx, namespace)
+                setattr(namespace, k, v)
         
         if root_path is None:
-            root_path = base_path(inspect.getfile(sys._getframe(frame - 1)))
+            root_path = base_path(inspect.getfile(sys._getframe(frame)))
 
-        ctx.input_path = join_path(root_path, input_path_relative)
-        ctx.output_path = join_path(root_path, output_path_relative or 'build')
-        ctx.binary_path_relative = binary_path_relative or 'bin'
-        ctx.object_path_relative = object_path_relative or 'obj'
-        ctx.which_command = which_command or DEFAULT_WHICH_COMMAND
-
-        ctx.platform_prefixes = DEFAULT_PLATFORM_PREFIXES.copy()
+        ctx.paths.input = join_path(root_path, input_path_relative)
+        ctx.paths.output = join_path(root_path, output_path_relative or 'build')
+        ctx.paths.binary_relative = binary_path_relative or 'bin'
+        ctx.paths.object_relative = object_path_relative or 'obj'
+        
+        ctx.platform.which_command = which_command or DEFAULT_WHICH_COMMAND
+        ctx.platform.prefixes = DEFAULT_PLATFORM_PREFIXES.copy()
         if platform_prefixes:
-            ctx.platform_prefixes.update(platform_prefixes)
+            ctx.platform.prefixes.update(platform_prefixes)
 
 class _ArgumentParser(ArgumentParser):
     def __init__(self, name, frame):
         description = ('Build %s using Ronin') % name if name is not None else 'Build using Ronin'
         prog = os.path.basename(inspect.getfile(sys._getframe(frame)))
         super(_ArgumentParser, self).__init__(description=description, prog=prog)
-        self.add_argument('operation', nargs='*', default=['build'], help='operation ("build", "clean", "ninja")')
+        self.add_argument('operation', nargs='*', default=['build'], help='"build", "clean", "ninja"')
         self.add_flag_argument('debug', help_true='enable debug build', help_false='disable debug build')
         self.add_argument('--variant', help='override default project variant (defaults to host platform, e.g. "linux64")')
-        self.add_argument('--set', nargs='*', help='set a value in the context: "k=v"')
+        self.add_argument('--set', nargs='*', metavar='ns.k=v', help='set values in the context')
         self.add_flag_argument('verbose', help_true='enable verbose output', help_false='disable verbose output')

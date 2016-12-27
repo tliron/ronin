@@ -38,10 +38,10 @@ DEFAULT_COLUMNS = 100
 
 def configure_ninja(command=None, file_name=None, columns=None, strict=None):
     with current_context(False) as ctx:
-        ctx.ninja_command = command
-        ctx.ninja_file_name = file_name
-        ctx.ninja_file_columns = columns
-        ctx.ninja_file_strict = strict
+        ctx.ninja.command = command
+        ctx.ninja.file_name = file_name
+        ctx.ninja.file_columns = columns
+        ctx.ninja.file_strict = strict
 
 class NinjaFile(object):
     """
@@ -68,12 +68,12 @@ class NinjaFile(object):
     @property
     def base_path(self):
         with current_context() as ctx:
-            return join_path(ctx.output_path, self._project.variant)
+            return join_path(ctx.paths.output, self._project.variant)
 
     @property
     def path(self):
         with current_context() as ctx:
-            file_name = stringify(ctx.fallback(self.file_name, 'ninja_file_name', DEFAULT_NAME))
+            file_name = stringify(ctx.fallback(self.file_name, 'ninja.file_name', DEFAULT_NAME))
         return join_path(self.base_path, file_name)
 
     def generate(self):
@@ -94,8 +94,8 @@ class NinjaFile(object):
         self.generate()
         path = self.path
         with current_context() as ctx:
-            command = which(ctx.fallback(self.command, 'ninja_command', 'ninja'), True)
-            verbose = ctx.get('verbose', False)
+            command = which(ctx.fallback(self.command, 'ninja.command', 'ninja'), True)
+            verbose = ctx.get('cli.verbose', False)
         args = [command, '-f', path]
         if verbose:
             args.append('-v')
@@ -107,13 +107,13 @@ class NinjaFile(object):
 
     def clean(self):
         with current_context() as ctx:
-            results = ctx.get('_phase_results')
+            results = ctx.get('build._phase_results')
             if results is not None:
                 results[self._project] = None
         path = self.path
         if os.path.isfile(path):
             with current_context() as ctx:
-                command = which(ctx.fallback(self.command, 'ninja_command', 'ninja'), True)
+                command = which(ctx.fallback(self.command, 'ninja.command', 'ninja'), True)
             args = [command, '-f', path, '-t', 'clean', '-g']
             try:
                 check_call(args)
@@ -127,8 +127,8 @@ class NinjaFile(object):
 
     def write(self, io):
         with current_context() as ctx:
-            columns = ctx.fallback(self.columns, 'ninja_file_columns', DEFAULT_COLUMNS)
-            strict = ctx.fallback(self.strict, 'ninja_file_columns_strict', False)
+            columns = ctx.fallback(self.columns, 'ninja.file_columns', DEFAULT_COLUMNS)
+            strict = ctx.fallback(self.strict, 'ninja.file_columns_strict', False)
             if strict and (columns is not None) and (columns < _MINIMUM_COLUMNS_STRICT):
                 columns = _MINIMUM_COLUMNS_STRICT
         with _Writer(io, columns, strict) as w:
@@ -152,7 +152,7 @@ class NinjaFile(object):
         phase_outputs = []
         all_phase_outputs[phase_name] = phase_outputs
         with current_context() as ctx:
-            results = ctx.get('_phase_results')
+            results = ctx.get('build._phase_results')
         if results is not None:
             phase_results = results.get(phase)
             if phase_results is None:
@@ -188,19 +188,19 @@ class NinjaFile(object):
 
         # Paths
         with current_context() as ctx:
-            input_base = ctx.get('input_path')
+            input_base = ctx.get('paths.input')
             if not input_base.endswith(os.sep):
                 input_base += os.sep
             
             output_type = phase.executor.output_type
             if output_type == 'object':
-                output_base = ctx.get('object_path')
+                output_base = ctx.get('paths.object')
                 if output_base is None:
-                    output_base = join_path(self.base_path, ctx.get('object_path_relative'))
+                    output_base = join_path(self.base_path, ctx.get('paths.object_relative'))
             elif output_type == 'binary':
-                output_base = ctx.get('binary_path')
+                output_base = ctx.get('paths.binary')
                 if output_base is None:
-                    output_base = join_path(self.base_path, ctx.get('binary_path_relative'))
+                    output_base = join_path(self.base_path, ctx.get('paths.binary_relative'))
         
         # Single output?
         if phase.output:

@@ -20,7 +20,7 @@ DEFAULT_CP_COMMAND = 'cp'
 
 def configure_copy(command=None):
     with current_context(False) as ctx:
-        ctx.cp_command = command or DEFAULT_CP_COMMAND
+        ctx.copy.command = command or DEFAULT_CP_COMMAND
 
 class Copy(ExecutorWithArguments):
     """
@@ -29,6 +29,6 @@ class Copy(ExecutorWithArguments):
     
     def __init__(self, command=None):
         super(Copy, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'cp_command', DEFAULT_CP_COMMAND), True)
+        self.command = lambda ctx: which(ctx.fallback(command, 'copy.command', DEFAULT_CP_COMMAND), True)
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('$out')

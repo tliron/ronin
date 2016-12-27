@@ -26,17 +26,17 @@ def configure_sdl_config(command=None,
                          prefix=None,
                          exec_prefix=None):
     with current_context(False) as ctx:
-        ctx.sdl_config_command = command or DEFAULT_SDL_CONFIG_COMMAND
-        ctx.sdl_config_static = static
-        ctx.sdl_config_prefix = prefix
-        ctx.sdl_config_exec_prefix = exec_prefix
+        ctx.sdl_config.command = command or DEFAULT_SDL_CONFIG_COMMAND
+        ctx.sdl_config.static = static
+        ctx.sdl_config.prefix = prefix
+        ctx.sdl_config.exec_prefix = exec_prefix
 
 class SDL(Extension):
     """
-    The `SDL <https://www.libsdl.org/>`__ library, configured using the `sdl2-config` tool that
+    The `SDL <https://www.libsdl.org/>`__ library, configured using the sdl2-config tool that
     comes with SDL's development distribution.
     
-    Note that you should also be able to use :code:`pkg-config` to configure SDL. However, this tool
+    Note that you should also be able to use pkg-config to configure SDL. However, this tool
     offers some special options you might need.
     """
     
@@ -52,14 +52,14 @@ class SDL(Extension):
 
     def apply_to_executor_gcc_link(self, executor):
         with current_context() as ctx:
-            sdl_config_static = bool_stringify(ctx.fallback(self.static, 'sdl_config_static', False))
+            sdl_config_static = bool_stringify(ctx.fallback(self.static, 'sdl_config.static', False))
         add_libs_to_executor(executor, self._parse('--static-libs' if sdl_config_static else '--libs'))
 
     def _parse(self, flags):
         with current_context() as ctx:
-            sdl_config_command = which(ctx.fallback(self.command, 'sdl_config_command', DEFAULT_SDL_CONFIG_COMMAND), True)
-            sdl_config_prefix = stringify(ctx.fallback(self.prefix, 'sdl_config_prefix'))
-            sdl_config_exec_prefix = stringify(ctx.fallback(self.exec_prefix, 'sdl_config_exec_prefix'))
+            sdl_config_command = which(ctx.fallback(self.command, 'sdl_config.command', DEFAULT_SDL_CONFIG_COMMAND), True)
+            sdl_config_prefix = stringify(ctx.fallback(self.prefix, 'sdl_config.prefix'))
+            sdl_config_exec_prefix = stringify(ctx.fallback(self.exec_prefix, 'sdl_config.exec_prefix'))
         
         args = [sdl_config_command, flags]
         if sdl_config_prefix is not None:
