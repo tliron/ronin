@@ -146,9 +146,12 @@ class NinjaFile(object):
         if phase_name in all_phase_outputs:
             return
         
-        # Input from other phases
-        inputs_from_names = self._get_inputs_from_names(phase, all_phase_outputs, w)
+        # From other phases
+        inputs_from = self._get_outputs_from(phase, phase.inputs_from, all_phase_outputs, w)
+        rebuild_on_from = self._get_outputs_from(phase, phase.rebuild_on_from, all_phase_outputs, w)
+        build_if_from = self._get_outputs_from(phase, phase.build_if_from, all_phase_outputs, w)
         
+        # State
         phase_outputs = []
         all_phase_outputs[phase_name] = phase_outputs
         with current_context() as ctx:
@@ -161,9 +164,24 @@ class NinjaFile(object):
         else:
             phase_results = None
         
-        rule_name = phase_name.replace(' ', '_')
+        # Paths
+        with current_context() as ctx:
+            input_base = ctx.get('paths.input')
+            
+            output_base = phase.output_path
+            if output_base is None:
+                output_type = phase.executor.output_type
+                if output_type == 'object':
+                    output_base = ctx.get('paths.object')
+                    if output_base is None:
+                        output_base = join_path(self.base_path, ctx.get('paths.object_relative'))
+                elif output_type == 'binary':
+                    output_base = ctx.get('paths.binary')
+                    if output_base is None:
+                        output_base = join_path(self.base_path, ctx.get('paths.binary_relative'))
 
         # Rule
+        rule_name = phase_name.replace(' ', '_')
         w.line()
         w.line('rule %s' % rule_name)
         
@@ -186,69 +204,79 @@ class NinjaFile(object):
             if deps_type:
                 w.line('deps = %s' % deps_type, 1)
 
-        # Paths
-        with current_context() as ctx:
-            input_base = ctx.get('paths.input')
-            if not input_base.endswith(os.sep):
-                input_base += os.sep
-            
-            output_type = phase.executor.output_type
-            if output_type == 'object':
-                output_base = ctx.get('paths.object')
-                if output_base is None:
-                    output_base = join_path(self.base_path, ctx.get('paths.object_relative'))
-            elif output_type == 'binary':
-                output_base = ctx.get('paths.binary')
-                if output_base is None:
-                    output_base = join_path(self.base_path, ctx.get('paths.binary_relative'))
-        
-        # Single output?
-        if phase.output:
-            output = join_path(output_base, phase.output)
+        # Implicit dependencies
+        implicit_dependencies = phase.rebuild_on
+        for n in rebuild_on_from:
+            implicit_dependencies += all_phase_outputs[n]
+        if implicit_dependencies:
+            implicit_dependencies = ' | %s' % (' '.join(_pathify(v) for v in implicit_dependencies))
         else:
-            output = None
+            implicit_dependencies = ''
+
+        # Order dependencies
+        order_dependencies = phase.build_if
+        for n in build_if_from:
+            order_dependencies += all_phase_outputs[n]
+        if order_dependencies:
+            order_dependencies = ' || %s' % (' '.join(_pathify(v) for v in order_dependencies))
+        else:
+            order_dependencies = ''
 
         # Inputs
         inputs = phase.inputs
-        for inputs_from_name in inputs_from_names:
-            inputs += all_phase_outputs[inputs_from_name]
+        for n in inputs_from:
+            inputs += all_phase_outputs[n]
         inputs = dedup(inputs)
 
         # Extension
-        output_prefix = stringify(phase.executor.output_prefix) or ''
         output_extension = stringify(phase.executor.output_extension)
 
-        if output:
+        if phase.output:
             # Single output
             w.line()
             
-            output = output_prefix + change_extension(output, output_extension)
+            output_prefix = stringify(phase.executor.output_prefix) or ''
+            output = output_prefix + change_extension(phase.output, output_extension)
+            output = join_path(output_base, output)
+            if phase.output_transform:
+                output = phase.output_transform(output)
+
             if inputs:
-                w.line('build %s: %s %s' % (_pathify(output), rule_name, ' '.join([_pathify(v) for v in inputs])))
+                w.line('build %s: %s %s%s%s' % (_pathify(output), rule_name, ' '.join([_pathify(v) for v in inputs]), implicit_dependencies, order_dependencies))
             else:
-                w.line('build %s: %s' % (_pathify(output), rule_name))
+                w.line('build %s: %s%s%s' % (_pathify(output), rule_name, implicit_dependencies, order_dependencies))
             phase_outputs.append(output)
             if phase_results is not None:
                 phase_results.append(output)
         elif inputs:
+            # Strip prefix
+            output_strip_prefix = phase.output_strip_prefix
+            if output_strip_prefix is None:
+                output_strip_prefix = input_base
+            if not output_strip_prefix.endswith(os.sep):
+                output_strip_prefix += os.sep
+            output_strip_prefix_length = len(output_strip_prefix)
+    
             # Multiple outputs
             w.line()
             
-            input_base_length = len(input_base)
             for input in inputs:
                 output = input
-                if output.startswith(input_base):
-                    output = output[input_base_length:]
+                if output.startswith(output_strip_prefix):
+                    output = output[output_strip_prefix_length:]
                 output = change_extension(output, output_extension)
                 output = join_path(output_base, output)
-                w.line('build %s: %s %s' % (_pathify(output), rule_name, _pathify(input)))
+                if phase.output_transform:
+                    output = phase.output_transform(output)
+
+                w.line('build %s: %s %s%s%s' % (_pathify(output), rule_name, _pathify(input), implicit_dependencies, order_dependencies))
                 phase_outputs.append(output)
                 if phase_results is not None:
                     phase_results.append(output)
 
-    def _get_inputs_from_names(self, phase, all_phase_outputs, w):
+    def _get_outputs_from(self, phase, values, all_phase_outputs, w):
         names = []
-        for value in phase.inputs_from:
+        for value in values:
             if isinstance(value, Phase):
                 name = self._project.get_phase_name(value)
                 inputs_from = value

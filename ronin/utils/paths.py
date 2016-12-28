@@ -37,10 +37,15 @@ def input_path(path):
     with current_context() as ctx:
         return join_path(ctx.get('paths.input'), path)
 
-def glob(path):
-    path = stringify(path)
-    with current_context() as ctx:
-        return _glob(join_path(ctx.get('paths.input'), path))
+def glob(pattern, path=None, hidden=False, dirs=False):
+    pattern = stringify(pattern)
+    if path is None:
+        with current_context() as ctx:
+            path = ctx.get('paths.input')
+    paths = _glob(join_path(path, pattern), include_hidden=hidden)
+    if not dirs:
+        paths = [v for v in paths if not os.path.isdir(v)]
+    return paths
 
 def change_extension(path, new_extension):
     path = stringify(path)

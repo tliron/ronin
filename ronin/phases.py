@@ -22,7 +22,20 @@ class Phase(object):
     A build phase.
     """
     
-    def __init__(self, executor=None, description=None, inputs=None, inputs_from=None, extensions=None, output=None):
+    def __init__(self,
+                 executor=None,
+                 description=None,
+                 inputs=None,
+                 inputs_from=None,
+                 extensions=None,
+                 output=None,
+                 output_path=None,
+                 output_strip_prefix=None,
+                 output_transform=None,
+                 rebuild_on=None,
+                 rebuild_on_from=None,
+                 build_if=None,
+                 build_if_from=None):
         if executor:
             verify_type(executor, Executor)
         self.executor = executor
@@ -31,6 +44,13 @@ class Phase(object):
         self.inputs_from = inputs_from or []
         self.extensions = extensions or []
         self.output = output
+        self.output_path = output_path
+        self.output_strip_prefix = output_strip_prefix
+        self.output_transform = output_transform
+        self.rebuild_on = rebuild_on or []
+        self.rebuild_on_from = rebuild_on_from or []
+        self.build_if = build_if or []
+        self.build_if_from = build_if_from or []
         self.hooks = []
 
     def command_as_str(self, filter=None):

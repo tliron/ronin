@@ -16,19 +16,19 @@ from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
 
-DEFAULT_CP_COMMAND = 'cp'
+DEFAULT_COPY_COMMAND = 'cp'
 
 def configure_copy(command=None):
     with current_context(False) as ctx:
-        ctx.copy.command = command or DEFAULT_CP_COMMAND
+        ctx.copy.command = command or DEFAULT_COPY_COMMAND
 
 class Copy(ExecutorWithArguments):
     """
-    Copy command.
+    Copy executor.
     """
     
     def __init__(self, command=None):
         super(Copy, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'copy.command', DEFAULT_CP_COMMAND), True)
+        self.command = lambda ctx: which(ctx.fallback(command, 'copy.command', DEFAULT_COPY_COMMAND), True)
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('$out')

@@ -14,6 +14,7 @@
 
 from .utils.platform import host_platform, platform_executable_extension, platform_shared_library_extension, platform_shared_library_prefix
 from .utils.strings import stringify
+from collections import OrderedDict
 
 class Project(object):
     """
@@ -24,7 +25,7 @@ class Project(object):
         self.name = name
         self.file_name = file_name
         self.version = version
-        self.phases = phases or {}
+        self.phases = phases or OrderedDict()
         self.hooks = []
         self._variant = variant or (lambda ctx: ctx.get('projects.default_variant', host_platform()))
 

@@ -28,7 +28,7 @@ Packages
 
    ronin
    ronin.binutils
-   ronin.copy
+   ronin.files
    ronin.gcc
    ronin.pkg_config
    ronin.sdl_config

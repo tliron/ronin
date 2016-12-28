@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-`ronin.copy`
-############
+`ronin.files`
+#############
 
-.. automodule:: ronin.copy
+.. automodule:: ronin.files

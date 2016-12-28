@@ -54,6 +54,7 @@ def configure_build(root_path=None,
         if root_path is None:
             root_path = base_path(inspect.getfile(sys._getframe(frame)))
 
+        ctx.paths.root = root_path
         ctx.paths.input = join_path(root_path, input_path_relative)
         ctx.paths.output = join_path(root_path, output_path_relative or 'build')
         ctx.paths.binary_relative = binary_path_relative or 'bin'

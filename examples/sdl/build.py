@@ -13,13 +13,13 @@
 # pkg_config.Package('sdl2'). The difference is that sdl_config.SDL() uses the sdl2-config utility,
 # which is more specialized than pkg-config.
 #
-# The script also supports linking SDL as a static library if you specify "--context static true"
+# The script also supports linking SDL as a static library if you specify "--set sdl.static=true"
 # in the command line.
 #
 
 from ronin.cli import cli
-from ronin.copy import Copy
 from ronin.contexts import new_build_context
+from ronin.files import Copy
 from ronin.gcc import GccBuild
 from ronin.phases import Phase
 from ronin.projects import Project
@@ -27,13 +27,11 @@ from ronin.sdl_config import SDL
 from ronin.utils.paths import glob
 
 with new_build_context() as ctx:
-    ctx.static = False
-    
     project = Project('SDL Hello World')
     
     build = Phase(GccBuild('g++'),
                   inputs=glob('src/*.cpp'),
-                  extensions=[SDL(static=lambda ctx: ctx.static)],
+                  extensions=[SDL(static=ctx.sdl.static == 'true')],
                   output='hello')
     build.executor.standard('c++0x')
 
