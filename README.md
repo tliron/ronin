@@ -4,6 +4,9 @@ Rōnin
 A straightforward but powerful build system based on [Ninja](https://ninja-build.org/) and Python,
 suitable for projects both big and small.
 
+Rōnin comes with [frustration-free packaging](https://en.wikipedia.org/wiki/Wrap_rage). Let's build
+all the things!
+
 "Based on Python" means that not only is it written in Python, but also it uses Python as the DSL
 for build scripts. Many build systems invent their own DSLs, but Rōnin intentionally uses a language
 that already exists. Note that you _don't_ need to be an expert in Python to use Rōnin, but the
@@ -33,17 +36,22 @@ Quickstart
 
 To install the development snapshot of Rōnin (until we have proper releases):
 
+    sudo apt install python-setuptools
+    sudo -H easy_install pip
     sudo -H pip2 install git+https://github.com/tliron/ronin.git
 
-Since Ninja is just one small self-contained executable, it's easiest to download the
+Since Ninja is just one small self-contained executable, it's easy to get it by downloading the
 [latest release](https://github.com/ninja-build/ninja/releases). Just make sure it's in your
-execution path. Otherwise, on Debian/Ubuntu:
+execution path, or run Rōnin with `--set ninja.command=` and give it the full path to `ninja`.
+Older versions (they work fine) are also available on Debian/Ubuntu:
 
     sudo apt install ninja-build 
 
 For your `build.py` build script, copy from one of the [examples](examples) to start.
 
-[Full documentation on the wiki!](https://github.com/tliron/ronin/wiki) (API docs coming soon!)
+[Full documentation on the wiki!](https://github.com/tliron/ronin/wiki)
+
+(API docs coming soon!)
 
 FAQ
 ---
@@ -63,16 +71,24 @@ FAQ
   its job extremely well. But it's just too low-level for most users, hence the need for a frontend.
 * _Why not Python 3?_ Many, many deployed systems are still locked in Python 2 for various reasons.
   We want to be able to build on them.
+* _Why Ninja? It's already yesterday's news! There are even faster builders._ Eh, if you ignore the
+  initial configuration phase, and are properly multithreading your build (`-j` flag in Make), then
+  the time you wait for things to be done ends up depending on your compiler, not the build system.
+  Ninja was chosen because of its marvelous minimalism, not its speed. Ninja is actually 
+  [not much](http://david.rothlis.net/ninja-benchmark/) 
+  [faster](http://hamelot.io/programming/make-vs-ninja-performance-comparison/)
+  than Make.
 
 
 Similar Projects
 ----------------
 
-* [Meson](http://mesonbuild.com/): "Meson is an open source build system meant to be both extremely
-  fast, and, even more importantly, as user friendly as possible."
+* [emk](https://github.com/kmackay/emk): "A Python-based build tool."
+* [CMake Ninja Generator](https://cmake.org/cmake/help/v3.0/generator/Ninja.html): "Generates
+  build.ninja files (experimental)."
 * [Craftr](https://craftr.net/): "Craftr is a next generation build system based on Ninja and Python
   that features modular and cross-platform build definitions at the flexibility of a Python script
   and provides access to multiple levels of build automation abstraction."
-* [CMake Ninja Generator](https://cmake.org/cmake/help/v3.0/generator/Ninja.html): "Generates
-  build.ninja files (experimental)."
+* [Meson](http://mesonbuild.com/): "Meson is an open source build system meant to be both extremely
+  fast, and, even more importantly, as user friendly as possible."
 * [Waf](https://waf.io/): "The meta build system."
