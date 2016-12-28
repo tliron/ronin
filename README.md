@@ -5,9 +5,9 @@ A straightforward but powerful build system based on [Ninja](https://ninja-build
 suitable for projects both big and small.
 
 "Based on Python" means that not only is it written in Python, but also it uses Python as the DSL
-for build scripts. Many build systems invent their own DSLs, but Rōnin intentionally builds on a
-language that already exists. Note that you _don't_ need to be an expert in Python to use Rōnin,
-but the power is there if you need it.
+for build scripts. Many build systems invent their own DSLs, but Rōnin intentionally uses a language
+that already exists. Note that you _don't_ need to be an expert in Python to use Rōnin, but the
+power is there if you need it.
 
 Guiding lights:
 
@@ -25,7 +25,7 @@ Design principles:
    build systems bungle this and make it either impossible or very difficult to do something that
    would be trivial using a shell script.
 3. Don't reinvent wheels: if Python or Ninja do something for us, use it. The build script is a
-   plain Python program with no unnecessary cleverness. The generated Ninja script looks like
+   plain Python program without any unnecessary cleverness. The generated Ninja file looks like
    something you could have created manually.
 
 Quickstart
@@ -33,7 +33,7 @@ Quickstart
 
 To install the development snapshot of Rōnin (until we have proper releases):
 
-    sudo -H pip install git+https://github.com/tliron/ronin.git
+    sudo -H pip2 install git+https://github.com/tliron/ronin.git
 
 Since Ninja is just one small self-contained executable, it's easiest to download the
 [latest release](https://github.com/ninja-build/ninja/releases). Just make sure it's in your
@@ -43,7 +43,7 @@ execution path. Otherwise, on Debian/Ubuntu:
 
 For your `build.py` build script, copy from one of the [examples](examples) to start.
 
-More documentation coming soon!
+[Full documentation on the wiki!](https://github.com/tliron/ronin/wiki) (API docs coming soon!)
 
 FAQ
 ---
@@ -70,8 +70,9 @@ Similar Projects
 
 * [Meson](http://mesonbuild.com/): "Meson is an open source build system meant to be both extremely
   fast, and, even more importantly, as user friendly as possible."
-* [Craftr](https://github.com/craftr-build/craftr): "Craftr is a meta build system based on Python 3
-   scripts which produces Ninja build manifests."
+* [Craftr](https://craftr.net/): "Craftr is a next generation build system based on Ninja and Python
+  that features modular and cross-platform build definitions at the flexibility of a Python script
+  and provides access to multiple levels of build automation abstraction."
 * [CMake Ninja Generator](https://cmake.org/cmake/help/v3.0/generator/Ninja.html): "Generates
   build.ninja files (experimental)."
 * [Waf](https://waf.io/): "The meta build system."

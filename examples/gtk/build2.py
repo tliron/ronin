@@ -27,8 +27,7 @@ with new_build_context() as ctx:
     # Compile
     compile = Phase(GccCompile(),
                     inputs=glob('src/*.c'),
-                    extensions=extensions,
-                    output='example_1')
+                    extensions=extensions)
 
     # Link
     link = Phase(GccLink(),
