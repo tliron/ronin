@@ -26,6 +26,7 @@ class Executor(object):
         self.output_extension = None
         self.output_prefix = None
         self.output_type = 'binary'
+        self.get_outputs_fn = False
         self.hooks = []
         self._deps_file = None
         self._deps_type = None

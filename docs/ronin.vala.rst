@@ -13,32 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Rōnin
-=====
+`ronin.vala`
+############
 
-A straightforward but powerful build system based on `Ninja <https://ninja-build.org/>`__ and
-Python, suitable for projects both big and small.
-
-
-Packages
---------
-
-.. toctree::
-   :maxdepth: 2
-
-   ronin
-   ronin.binutils
-   ronin.files
-   ronin.gcc
-   ronin.pkg_config
-   ronin.sdl_config
-   ronin.utils
-   ronin.vala
-
-
-Indices and Tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. automodule:: ronin.vala

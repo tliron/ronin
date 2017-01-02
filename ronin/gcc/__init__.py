@@ -79,7 +79,7 @@ class _GccExecutor(ExecutorWithArguments):
         self.add_argument_unfiltered('-o', '$out')
         self._platform = platform
 
-    def use_threads(self):
+    def enable_threads(self):
         self.add_argument('-pthread') # both compiler flags and linker libraries
 
     # Compiler
@@ -187,11 +187,12 @@ class _GccExecutor(ExecutorWithArguments):
     def linker_no_undefined_symbols_in_libraries(self):
         self.add_linker_argument('--no-allow-shlib-undefined')
     
-    def linker_undefine_symbol(self, value):
-        self.add_argument('-u', value)
-
     def linker_no_symbol_table(self):
         self.add_argument('-s')
+
+    def linker_undefine_symbols(self, *values):
+        for value in values:
+            self.add_argument('-u', value)
 
     def linker_exclude_symbols(self, *values):
         self.add_linker_argument('-exclude-symbols', join_later(values, ','))

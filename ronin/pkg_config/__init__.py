@@ -24,7 +24,7 @@ DEFAULT_PKG_CONFIG_COMMAND = 'pkg-config'
 def configure_pkg_config(command=None,
                          path=None):
     with current_context(False) as ctx:
-        ctx.pkg_config.command = command
+        ctx.pkg_config.command = command or DEFAULT_PKG_CONFIG_COMMAND
         ctx.pkg_config.path = path
 
 def add_cflags_to_executor(executor, args):

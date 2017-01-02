@@ -15,7 +15,11 @@
 from .executors import Executor
 from .extensions import Extension
 from .utils.types import verify_type, verify_type_or_subclass
+from .utils.paths import join_path, change_extension
+from .utils.strings import stringify
 from inspect import isclass
+import os
+from ronin.contexts import current_context
 
 class Phase(object):
     """
@@ -51,6 +55,7 @@ class Phase(object):
         self.rebuild_on_from = rebuild_on_from or []
         self.build_if = build_if or []
         self.build_if_from = build_if_from or []
+        self.vars = {}
         self.hooks = []
 
     def command_as_str(self, filter=None):
@@ -69,3 +74,55 @@ class Phase(object):
             hook(self)
 
         return self.executor.command_as_str(filter)
+
+    def get_output_path(self, default_output_path):
+        output_path = self.output_path
+        if output_path is None:
+            output_type = self.executor.output_type
+            with current_context() as ctx:
+                output_path = ctx.get('paths.%s' % output_type)
+            if output_path is None:
+                output_path = join_path(default_output_path, ctx.get('paths.%s_relative' % output_type))
+        return output_path
+
+    def get_outputs(self, default_output_path, inputs):
+        # Paths
+        with current_context() as ctx:
+            input_base = ctx.get('paths.input')
+        output_path = self.get_output_path(default_output_path)
+
+        # Extension
+        output_extension = stringify(self.executor.output_extension)
+
+        if self.output:
+            # Combine all inputs into one output
+            output_prefix = stringify(self.executor.output_prefix) or ''
+            output = output_prefix + change_extension(self.output, output_extension)
+            output = join_path(output_path, output)
+            if self.output_transform:
+                output = self.output_transform(output)
+                
+            return True, [output]
+        elif inputs:
+            # Each input matches an output
+            
+            # Strip prefix
+            output_strip_prefix = self.output_strip_prefix
+            if output_strip_prefix is None:
+                output_strip_prefix = input_base
+            if not output_strip_prefix.endswith(os.sep):
+                output_strip_prefix += os.sep
+            output_strip_prefix_length = len(output_strip_prefix)
+    
+            outputs = []            
+            for input in inputs:
+                output = input
+                if output.startswith(output_strip_prefix):
+                    output = output[output_strip_prefix_length:]
+                output = change_extension(output, output_extension)
+                output = join_path(output_path, output)
+                if self.output_transform:
+                    output = self.output_transform(output)
+                outputs.append(output)
+                
+            return False, outputs

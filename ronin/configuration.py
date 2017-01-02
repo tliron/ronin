@@ -24,6 +24,7 @@ def configure_build(root_path=None,
                     output_path_relative=None,
                     binary_path_relative=None,
                     object_path_relative=None,
+                    source_path_relative=None,
                     which_command=None,
                     platform_prefixes=None,
                     name=None,
@@ -33,7 +34,6 @@ def configure_build(root_path=None,
         ctx.cli.verbose = ctx.cli.args.verbose
 
         ctx.build.debug = ctx.cli.args.debug
-        ctx.build._phase_results = {}
 
         if ctx.cli.args.variant:
             ctx.projects.default_variant = ctx.cli.args.variant
@@ -59,6 +59,7 @@ def configure_build(root_path=None,
         ctx.paths.output = join_path(root_path, output_path_relative or 'build')
         ctx.paths.binary_relative = binary_path_relative or 'bin'
         ctx.paths.object_relative = object_path_relative or 'obj'
+        ctx.paths.source_relative = object_path_relative or 'src'
         
         ctx.platform.which_command = which_command or DEFAULT_WHICH_COMMAND
         ctx.platform.prefixes = DEFAULT_PLATFORM_PREFIXES.copy()
