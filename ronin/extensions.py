@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from .contexts import current_context
+from .projects import Project
 from .utils.types import verify_type
 
 class Extension(object):
@@ -60,24 +61,27 @@ class ExplicitExtension(Extension):
         for library in self.libraries:
             executor.add_library(library)
 
-class ResultsExtension(Extension):
+class OutputsExtension(Extension):
     """
-    An extension that adds results from another build phase.
+    An extension that adds outputs from another build phase.
     """
     
-    def __init__(self, phase):
-        super(ResultsExtension, self).__init__()
-        from .phases import Phase 
-        verify_type(phase, Phase)
-        self._phase = phase
+    def __init__(self, project, phase_name):
+        super(OutputsExtension, self).__init__()
+        verify_type(project, Project)
+        self._project = project
+        self._phase_name = phase_name
     
     def apply_to_executor_gcc_link(self, executor):
         with current_context() as ctx:
-            results = ctx.get('build._phase_results')
-        if results is None:
+            project_outputs = ctx.get('build._project_outputs')
+        if project_outputs is None:
             return
-        results = results.get(self._phase)
-        if results is None:
+        phase_outputs = project_outputs.get(self._project)
+        if phase_outputs is None:
             return
-        for result in results:
-            executor.add_result(result)
+        outputs = phase_outputs.get(self._phase_name)
+        if outputs is None:
+            return
+        for output in outputs:
+            executor.add_result(output)
