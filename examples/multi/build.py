@@ -5,10 +5,21 @@
 #
 # build.py
 #
-# Requirements: sudo apt install gcc ccache
+# Requirements:
+#
+#   Ubuntu: sudo apt install gcc ccache
 #
 # Shows a single script building multiple projects: a shared library, plus an executable that uses
 # that library.
+#
+# In this example we've given each project it's own Ninja file (using "file_name="). This is good
+# enough to make sure each project builds separately while sharing the same build directory.
+#
+# However, note a potential pitfall in this strategy: in this situation it also means that both
+# builds share the same ".ninja_deps" file, which is where Ninja keeps track of changed files.
+# Because in this particular case the projects don't share source files, this is not a problem.
+# However, to avoid conflicts it may be better to use "path=" instead of "file_name=" for each
+# project, which would guarantee each project its own ".ninja_deps" file.
 #
 
 from ronin.cli import cli
@@ -20,8 +31,9 @@ from ronin.projects import Project
 from ronin.utils.paths import glob, input_path
 
 with new_build_context() as ctx:
-    # Extension
-    library = Project('Multi-Project Example: Extension', file_name='library')
+
+    # Library
+    library = Project('Multi-Project Example: Library', file_name='library')
     build_library = Phase(GccBuild(),
                           inputs=glob('src/foo/*.c'),
                           output='foo')

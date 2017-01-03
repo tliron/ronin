@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
 #
-# Cross-compilation example
+# Cross-compilation Example
 #
 # build.py
 #
-# Requirements: sudo apt install gcc ccache gcc-multilib mingw-w64
+# Requirements:
 #
-# To test, try "--variant linux64", "--variant linux32", "--variant win64", "--variant win32".
+#   Ubuntu: sudo apt install gcc ccache gcc-multilib mingw-w64
+#
+# To test various builds, try "--variant linux64", "--variant linux32", "--variant win64",
+# "--variant win32" in the command line. On Linux you can run the Windows builds using WINE.
 #
 
 from ronin.cli import cli
@@ -18,6 +21,7 @@ from ronin.projects import Project
 from ronin.utils.paths import glob
 
 with new_build_context() as ctx:
+    
     project = Project('Cross-compilation Example')
     build = Phase(GccBuild(platform=project),
                   inputs=glob('src/*.c'),

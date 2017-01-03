@@ -117,7 +117,8 @@ class NinjaFile(object):
         with current_context() as ctx:
             project_outputs = ctx.get('build._project_outputs')
             if project_outputs is not None:
-                del project_outputs[self._project]
+                if self._project in project_outputs:
+                    del project_outputs[self._project]
                 
         path = self.path
         if os.path.isfile(path):

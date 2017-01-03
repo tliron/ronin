@@ -30,11 +30,15 @@ def configure_valac(command=None):
 def vala_configure_transpile_phase(transpile, api):
     # valac is so complicated:
     #
-    # 1) '--output=' is not supported in '--ccode' mode, only a '--directory='.
+    # 1) '--output=' is not supported in '--ccode' mode, only a '--directory=' with '--basedir='.
     # 2) We need to have a '--use-fast-vapi=' argument for each .vapi produced by the API
     #    phase, *except* for the one produced for our input.
+    #
+    # See: https://wiki.gnome.org/Projects/Vala/Documentation/ParallelBuilds
       
     transpile.rebuild_on_from = [api]
+    transpile.executor.add_argument_unfiltered('--basedir=$base_path')
+    transpile.vars['base_path'] = vala_base_path_var
     transpile.executor.add_argument_unfiltered('--directory=$output_path')
     transpile.vars['output_path'] = vala_output_path_var
     transpile.executor.add_argument_unfiltered('$fast_vapis')
@@ -46,6 +50,10 @@ def vala_configure_compile_phase(compile):
     compile.executor.disable_warning('discarded-qualifiers')
     compile.executor.disable_warning('format-extra-args')
 
+def vala_base_path_var(output, inputs):
+    with current_context() as ctx:
+        return ctx.paths.root
+        
 def vala_output_path_var(output, inputs):
     with current_context() as ctx:
         return ctx.build._phase.get_output_path(ctx.build._output_path)
@@ -59,7 +67,7 @@ def vala_fast_vapis_var(api):
         with current_context() as ctx:
             _, values = api.get_outputs(ctx.build._output_path, values)
         
-        return ' '.join(['--use-fast-vapi=%s' % pathify(v) for v in values]) 
+        return ' '.join(['--use-fast-vapi=%s' % pathify(v) for v in values])
     return var
 
 class _ValaExecutor(ExecutorWithArguments):

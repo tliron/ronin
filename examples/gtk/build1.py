@@ -7,9 +7,16 @@
 #
 # Source: https://developer.gnome.org/gtk3/stable/gtk-getting-started.html
 #
-# Requirements: sudo apt install gcc ccache libgtk-3-dev
+# Requirements:
 #
-# This is the simplest possible version, using all the sensible defaults.
+#   Ubuntu: sudo apt install gcc ccache libgtk-3-dev
+#
+# This is the simplest possible version, using a single build phase and all the defaults.
+#
+# Note that a single build phase works fine, and may be the best solution for small projects.
+# However, it does not make use of Ninja's ability to parallelize builds, and to track changes to
+# individual files ("incremental" builds). Larger projects would generally build faster will a
+# two-phase (compile/link) build. See build2.py for an example.
 #
 
 from ronin.cli import cli
@@ -20,7 +27,8 @@ from ronin.pkg_config import Package
 from ronin.projects import Project
 from ronin.utils.paths import glob
 
-with new_build_context() as ctx:
+with new_build_context(output_path_relative='build1') as ctx:
+
     project = Project('GTK+ Hello World')
     
     build = Phase(GccBuild(),

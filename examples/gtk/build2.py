@@ -7,9 +7,12 @@
 #
 # Source: https://developer.gnome.org/gtk3/stable/gtk-getting-started.html
 #
-# Requirements: sudo apt install gcc ccache libgtk-3-dev
+# Requirements:
 #
-# This adds on build1.py by separating the compile and link phases.
+#   Ubuntu: sudo apt install gcc ccache libgtk-3-dev
+#
+# This adds on build1.py by separating the compile and link phases, which is the recommended setup
+# for larger projects.
 #
 
 from ronin.cli import cli
@@ -20,7 +23,8 @@ from ronin.pkg_config import Package
 from ronin.projects import Project
 from ronin.utils.paths import glob
 
-with new_build_context() as ctx:
+with new_build_context(output_path_relative='build2') as ctx:
+
     project = Project('GTK+ Hello World')
     extensions = [Package('gtk+-3.0')]
     

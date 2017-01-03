@@ -7,9 +7,12 @@
 #
 # Source: https://developer.gnome.org/gtk3/stable/gtk-getting-started.html
 #
-# Requirements: sudo apt install gcc ccache libgtk-3-dev
+# Requirements:
 #
-# This adds on build2.py by explicit configuring the utilities and adding verbosity.
+#   Ubuntu: sudo apt install gcc ccache libgtk-3-dev
+#
+# This adds on build2.py by explicitly configuring the utilities (the values are all identical to
+# the default), just to show you what is possible.
 #
 
 from ronin.cli import cli
@@ -23,7 +26,7 @@ from ronin.utils.paths import base_path, glob
 
 with new_build_context(root_path=base_path(__file__),
                        input_path_relative=None,
-                       output_path_relative='build',
+                       output_path_relative='build3',
                        binary_path_relative='bin',
                        object_path_relative='obj') as ctx:
 

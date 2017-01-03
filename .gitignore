@@ -2,6 +2,9 @@
 
 **/*.egg-info/
 **/build/
+**/build1/
+**/build2/
+**/build3/
 **/.ninja*
 
 env/

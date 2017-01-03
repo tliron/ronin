@@ -126,3 +126,5 @@ class Phase(object):
                 outputs.append(output)
                 
             return False, outputs
+        
+        return False, []

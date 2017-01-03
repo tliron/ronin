@@ -12,10 +12,13 @@ for build scripts. Many build systems invent their own DSLs, but Rōnin intentio
 that already exists. Note that you _don't_ need to be an expert in Python to use Rōnin, but the
 power is there if you need it.
 
+Current supported out-of-the-box: all gcc languages, Vala (and Genie). `pkg-config`, `sdl2-config`,
+binutils.
+
 Guiding lights:
 
 1. **Powerful does not have to mean hard to use**: _optional_ auto-configuration with sensible,
-   _overridable_ defaults: detect `ccache`, support `pkg-config`, etc.
+   _overridable_ defaults.
 2. **Complex does not have to mean complicated**: handle cross-compilation and other
    multi-configuration builds in a single script with minimal duplication of effort.
 

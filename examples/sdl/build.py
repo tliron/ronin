@@ -7,7 +7,9 @@
 #
 # Source: https://github.com/Twinklebear/TwinklebearDev-Lessons/blob/master/Lesson1/src/main.cpp
 #
-# Requirements: sudo apt install gcc ccache libsdl2-dev
+# Requirements:
+#
+#   Ubuntu: sudo apt install gcc ccache libsdl2-dev
 #
 # Simple example of using SDL. Note that instead of using sdl_config.SDL() we could also have used
 # pkg_config.Package('sdl2'). The difference is that sdl_config.SDL() uses the sdl2-config utility,
@@ -27,11 +29,14 @@ from ronin.sdl_config import SDL
 from ronin.utils.paths import glob
 
 with new_build_context() as ctx:
+
     project = Project('SDL Hello World')
+    
+    static = (ctx.sdl.static == 'true')
     
     build = Phase(GccBuild('g++'),
                   inputs=glob('src/*.cpp'),
-                  extensions=[SDL(static=ctx.sdl.static == 'true')],
+                  extensions=[SDL(static=static)],
                   output='hello')
     build.executor.standard('c++0x')
 
