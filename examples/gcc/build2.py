@@ -30,7 +30,7 @@ with new_build_context(output_path_relative='build2') as ctx:
     
     # Compile
     compile = Phase(GccCompile(),
-                    inputs=glob('src/*.c'),
+                    inputs=glob('src/**/*.c'),
                     extensions=extensions)
 
     # Link

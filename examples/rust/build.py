@@ -3,7 +3,7 @@
 #
 # Rust Hello World
 #
-# build1.py
+# build.py
 #
 # Source: http://rustbyexample.com/hello.html
 #
@@ -11,9 +11,9 @@
 #
 #   Ubuntu: curl https://sh.rustup.rs -sSf | sh
 #
-# Rust comes with its own build system, Cargo, which is designed to work well with it. However,
-# Ronin still provides basic Rust support, which can be useful in projects that combine Rust code
-# with other languages.
+# Rust comes with its own build system, Cargo, which is tightly integrated with the language.
+# However, Ronin still provides basic Rust support, which can be useful in projects that combine
+# Rust code with other languages.
 #
 
 from ronin.cli import cli
@@ -28,7 +28,7 @@ with new_build_context() as ctx:
     project = Project('Rust Hello World')
     
     build = Phase(RustBuild(),
-                  inputs=glob('src/*.rs'),
+                  inputs=glob('src/**/*.rs'),
                   output='hello')
 
     project.phases['build'] = build

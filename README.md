@@ -9,10 +9,12 @@ all the things!
 
 "Based on Python" means that not only is it written in Python, but also it uses Python as the DSL
 for build scripts. Many build systems invent their own DSLs, but Rōnin intentionally uses a language
-that already exists. Note that you _don't_ need to be an expert in Python to use Rōnin, but the
-power is there if you need it.
+that already exists. There's no hidden cost to this design choice: build scripts are pretty much
+as concise and coherent as any specialized DSL. You _don't_ need to be an expert in Python to use
+Rōnin, but the power is at your fingertips if you need it.
 
 Currently supported out-of-the-box: all [gcc](https://gcc.gnu.org/) languages,
+[Java](https://www.oracle.com/java/),
 [Vala](https://wiki.gnome.org/Projects/Vala) (and [Genie](https://wiki.gnome.org/Projects/Genie)),
 [Rust](https://www.rust-lang.org/),
 [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/),
@@ -28,22 +30,21 @@ Guiding lights:
 
 Design principles:
 
-1. Pour some sugar on me: make common tasks easier with sweet utility functions. But make sure
+1. **Pour some sugar on me**: make common tasks easier with sweet utility functions. But make sure
    that sugar is optional, allowing the script to be more verbose when more control is necessary. 
-2. Don't hide functionality behind complexity: the architecture should be straightforward. For
+2. **Don't hide functionality behind complexity**: the architecture should be straightforward. For
    example, if the user wants to manipulate a compiler command line, let them do it easily. Too many
    build systems bungle this and make it either impossible or very difficult to do something that
    would be trivial using a shell script.
-3. Don't reinvent wheels: if Python or Ninja do something for us, use it. The build script is a
+3. **Don't reinvent wheels**: if Python or Ninja do something for us, use it. The build script is a
    plain Python program without any unnecessary cleverness. The generated Ninja file looks like
    something you could have created manually.
 
 User Manual
 -----------
 
-[Quickstart here](https://github.com/tliron/ronin/wiki/Quick-Start).
-
-[Full documentation on the wiki](https://github.com/tliron/ronin/wiki).
+Full documentation on the [wiki](https://github.com/tliron/ronin/wiki).
+Or quickstart [here](https://github.com/tliron/ronin/wiki/Quick-Start).
 
 (API docs coming soon!)
 
@@ -68,11 +69,11 @@ FAQ
   We want to be able to build on them.
 * _Why Ninja? It's already yesterday's news! There are even faster builders._ Eh, if you ignore the
   initial configuration phase, and are properly multithreading your build (`-j` flag in Make), then
-  the time you wait for things to be done ends up depending on your compiler, not the build system.
-  Ninja was chosen because of its marvelous minimalism, not its speed. Ninja is actually 
+  the time you wait for the build to finish ends up depending on your compiler, not the build
+  system. Ninja was chosen because of its marvelous minimalism, not its speed. Ninja is actually 
   [not much](http://david.rothlis.net/ninja-benchmark/) 
   [faster](http://hamelot.io/programming/make-vs-ninja-performance-comparison/)
-  than Make. However, [tup](http://gittup.org/tup/) is interesting.
+  than Make. For a similarly minimalist build system, see [tup](http://gittup.org/tup/).
 
 
 Similar Projects

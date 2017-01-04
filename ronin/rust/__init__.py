@@ -17,50 +17,22 @@ from ..contexts import current_context
 from ..utils.platform import which
 from ..utils.strings import join_later, interpolate_later
 
-DEFAULT_RUST_COMMAND = 'rustc'
+DEFAULT_RUSTC_COMMAND = 'rustc'
 
-def configure_valac(command=None):
+def configure_rust(command=None):
     with current_context(False) as ctx:
-        ctx.rust.command = command or DEFAULT_RUST_COMMAND
+        ctx.rust.command = command or DEFAULT_RUSTC_COMMAND
 
-class _RustExecutor(ExecutorWithArguments):
+class RustBuild(ExecutorWithArguments):
     """
     Base class for `Rust <https://www.rust-lang.org/>`__ executors.
     """
     
     def __init__(self, command=None):
-        super(_RustExecutor, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'rust.command', DEFAULT_RUST_COMMAND))
+        super(RustBuild, self).__init__()
+        self.command = lambda ctx: which(ctx.fallback(command, 'rust.command', DEFAULT_RUSTC_COMMAND))
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('-o', '$out')
-
-    def enable_debug(self):
-        self.add_argument('-g')
-
-    def enable_optimization(self):
-        self.add_argument('-O')
-    
-    def emit_types(self, *values):
-        self.add_argument('--emit', join_later(values, ','))
-
-    def crate_types(self, *values):
-        self.add_argument('--crate-type', join_later(values, ','))
-
-    def crate_name(self, value):
-        self.add_argument('--crate-name', value)
-
-    def configure(self, value):
-        self.add_argument('--cfg', value)
-
-    def set_codegen_options(self, key, value=None):
-        if value is not None:
-            self.add_argument('--codegen', interpolate_later('%s=%s', key, value))
-        else:
-            self.add_argument('--codegen', key)
-
-class RustBuild(_RustExecutor):
-    def __init__(self, command=None):
-        super(RustBuild, self).__init__(command)
         self.hooks.append(_debug_hook)
 
 def _debug_hook(executor):

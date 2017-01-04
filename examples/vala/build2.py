@@ -28,17 +28,17 @@
 
 from ronin.cli import cli
 from ronin.contexts import new_build_context
-from ronin.gcc import GccCompile, GccLink
+from ronin.gcc import GccLink
 from ronin.phases import Phase
 from ronin.projects import Project
-from ronin.vala import ValaApi, ValaTranspile, ValaExtension, vala_configure_transpile_phase, vala_configure_compile_phase
+from ronin.vala import ValaApi, ValaTranspile, ValaGccCompile, ValaExtension
 from ronin.utils.paths import glob
 
 with new_build_context(output_path_relative='build2') as ctx:
 
     project = Project('Vala GTK+ Hello World')
     
-    inputs = glob('src/*.vala')
+    inputs = glob('src/**/*.vala')
     extensions = [ValaExtension('gtk+-3.0')]
     
     # API
@@ -48,17 +48,15 @@ with new_build_context(output_path_relative='build2') as ctx:
     project.phases['api'] = api
     
     # Transpile
-    transpile = Phase(ValaTranspile(),
+    transpile = Phase(ValaTranspile(apis=[api]),
                       inputs=inputs,
                       extensions=extensions)
-    vala_configure_transpile_phase(transpile, api)
     project.phases['transpile'] = transpile
  
     # Compile
-    compile = Phase(GccCompile(),
+    compile = Phase(ValaGccCompile(),
                     inputs_from=[transpile],
                     extensions=extensions)
-    vala_configure_compile_phase(compile)
     project.phases['compile'] = compile
 
     # Link

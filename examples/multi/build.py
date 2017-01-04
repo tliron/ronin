@@ -35,7 +35,7 @@ with new_build_context() as ctx:
     # Library
     library = Project('gcc Multi-Project Example: Library', file_name='library')
     build_library = Phase(GccBuild(),
-                          inputs=glob('src/foo/*.c'),
+                          inputs=glob('src/foo/**/*.c'),
                           output='foo')
     build_library.executor.create_shared_library()
     build_library.executor.pic()
@@ -44,7 +44,7 @@ with new_build_context() as ctx:
     # Main
     main = Project('Multi-Project Example: Main', file_name='main')
     build_main = Phase(GccBuild(),
-                       inputs=glob('src/main/*.c'),
+                       inputs=glob('src/main/**/*.c'),
                        extensions=[OutputsExtension(library, 'build')],
                        output='main')
     build_main.executor.add_include_path(input_path('src/foo'))

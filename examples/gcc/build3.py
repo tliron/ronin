@@ -48,7 +48,7 @@ with new_build_context(root_path=base_path(__file__),
     # Compile
     compile = Phase()
     compile.executor = GccCompile()
-    compile.inputs = glob('src/*.c')
+    compile.inputs = glob('src/**/*.c')
     compile.extensions += extensions
 
     # Link

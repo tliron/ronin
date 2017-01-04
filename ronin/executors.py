@@ -45,7 +45,7 @@ class Executor(object):
             io.close()
         return v
 
-    def add_result(self, value):
+    def add_input(self, value):
         pass
 
 class ExecutorWithArguments(Executor):

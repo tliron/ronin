@@ -15,60 +15,19 @@
 from ..executors import ExecutorWithArguments
 from ..extensions import Extension
 from ..contexts import current_context
+from ..phases import Phase
 from ..ninja import pathify
 from ..pkg_config import Package
+from ..gcc import GccCompile
 from ..utils.platform import which
 from ..utils.paths import join_path, join_path_later
 from ..utils.strings import interpolate_later
 
-DEFAULT_VALA_COMMAND = 'valac'
+DEFAULT_VALAC_COMMAND = 'valac'
 
-def configure_valac(command=None):
+def configure_vala(command=None):
     with current_context(False) as ctx:
-        ctx.vala.command = command or DEFAULT_VALA_COMMAND
-
-def vala_configure_transpile_phase(transpile, api):
-    # valac is so complicated:
-    #
-    # 1) '--output=' is not supported in '--ccode' mode, only a '--directory=' with '--basedir='.
-    # 2) We need to have a '--use-fast-vapi=' argument for each .vapi produced by the API
-    #    phase, *except* for the one produced for our input.
-    #
-    # See: https://wiki.gnome.org/Projects/Vala/Documentation/ParallelBuilds
-      
-    transpile.rebuild_on_from = [api]
-    transpile.executor.add_argument_unfiltered('--basedir=$base_path')
-    transpile.vars['base_path'] = vala_base_path_var
-    transpile.executor.add_argument_unfiltered('--directory=$output_path')
-    transpile.vars['output_path'] = vala_output_path_var
-    transpile.executor.add_argument_unfiltered('$fast_vapis')
-    transpile.vars['fast_vapis'] = vala_fast_vapis_var(api)
-
-def vala_configure_compile_phase(compile):
-    compile.executor.standard('gnu89')
-    compile.executor.disable_warning('incompatible-pointer-types')
-    compile.executor.disable_warning('discarded-qualifiers')
-    compile.executor.disable_warning('format-extra-args')
-
-def vala_base_path_var(output, inputs):
-    with current_context() as ctx:
-        return ctx.paths.root
-        
-def vala_output_path_var(output, inputs):
-    with current_context() as ctx:
-        return ctx.current.phase.get_output_path(ctx.current.output_path)
-
-def vala_fast_vapis_var(api):
-    def var(output, inputs):
-        # Relevant API inputs (not including ourselves)
-        values = [v for v in api.inputs if v not in inputs]
-
-        # API outputs
-        with current_context() as ctx:
-            _, values = api.get_outputs(ctx.current.output_path, values)
-        
-        return ' '.join(['--use-fast-vapi=%s' % pathify(v) for v in values])
-    return var
+        ctx.vala.command = command or DEFAULT_VALAC_COMMAND
 
 class _ValaExecutor(ExecutorWithArguments):
     """
@@ -77,7 +36,7 @@ class _ValaExecutor(ExecutorWithArguments):
     
     def __init__(self, command=None):
         super(_ValaExecutor, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'vala.command', DEFAULT_VALA_COMMAND))
+        self.command = lambda ctx: which(ctx.fallback(command, 'vala.command', DEFAULT_VALAC_COMMAND))
         self.add_argument_unfiltered('$in')
 
     def set_output_directory(self, *value):
@@ -156,8 +115,9 @@ class ValaApi(_ValaExecutor):
         self.add_argument_unfiltered('--fast-vapi=$out')
 
 class ValaTranspile(_ValaExecutor):
-    def __init__(self, command=None):
+    def __init__(self, command=None, apis=None):
         super(ValaTranspile, self).__init__(command)
+        self.apis = apis or []
         self.command_types = ['vala']
         self.output_type = 'source'
         self.output_extension = 'c'
@@ -165,6 +125,15 @@ class ValaTranspile(_ValaExecutor):
         self._deps_file = '$out.d'
         self._deps_type = 'gcc'
         self.create_c_code()
+        self.hooks.append(_transpile_hook)
+
+class ValaGccCompile(GccCompile):
+    def __init__(self, command=None, ccache=True, platform=None):
+        super(ValaGccCompile, self).__init__(command, ccache, platform)
+        self.standard('gnu89')
+        self.disable_warning('incompatible-pointer-types')
+        self.disable_warning('discarded-qualifiers')
+        self.disable_warning('format-extra-args')
 
 class ValaExtension(Extension):
     def __init__(self, name=None, package=True, vapi_paths=None, c_compile_arguments=None, c_link_arguments=None):
@@ -208,3 +177,45 @@ def _debug_hook(executor):
     with current_context() as ctx:
         if ctx.get('build.debug', False):
             executor.enable_debug()
+
+def _transpile_hook(executor):
+    # valac is so complicated:
+    #
+    # 1) '--output=' is not supported in '--ccode' mode, only a '--directory=' with '--basedir='.
+    # 2) We need to have a '--use-fast-vapi=' argument for each .vapi produced by the API
+    #    phase, *except* for the one produced for our input.
+    #
+    # See: https://wiki.gnome.org/Projects/Vala/Documentation/ParallelBuilds
+    executor.add_argument_unfiltered('--basedir=$base_path')
+    executor.add_argument_unfiltered('--directory=$output_path')
+    executor.add_argument_unfiltered('$fast_vapis')
+
+    with current_context() as ctx:
+        phase = ctx.current.phase
+    phase.rebuild_on_from += executor.apis
+    phase.vars['base_path'] = _vala_base_path_var
+    phase.vars['output_path'] = _vala_output_path_var
+    phase.vars['fast_vapis'] = _vala_fast_vapis_var(executor.apis)
+
+def _vala_base_path_var(output, inputs):
+    with current_context() as ctx:
+        return ctx.paths.root
+        
+def _vala_output_path_var(output, inputs):
+    with current_context() as ctx:
+        return ctx.current.phase.get_output_path(ctx.current.output_path)
+
+def _vala_fast_vapis_var(apis):
+    def var(output, inputs):
+        outputs = []
+        for api in apis:
+            # All API inputs except ourselves
+            api_inputs = [v for v in api.inputs if v not in inputs]
+
+            # API outputs
+            with current_context() as ctx:
+                _, api_outputs = api.get_outputs(ctx.current.output_path, api_inputs)
+            outputs += api_outputs
+        
+        return ' '.join(['--use-fast-vapi=%s' % pathify(v.file) for v in outputs])
+    return var

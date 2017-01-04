@@ -84,4 +84,4 @@ class OutputsExtension(Extension):
         if outputs is None:
             return
         for output in outputs:
-            executor.add_result(output)
+            executor.add_input(output.file)

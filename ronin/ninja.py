@@ -169,9 +169,12 @@ class NinjaFile(object):
         # Check if already written
         if phase_name in phase_outputs:
             return
+        
+        phase.apply()
 
         ctx.current.phase_name = phase_name
         ctx.current.phase = phase
+        ctx.current.input_path = phase.input_path or ctx.paths.input
         w = ctx.current.writer
 
         # From other phases
@@ -206,7 +209,7 @@ class NinjaFile(object):
         # Implicit dependencies
         implicit_dependencies = phase.rebuild_on
         for n in rebuild_on_from:
-            implicit_dependencies += phase_outputs[n]
+            implicit_dependencies += [v.file for v in phase_outputs[n]]
         if implicit_dependencies:
             implicit_dependencies = ' | %s' % (' '.join(pathify(v) for v in implicit_dependencies))
         else:
@@ -215,7 +218,7 @@ class NinjaFile(object):
         # Order dependencies
         order_dependencies = phase.build_if
         for n in build_if_from:
-            order_dependencies += phase_outputs[n]
+            order_dependencies += [v.file for v in phase_outputs[n]]
         if order_dependencies:
             order_dependencies = ' || %s' % (' '.join(pathify(v) for v in order_dependencies))
         else:
@@ -224,7 +227,7 @@ class NinjaFile(object):
         # Inputs
         inputs = phase.inputs
         for n in inputs_from:
-            inputs += phase_outputs[n]
+            inputs += [v.file for v in phase_outputs[n]]
         inputs = dedup(inputs)
         
         # Outputs
@@ -234,7 +237,7 @@ class NinjaFile(object):
         phase_outputs[phase_name] = outputs
         
         def build(output, inputs):
-            line = 'build %s: %s' % (pathify(output), rule_name)
+            line = 'build %s: %s' % (pathify(output.file), rule_name)
             if inputs:
                 line += ' ' + ' '.join([pathify(v) for v in inputs])
             line += implicit_dependencies
@@ -242,9 +245,10 @@ class NinjaFile(object):
             w.line(line)
             
             # Vars
-            for var_name, var_fn in phase.vars.iteritems():
-                value = var_fn(output, inputs)
-                w.line('%s = %s' % (var_name, value), 1)
+            for var_name, var in phase.vars.iteritems():
+                if hasattr(var, '__call__'):
+                    var = var(output, inputs)
+                w.line('%s = %s' % (var_name, var), 1)
     
         if combine_inputs:
             w.line()

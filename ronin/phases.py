@@ -14,12 +14,12 @@
 
 from .executors import Executor
 from .extensions import Extension
+from .contexts import current_context
 from .utils.types import verify_type, verify_type_or_subclass
 from .utils.paths import join_path, change_extension
 from .utils.strings import stringify
 from inspect import isclass
 import os
-from ronin.contexts import current_context
 
 class Phase(object):
     """
@@ -31,6 +31,7 @@ class Phase(object):
                  description=None,
                  inputs=None,
                  inputs_from=None,
+                 input_path=None,
                  extensions=None,
                  output=None,
                  output_path=None,
@@ -46,6 +47,7 @@ class Phase(object):
         self.description = description
         self.inputs = inputs or []
         self.inputs_from = inputs_from or []
+        self.input_path = input_path
         self.extensions = extensions or []
         self.output = output
         self.output_path = output_path
@@ -58,20 +60,30 @@ class Phase(object):
         self.vars = {}
         self.hooks = []
 
-    def command_as_str(self, filter=None):
+    def apply(self):
         def apply_extensions(extensions):
             for extension in extensions:
                 verify_type_or_subclass(extension, Extension)
                 if isclass(extension):
                     extension = extension()
                 extension.apply_to_phase(self)
-                extension.apply_to_executor(self.executor)
                 apply_extensions(extension.extensions)
-        
+
         apply_extensions(self.extensions)
 
         for hook in self.hooks:
             hook(self)
+
+    def command_as_str(self, filter=None):
+        def apply_extensions(extensions):
+            for extension in extensions:
+                verify_type_or_subclass(extension, Extension)
+                if isclass(extension):
+                    extension = extension()
+                extension.apply_to_executor(self.executor)
+                apply_extensions(extension.extensions)
+
+        apply_extensions(self.extensions)
 
         return self.executor.command_as_str(filter)
 
@@ -88,7 +100,7 @@ class Phase(object):
     def get_outputs(self, default_output_path, inputs):
         # Paths
         with current_context() as ctx:
-            input_base = ctx.get('paths.input')
+            input_path = ctx.get('current.input_path')
         output_path = self.get_output_path(default_output_path)
 
         # Extension
@@ -102,14 +114,14 @@ class Phase(object):
             if self.output_transform:
                 output = self.output_transform(output)
                 
-            return True, [output]
+            return True, [Output(output_path, output)]
         elif inputs:
             # Each input matches an output
             
             # Strip prefix
             output_strip_prefix = self.output_strip_prefix
             if output_strip_prefix is None:
-                output_strip_prefix = input_base
+                output_strip_prefix = input_path
             if not output_strip_prefix.endswith(os.sep):
                 output_strip_prefix += os.sep
             output_strip_prefix_length = len(output_strip_prefix)
@@ -123,8 +135,13 @@ class Phase(object):
                 output = join_path(output_path, output)
                 if self.output_transform:
                     output = self.output_transform(output)
-                outputs.append(output)
+                outputs.append(Output(output_path, output))
                 
             return False, outputs
         
         return False, []
+
+class Output(object):
+    def __init__(self, path, file):
+        self.path = path
+        self.file = file

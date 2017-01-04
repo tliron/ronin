@@ -125,14 +125,16 @@ class _GccExecutor(ExecutorWithArguments):
     
     # Linker
 
-    def add_result(self, value):
+    def add_input(self, value):
         if value.endswith('.so'):
             value = value[:-3]
-            dir, file = os.path.split(value)
-            if file.startswith('lib'):
-                file = file[3:]
-                self.add_library_path(dir)
-                self.add_library(file)
+        elif value.endswith('.dll'):
+            value = value[:-4]
+        dir, file = os.path.split(value)
+        if file.startswith('lib'):
+            file = file[3:]
+        self.add_library_path(dir)
+        self.add_library(file)
 
     def add_library_path(self, *value):
         self.add_argument(interpolate_later('-L%s', join_path_later(*value)))
