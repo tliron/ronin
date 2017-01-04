@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# GTK+ Hello World
+# gcc GTK+ Hello World
 #
 # build1.py
 #
@@ -29,7 +29,7 @@ from ronin.utils.paths import glob
 
 with new_build_context(output_path_relative='build1') as ctx:
 
-    project = Project('GTK+ Hello World')
+    project = Project('gcc GTK+ Hello World')
     
     build = Phase(GccBuild(),
                   inputs=glob('src/*.c'),

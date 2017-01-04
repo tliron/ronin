@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# SDL Hello World
+# g++ SDL Hello World
 #
 # build.py
 #
@@ -30,7 +30,7 @@ from ronin.utils.paths import glob
 
 with new_build_context() as ctx:
 
-    project = Project('SDL Hello World')
+    project = Project('g++ SDL Hello World')
     
     static = (ctx.sdl.static == 'true')
     

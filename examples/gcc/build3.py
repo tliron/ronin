@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# GTK+ Hello World
+# gcc GTK+ Hello World
 #
 # build2.py
 #
@@ -42,7 +42,7 @@ with new_build_context(root_path=base_path(__file__),
     configure_pkg_config(command='pkg-config',
                          path=None)
 
-    project = Project('GTK+ Hello World')
+    project = Project('gcc GTK+ Hello World')
     extensions = [Package('gtk+-3.0')]
     
     # Compile

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# GTK+ Hello World
+# gcc GTK+ Hello World
 #
 # build2.py
 #
@@ -25,7 +25,7 @@ from ronin.utils.paths import glob
 
 with new_build_context(output_path_relative='build2') as ctx:
 
-    project = Project('GTK+ Hello World')
+    project = Project('gcc GTK+ Hello World')
     extensions = [Package('gtk+-3.0')]
     
     # Compile

@@ -25,7 +25,7 @@ DEFAULT_VALA_COMMAND = 'valac'
 
 def configure_valac(command=None):
     with current_context(False) as ctx:
-        ctx.valac.command = command or DEFAULT_VALA_COMMAND
+        ctx.vala.command = command or DEFAULT_VALA_COMMAND
 
 def vala_configure_transpile_phase(transpile, api):
     # valac is so complicated:
@@ -71,6 +71,10 @@ def vala_fast_vapis_var(api):
     return var
 
 class _ValaExecutor(ExecutorWithArguments):
+    """
+    Base class for `Vala <https://wiki.gnome.org/Projects/Vala>`__ executors.
+    """
+    
     def __init__(self, command=None):
         super(_ValaExecutor, self).__init__()
         self.command = lambda ctx: which(ctx.fallback(command, 'vala.command', DEFAULT_VALA_COMMAND))

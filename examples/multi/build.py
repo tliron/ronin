@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Multi-Project Example
+# gcc Multi-Project Example
 #
 # build.py
 #
@@ -33,7 +33,7 @@ from ronin.utils.paths import glob, input_path
 with new_build_context() as ctx:
 
     # Library
-    library = Project('Multi-Project Example: Library', file_name='library')
+    library = Project('gcc Multi-Project Example: Library', file_name='library')
     build_library = Phase(GccBuild(),
                           inputs=glob('src/foo/*.c'),
                           output='foo')

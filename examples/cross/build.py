@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Cross-compilation Example
+# gcc Cross-compilation Example
 #
 # build.py
 #
@@ -22,7 +22,7 @@ from ronin.utils.paths import glob
 
 with new_build_context() as ctx:
     
-    project = Project('Cross-compilation Example')
+    project = Project('gcc Cross-compilation Example')
     build = Phase(GccBuild(platform=project),
                   inputs=glob('src/*.c'),
                   output='size')

@@ -14,6 +14,7 @@ power is there if you need it.
 
 Currently supported out-of-the-box: all [gcc](https://gcc.gnu.org/) languages,
 [Vala](https://wiki.gnome.org/Projects/Vala) (and [Genie](https://wiki.gnome.org/Projects/Genie)),
+[Rust](https://www.rust-lang.org/),
 [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/),
 [sdl2-config](https://wiki.libsdl.org/Installation), and
 [binutils](https://sourceware.org/binutils/docs/binutils/).
