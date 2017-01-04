@@ -115,7 +115,7 @@ class NinjaFile(object):
 
     def clean(self):
         with current_context() as ctx:
-            project_outputs = ctx.get('build._project_outputs')
+            project_outputs = ctx.get('current.project_outputs')
             if project_outputs is not None:
                 if self._project in project_outputs:
                     del project_outputs[self._project]
@@ -143,11 +143,11 @@ class NinjaFile(object):
                 columns = _MINIMUM_COLUMNS_STRICT
 
             with _Writer(io, columns, strict) as w:
-                ctx.build._w = w
-                ctx.build._output_path = self.output_path
-                ctx.build._project = self._project
-                ctx.build._phase_outputs = {}
-                ctx.build._project_outputs[self._project] = ctx.build._phase_outputs
+                ctx.current.project = self._project
+                ctx.current.phase_outputs = {}
+                ctx.current.writer = w
+                ctx.current.output_path = self.output_path
+                ctx.current.project_outputs[self._project] = ctx.current.phase_outputs
                 
                 # Header
                 w.comment('Ninja file for %s' % self._project)
@@ -164,15 +164,15 @@ class NinjaFile(object):
                     self._write_rule(ctx, phase_name, phase)
 
     def _write_rule(self, ctx, phase_name, phase):
-        phase_outputs = ctx.build._phase_outputs
+        phase_outputs = ctx.current.phase_outputs
 
         # Check if already written
         if phase_name in phase_outputs:
             return
 
-        ctx.build._phase_name = phase_name
-        ctx.build._phase = phase
-        w = ctx.build._w
+        ctx.current.phase_name = phase_name
+        ctx.current.phase = phase
+        w = ctx.current.writer
 
         # From other phases
         inputs_from = self._get_phase_names(ctx, phase, 'inputs_from')

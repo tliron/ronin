@@ -1,8 +1,8 @@
 Rōnin
 =====
 
-A straightforward but powerful build system based on [Ninja](https://ninja-build.org/) and Python,
-suitable for projects both big and small.
+A straightforward but powerful build system based on [Ninja](https://ninja-build.org/) and
+[Python](https://www.python.org/), suitable for projects both big and small.
 
 Rōnin comes with [frustration-free packaging](https://en.wikipedia.org/wiki/Wrap_rage). Let's build
 all the things!
@@ -12,8 +12,11 @@ for build scripts. Many build systems invent their own DSLs, but Rōnin intentio
 that already exists. Note that you _don't_ need to be an expert in Python to use Rōnin, but the
 power is there if you need it.
 
-Current supported out-of-the-box: all gcc languages, Vala (and Genie). `pkg-config`, `sdl2-config`,
-binutils.
+Currently supported out-of-the-box: all [gcc](https://gcc.gnu.org/) languages,
+[Vala](https://wiki.gnome.org/Projects/Vala) (and [Genie](https://wiki.gnome.org/Projects/Genie)),
+[pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/),
+[sdl2-config](https://wiki.libsdl.org/Installation), and
+[binutils](https://sourceware.org/binutils/docs/binutils/).
 
 Guiding lights:
 
@@ -34,27 +37,15 @@ Design principles:
    plain Python program without any unnecessary cleverness. The generated Ninja file looks like
    something you could have created manually.
 
-Quickstart
-----------
+User Manual
+-----------
 
-To install the development snapshot of Rōnin (until we have proper releases):
+[Quickstart here](https://github.com/tliron/ronin/wiki/Quick-Start).
 
-    sudo apt install python-setuptools
-    sudo -H easy_install pip
-    sudo -H pip2 install git+https://github.com/tliron/ronin.git
-
-Since Ninja is just one small self-contained executable, it's easy to get it by downloading the
-[latest release](https://github.com/ninja-build/ninja/releases). Just make sure it's in your
-execution path, or run Rōnin with `--set ninja.command=` and give it the full path to `ninja`.
-Older versions (they work fine) are also available on Debian/Ubuntu:
-
-    sudo apt install ninja-build 
-
-For your `build.py` build script, copy from one of the [examples](examples) to start.
-
-[Full documentation on the wiki!](https://github.com/tliron/ronin/wiki)
+[Full documentation on the wiki](https://github.com/tliron/ronin/wiki).
 
 (API docs coming soon!)
+
 
 FAQ
 ---
@@ -80,7 +71,7 @@ FAQ
   Ninja was chosen because of its marvelous minimalism, not its speed. Ninja is actually 
   [not much](http://david.rothlis.net/ninja-benchmark/) 
   [faster](http://hamelot.io/programming/make-vs-ninja-performance-comparison/)
-  than Make.
+  than Make. However, [tup](http://gittup.org/tup/) is interesting.
 
 
 Similar Projects

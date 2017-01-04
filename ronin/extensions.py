@@ -74,7 +74,7 @@ class OutputsExtension(Extension):
     
     def apply_to_executor_gcc_link(self, executor):
         with current_context() as ctx:
-            project_outputs = ctx.get('build._project_outputs')
+            project_outputs = ctx.get('current.project_outputs')
         if project_outputs is None:
             return
         phase_outputs = project_outputs.get(self._project)

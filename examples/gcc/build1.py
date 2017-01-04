@@ -13,10 +13,10 @@
 #
 # This is the simplest possible version, using a single build phase and all the defaults.
 #
-# Note that a single build phase works fine, and may be the best solution for small projects.
-# However, it does not make use of Ninja's ability to parallelize builds, and to track changes to
-# individual files ("incremental" builds). Larger projects would generally build faster will a
-# two-phase (compile/link) build. See build2.py for an example.
+# A single build phase works fine, and may be the best solution for small projects. However, it does
+# not make use of Ninja's ability to parallelize builds, and to track changes to individual files
+# ("incremental" builds). Larger projects would generally build faster will a two-phase
+# (compile/link) build. See build2.py for an example.
 #
 
 from ronin.cli import cli

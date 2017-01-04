@@ -56,7 +56,7 @@ def vala_base_path_var(output, inputs):
         
 def vala_output_path_var(output, inputs):
     with current_context() as ctx:
-        return ctx.build._phase.get_output_path(ctx.build._output_path)
+        return ctx.current.phase.get_output_path(ctx.current.output_path)
 
 def vala_fast_vapis_var(api):
     def var(output, inputs):
@@ -65,7 +65,7 @@ def vala_fast_vapis_var(api):
 
         # API outputs
         with current_context() as ctx:
-            _, values = api.get_outputs(ctx.build._output_path, values)
+            _, values = api.get_outputs(ctx.current.output_path, values)
         
         return ' '.join(['--use-fast-vapi=%s' % pathify(v) for v in values])
     return var

@@ -35,7 +35,7 @@ def configure_build(root_path=None,
 
         ctx.build.debug = ctx.cli.args.debug
 
-        ctx.build._project_outputs = {}
+        ctx.current.project_outputs = {}
 
         if ctx.cli.args.variant:
             ctx.projects.default_variant = ctx.cli.args.variant
