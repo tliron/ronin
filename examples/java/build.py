@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Java Hello World
+# Java Swing Hello World
 #
 # build.py
 #
@@ -16,20 +16,20 @@
 # able to properly track source changes, make sure your source files are also in a directory
 # hierarchy that matches the package structure, and also set "input_path=".
 #
-# The jar command is similarly finicky about paths, however the ClassesExtension will make sure
+# The jar command is similarly finicky about paths, however the JavaClasses extension will make sure
 # to do the right thing. Take a look at the generated "build.ninja" for details. 
 #
 
 from ronin.cli import cli
 from ronin.contexts import new_context
-from ronin.java import JavaCompile, Jar, ClassesExtension
+from ronin.java import JavaCompile, Jar, JavaClasses
 from ronin.phases import Phase
 from ronin.projects import Project
 from ronin.utils.paths import glob, input_path, join_path
 
 with new_context() as ctx:
 
-    project = Project('Java Hello World')
+    project = Project('Java Swing Hello World')
     
     # Compile
     compile = Phase(JavaCompile(),
@@ -39,7 +39,7 @@ with new_context() as ctx:
     
     # Jar
     jar = Phase(Jar(manifest=input_path('MANIFEST.MF')),
-                extensions=[ClassesExtension(project, 'compile')],
+                extensions=[JavaClasses(project, 'compile')],
                 output='hello')
     project.phases['jar'] = jar
     

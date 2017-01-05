@@ -34,7 +34,7 @@ def configure_java(javac_command=None, jar_command=None):
 
 class JavaCompile(ExecutorWithArguments):
     """
-    `Java <https://www.oracle.com/java/>`__ compile executors.
+    `Java <https://www.oracle.com/java/>`__ compile executor.
     """
     
     def __init__(self, command=None, classpath=[]):
@@ -78,9 +78,9 @@ class Jar(ExecutorWithArguments):
     def disable_manifest(self):
         self.add_argument('-M')
 
-class ClassesExtension(Extension):
+class JavaClasses(Extension):
     def __init__(self, project, phase_name):
-        super(ClassesExtension, self).__init__()
+        super(JavaClasses, self).__init__()
         verify_type(project, Project)
         self._project = project
         self._phase_name = phase_name
@@ -101,10 +101,10 @@ class ClassesExtension(Extension):
         with current_context() as ctx:
             project_outputs = ctx.get('current.project_outputs')
         if project_outputs is None:
-            return
+            return []
         phase_outputs = project_outputs.get(self._project)
         if phase_outputs is None:
-            return
+            return []
         return phase_outputs.get(self._phase_name) or []
 
 def _debug_hook(executor):

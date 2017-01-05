@@ -13,10 +13,12 @@ that already exists. There's no hidden cost to this design choice: build scripts
 as concise and coherent as any specialized DSL. You _don't_ need to be an expert in Python to use
 Rōnin, but the power is at your fingertips if you need it.
 
-Currently supported out-of-the-box: all [gcc](https://gcc.gnu.org/) languages,
+Currently supported out-of-the-box:
+all [gcc](https://gcc.gnu.org/) languages,
 [Java](https://www.oracle.com/java/),
-[Vala](https://wiki.gnome.org/Projects/Vala) (and [Genie](https://wiki.gnome.org/Projects/Genie)),
 [Rust](https://www.rust-lang.org/),
+[Go](https://golang.org/),
+[Vala](https://wiki.gnome.org/Projects/Vala) (and [Genie](https://wiki.gnome.org/Projects/Genie)),
 [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/),
 [sdl2-config](https://wiki.libsdl.org/Installation), and
 [binutils](https://sourceware.org/binutils/docs/binutils/).
@@ -30,12 +32,12 @@ Guiding lights:
 
 Design principles:
 
-1. **Pour some sugar on me**: make common tasks easier with sweet utility functions. But make sure
-   that sugar is optional, allowing the script to be more verbose when more control is necessary. 
-2. **Don't hide functionality behind complexity**: the architecture should be straightforward. For
+1. **Don't hide functionality behind complexity**: the architecture should be straightforward. For
    example, if the user wants to manipulate a compiler command line, let them do it easily. Too many
    build systems bungle this and make it either impossible or very difficult to do something that
    would be trivial using a shell script.
+2. **Pour some sugar on me**: make common tasks easier with sweet utility functions. But make sure
+   that sugar is optional, allowing the script to be more verbose when more control is necessary. 
 3. **Don't reinvent wheels**: if Python or Ninja do something for us, use it. The build script is a
    plain Python program without any unnecessary cleverness. The generated Ninja file looks like
    something you could have created manually.

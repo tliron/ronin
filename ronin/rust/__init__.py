@@ -29,7 +29,7 @@ def configure_rust(rustc_command=None, cargo_command=None):
 
 class RustBuild(ExecutorWithArguments):
     """
-    Base class for `Rust <https://www.rust-lang.org/>`__ executors.
+    `Rust <https://www.rust-lang.org/>`__ build executor.
     """
     
     def __init__(self, command=None):
@@ -60,7 +60,7 @@ class CargoBuild(ExecutorWithArguments):
 
 def _build_debug_hook(executor):
     with current_context() as ctx:
-        if not ctx.get('build.debug', False):
+        if ctx.get('build.debug', False):
             executor.enable_debug()
 
 def _cargo_output_path_hook(executor):
@@ -72,4 +72,3 @@ def _cargo_debug_hook(executor):
     with current_context() as ctx:
         if not ctx.get('build.debug', False):
             executor.enable_release()
-

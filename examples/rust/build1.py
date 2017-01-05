@@ -15,6 +15,10 @@
 # However, Ronin still provides basic Rust support, which can be useful in projects that combine
 # Rust code with other languages.
 #
+# Note that if you want to easily use dependencies from crates.io, you will need to use Cargo.
+# Unfortunately, Cargo cannot be used just to manage dependencies, so you will have to work
+# entirely with Cargo.
+#
 # See build2.py for an example of integration with Cargo.
 #
 
