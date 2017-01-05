@@ -3,7 +3,7 @@
 #
 # Rust Hello World
 #
-# build.py
+# build1.py
 #
 # Source: http://rustbyexample.com/hello.html
 #
@@ -15,6 +15,8 @@
 # However, Ronin still provides basic Rust support, which can be useful in projects that combine
 # Rust code with other languages.
 #
+# See build2.py for an example of integration with Cargo.
+#
 
 from ronin.cli import cli
 from ronin.contexts import new_build_context
@@ -23,13 +25,13 @@ from ronin.projects import Project
 from ronin.rust import RustBuild
 from ronin.utils.paths import glob
 
-with new_build_context() as ctx:
+with new_build_context(output_path_relative='build1') as ctx:
 
     project = Project('Rust Hello World')
     
     build = Phase(RustBuild(),
-                  inputs=glob('src/**/*.rs'),
-                  output='hello')
+                  inputs=glob('src/hello1.rs'),
+                  output='hello1')
 
     project.phases['build'] = build
     

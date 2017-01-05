@@ -16,12 +16,16 @@ from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
 from ..utils.strings import join_later, interpolate_later
+from ..utils.paths import join_path
+from multiprocessing import cpu_count
 
 DEFAULT_RUSTC_COMMAND = 'rustc'
+DEFAULT_CARGO_COMMAND = 'cargo'
 
-def configure_rust(command=None):
+def configure_rust(rustc_command=None, cargo_command=None):
     with current_context(False) as ctx:
-        ctx.rust.command = command or DEFAULT_RUSTC_COMMAND
+        ctx.rust.rustc_command = rustc_command or DEFAULT_RUSTC_COMMAND
+        ctx.rust.cargo_command = cargo_command or DEFAULT_CARGO_COMMAND
 
 class RustBuild(ExecutorWithArguments):
     """
@@ -30,12 +34,42 @@ class RustBuild(ExecutorWithArguments):
     
     def __init__(self, command=None):
         super(RustBuild, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'rust.command', DEFAULT_RUSTC_COMMAND))
+        self.command = lambda ctx: which(ctx.fallback(command, 'rust.rustc_command', DEFAULT_RUSTC_COMMAND))
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('-o', '$out')
-        self.hooks.append(_debug_hook)
+        self.hooks.append(_build_debug_hook)
 
-def _debug_hook(executor):
+    def enable_debug(self):
+        self.add_argument('-g')
+
+class CargoBuild(ExecutorWithArguments):
+    def __init__(self, command=None):
+        super(CargoBuild, self).__init__()
+        self.command = lambda ctx: which(ctx.fallback(command, 'rust.cargo_command', DEFAULT_CARGO_COMMAND))
+        self.add_argument('build')
+        self.add_argument_unfiltered('--manifest-path', '$in')
+        self.jobs(cpu_count() + 1)
+        self.hooks.append(_cargo_output_path_hook)
+        self.hooks.append(_cargo_debug_hook)
+
+    def enable_release(self):
+        self.add_argument('--release')
+
+    def jobs(self, value):
+        self.add_argument('--jobs', value)
+
+def _build_debug_hook(executor):
     with current_context() as ctx:
-        if ctx.get('build.debug', False):
+        if not ctx.get('build.debug', False):
             executor.enable_debug()
+
+def _cargo_output_path_hook(executor):
+    with current_context() as ctx:
+        debug = ctx.get('build.debug', False)
+        ctx.current.phase.output_path = join_path(ctx.paths.root, 'target', 'debug' if debug else 'release')
+
+def _cargo_debug_hook(executor):
+    with current_context() as ctx:
+        if not ctx.get('build.debug', False):
+            executor.enable_release()
+
