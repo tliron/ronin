@@ -14,13 +14,13 @@
 #
 
 from ronin.cli import cli
-from ronin.contexts import new_build_context
+from ronin.contexts import new_context
 from ronin.gcc import GccBuild
 from ronin.phases import Phase
 from ronin.projects import Project
 from ronin.utils.paths import glob
 
-with new_build_context() as ctx:
+with new_context() as ctx:
     
     project = Project('gcc Cross-compilation Example')
     build = Phase(GccBuild(platform=project),

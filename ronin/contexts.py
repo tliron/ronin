@@ -13,27 +13,27 @@
 # limitations under the License.
 
 from .utils.types import verify_type
+from .utils.argparse import ArgumentParser
+from .utils.messages import error
 from cStringIO import StringIO
 from collections import OrderedDict
-import threading, sys
+import threading, sys, inspect, os
 
 _thread_locals = threading.local()
 
-def new_build_context(*args, **kwargs):
+def new_context(**kwargs):
     """
-    Creates a new context and calls :code:`configure_build` on it.
+    Creates a new context and calls :code:`configure_context` on it.
+    
+    If there already is a context in this thread, our new context will be a child of that context.
     """
     
-    from .configuration import configure_build
-    ctx = new_context()
-    ctx._push_thread_local()
-    try:
-        configure_build(*args, frame=2, **kwargs)
-    finally:
-        Context._pop_thread_local()
+    ctx = new_child_context()
+    with ctx:
+        configure_context(frame=2, **kwargs)
     return ctx
 
-def new_context():
+def new_child_context():
     """
     Creates a new context.
     
@@ -45,16 +45,80 @@ def new_context():
 
 def current_context(immutable=True):
     """
-    Uses the current context if there is one. If there is none, raises a
-    :class:`NoContextException`.
+    Returns the current context if there is one, otherwise raises a :class:`NoContextException`.
     
     By default, the context will be treated as immutable.
+    
+    :param immutable: set to False in order to allow changes to the context
     """
 
     ctx = Context._peek_thread_local()
     if ctx is None:
         raise NoContextException()
     return Context(ctx, True) if immutable else ctx
+
+def configure_context(root_path=None,
+                      input_path_relative=None,
+                      output_path_relative=None,
+                      binary_path_relative=None,
+                      object_path_relative=None,
+                      source_path_relative=None,
+                      name=None,
+                      frame=1):
+    """
+    Configures the current context for builds.
+    
+    :param root_path: the root of the input/output directory structure; defaults to the directory
+                      in which the calling script resides
+    :param input_path_relative: the default input path relative to the root; defaults to the root
+                                itself
+    :param output_path_relative: the default base output path relative to the root; defaults to
+                                 'build'
+    :param binary_path_relative: the default binary output base path relative to the output path;
+                                 defaults to 'bin'
+    :param object_path_relative: the default object output base path relative to the output path;
+                                 defaults to 'obj'
+    :param source_path_relative: the default source output base path relative to the output path;
+                                 defaults to 'src'
+    :param name: optional name to use for descriptions
+    :param frame: how many call frames to wind back to in order to find the calling script
+    """
+
+    from .utils.paths import join_path, base_path
+    
+    with current_context(False) as ctx:
+        ctx.cli.args, _ = _ArgumentParser(name, frame + 1).parse_known_args()
+        ctx.cli.verbose = ctx.cli.args.verbose
+
+        ctx.build.debug = ctx.cli.args.debug
+
+        ctx.current.project_outputs = {}
+
+        if ctx.cli.args.variant:
+            ctx.projects.default_variant = ctx.cli.args.variant
+        
+        if ctx.cli.args.set:
+            for value in ctx.cli.args.set:
+                if '=' not in value:
+                    error("'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
+                    sys.exit(1)
+                k, v = value.split('=', 2)
+                if '.' not in k:
+                    error("'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
+                    sys.exit(1)
+                namespace, k = k.split('.', 2)
+                namespace = getattr(ctx, namespace)
+                setattr(namespace, k, v)
+        
+        if root_path is None:
+            root_path = base_path(inspect.getfile(sys._getframe(frame)))
+
+        ctx.paths.root = root_path
+        ctx.paths.input = join_path(root_path, input_path_relative)
+        ctx.paths.output = join_path(root_path, output_path_relative or 'build')
+        ctx.paths.binary_relative = binary_path_relative or 'bin'
+        ctx.paths.object_relative = object_path_relative or 'obj'
+        ctx.paths.source_relative = object_path_relative or 'src'
 
 class Context(object):
     """
@@ -241,7 +305,7 @@ class _Namespace(object):
         if name in self.LOCAL:
             raise RuntimeError('namespace not initialized?')
         if self._context._parent is None:
-            raise NotInContextException(name)
+            raise NotInContextException('%s.%s' % (self._name, name))
         parent = getattr(self._context._parent, self._name)
         return getattr(parent, name)
 
@@ -270,3 +334,14 @@ class _ContextStack(object):
 
     def pop(self):
         return self._stack.pop() if len(self._stack) else None
+
+class _ArgumentParser(ArgumentParser):
+    def __init__(self, name, frame):
+        description = ('Build %s using Ronin') % name if name is not None else 'Build using Ronin'
+        prog = os.path.basename(inspect.getfile(sys._getframe(frame)))
+        super(_ArgumentParser, self).__init__(description=description, prog=prog)
+        self.add_argument('operation', nargs='*', default=['build'], help='"build", "clean", "ninja"')
+        self.add_flag_argument('debug', help_true='enable debug build', help_false='disable debug build')
+        self.add_argument('--variant', help='override default project variant (defaults to host platform, e.g. "linux64")')
+        self.add_argument('--set', nargs='*', metavar='ns.k=v', help='set values in the context')
+        self.add_flag_argument('verbose', help_true='enable verbose output', help_false='disable verbose output')

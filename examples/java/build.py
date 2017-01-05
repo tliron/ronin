@@ -21,13 +21,13 @@
 #
 
 from ronin.cli import cli
-from ronin.contexts import new_build_context
+from ronin.contexts import new_context
 from ronin.java import JavaCompile, Jar, ClassesExtension
 from ronin.phases import Phase
 from ronin.projects import Project
 from ronin.utils.paths import glob, input_path, join_path
 
-with new_build_context() as ctx:
+with new_context() as ctx:
 
     project = Project('Java Hello World')
     

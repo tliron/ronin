@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .contexts import current_context, new_context
+from .contexts import current_context, new_child_context
 from .projects import Project
 from .phases import Phase
 from .executors import Executor
@@ -136,7 +136,7 @@ class NinjaFile(object):
         sys.exit(self.build())
 
     def write(self, io):
-        with new_context() as ctx:
+        with new_child_context() as ctx:
             columns = ctx.fallback(self.columns, 'ninja.file_columns', DEFAULT_COLUMNS)
             strict = ctx.fallback(self.strict, 'ninja.file_columns_strict', False)
             if strict and (columns is not None) and (columns < _MINIMUM_COLUMNS_STRICT):

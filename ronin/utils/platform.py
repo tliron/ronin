@@ -40,6 +40,10 @@ def host_bits():
     machine = platform.machine() # i386, x86_64, AMD64
     return 64 if machine.endswith('64') else 32
 
+def configure_which(command):
+    with current_context(False) as ctx:
+        ctx.platform.which_command = command or DEFAULT_WHICH_COMMAND
+
 def which(command, exception=False):
     command = stringify(command)
     try:
@@ -53,6 +57,12 @@ def which(command, exception=False):
         if exception:
             raise Exception("'which' could not find '%s'" % command)
         return None
+
+def configure_platform(prefixes):
+    with current_context(False) as ctx:
+        ctx.platform.prefixes = DEFAULT_PLATFORM_PREFIXES.copy()
+        if platform_prefixes:
+            ctx.platform.prefixes.update(prefixes)
 
 def platform_prefixes():
     with current_context() as ctx:

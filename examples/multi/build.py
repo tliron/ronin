@@ -23,14 +23,14 @@
 #
 
 from ronin.cli import cli
-from ronin.contexts import new_build_context
+from ronin.contexts import new_context
 from ronin.gcc import GccBuild
 from ronin.extensions import OutputsExtension
 from ronin.phases import Phase
 from ronin.projects import Project
 from ronin.utils.paths import glob, input_path
 
-with new_build_context() as ctx:
+with new_context() as ctx:
 
     # Library
     library = Project('gcc Multi-Project Example: Library', file_name='library')

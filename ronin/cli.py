@@ -22,7 +22,10 @@ import sys
 
 def cli(*projects, **kwargs):
     """
-    Run the Ronin CLI on one or more projects.
+    Delegates control to the Ronin CLI on one or more projects.
+    
+    Note that the process is expected to exit after running the CLI, so this should only normally
+    be used as the last call of your application.
     
     :param projects: :class:`Project` instances
     """

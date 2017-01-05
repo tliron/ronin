@@ -16,7 +16,15 @@ def announce(message):
     print "ronin: %s" % message
 
 def error(message):
-    announce('Error: %s' % message)
+    if isinstance(message, BaseException):
+        the_type = type(message).__name__
+        message = str(message)
+        if message:
+            announce('%s: %s' % (the_type, message))
+        else:
+            announce(the_type)
+    else:
+        announce('Error: %s' % message)
 
 def warning(message):
     announce('Warning: %s' % message)

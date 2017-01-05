@@ -23,11 +23,6 @@
 
 .. automodule:: ronin.cli
 
-:mod:`ronin.configuration`
-**************************
-
-.. automodule:: ronin.configuration
-
 :mod:`ronin.contexts`
 *********************
 

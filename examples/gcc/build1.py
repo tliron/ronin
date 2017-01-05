@@ -20,14 +20,14 @@
 #
 
 from ronin.cli import cli
-from ronin.contexts import new_build_context
+from ronin.contexts import new_context
 from ronin.gcc import GccBuild
 from ronin.phases import Phase
 from ronin.pkg_config import Package
 from ronin.projects import Project
 from ronin.utils.paths import glob
 
-with new_build_context(output_path_relative='build1') as ctx:
+with new_context(output_path_relative='build1') as ctx:
 
     project = Project('gcc GTK+ Hello World')
     

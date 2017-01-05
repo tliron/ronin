@@ -79,12 +79,14 @@ FAQ
 Similar Projects
 ----------------
 
+* [bfg9000](https://github.com/jimporter/bfg9000): "bfg9000 is a cross-platform build configuration
+  system with an emphasis on making it easy to define how to build your software."
 * [emk](https://github.com/kmackay/emk): "A Python-based build tool."
-* [CMake Ninja Generator](https://cmake.org/cmake/help/v3.0/generator/Ninja.html): "Generates
-  build.ninja files (experimental)."
 * [Craftr](https://craftr.net/): "Craftr is a next generation build system based on Ninja and Python
   that features modular and cross-platform build definitions at the flexibility of a Python script
   and provides access to multiple levels of build automation abstraction."
 * [Meson](http://mesonbuild.com/): "Meson is an open source build system meant to be both extremely
   fast, and, even more importantly, as user friendly as possible."
+* [pyrate](https://github.com/pyrate-build/pyrate-build): "pyrate is a small python based build file
+  generator targeting ninja(s)."
 * [Waf](https://waf.io/): "The meta build system."

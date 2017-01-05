@@ -27,14 +27,14 @@
 #
 
 from ronin.cli import cli
-from ronin.contexts import new_build_context
+from ronin.contexts import new_context
 from ronin.gcc import GccLink
 from ronin.phases import Phase
 from ronin.projects import Project
 from ronin.vala import ValaApi, ValaTranspile, ValaGccCompile, ValaExtension
 from ronin.utils.paths import glob
 
-with new_build_context(output_path_relative='build2') as ctx:
+with new_context(output_path_relative='build2') as ctx:
 
     project = Project('Vala GTK+ Hello World')
     
