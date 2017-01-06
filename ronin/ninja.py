@@ -74,18 +74,13 @@ class NinjaFile(object):
         return v
     
     @property
-    def output_path(self):
-        with current_context() as ctx:
-            return join_path(ctx.paths.output, self._project.path, self._project.variant)
-
-    @property
     def path(self):
         with current_context() as ctx:
             file_name = stringify(ctx.fallback(self.file_name, 'ninja.file_name', DEFAULT_NAME))
-        return join_path(self.output_path, file_name)
+        return join_path(self._project.output_path, file_name)
 
     def generate(self):
-        output_path = self.output_path
+        output_path = self._project.output_path
         path = self.path
         announce("Generating '%s'" % path)
         if not os.path.isdir(output_path):
@@ -143,10 +138,9 @@ class NinjaFile(object):
                 columns = _MINIMUM_COLUMNS_STRICT
 
             with _Writer(io, columns, strict) as w:
-                ctx.current.project = self._project
-                ctx.current.phase_outputs = {}
                 ctx.current.writer = w
-                ctx.current.output_path = self.output_path
+                ctx.current.phase_outputs = {}
+                ctx.current.project = self._project
                 ctx.current.project_outputs[self._project] = ctx.current.phase_outputs
                 
                 # Header
@@ -156,7 +150,7 @@ class NinjaFile(object):
                     w.comment('Columns: %d (%s)' % (columns, 'strict' if strict else 'non-strict'))
                 
                 w.line()
-                w.line('builddir = %s' % pathify(self.output_path))
+                w.line('builddir = %s' % pathify(self._project.output_path))
                 
                 # Rules
                 for phase_name, phase in self._project.phases.iteritems():
@@ -174,7 +168,6 @@ class NinjaFile(object):
 
         ctx.current.phase_name = phase_name
         ctx.current.phase = phase
-        ctx.current.input_path = phase.input_path or ctx.paths.input
         w = ctx.current.writer
 
         # From other phases
@@ -210,6 +203,7 @@ class NinjaFile(object):
         implicit_dependencies = phase.rebuild_on
         for n in rebuild_on_from:
             implicit_dependencies += [v.file for v in phase_outputs[n]]
+        implicit_dependencies = dedup(implicit_dependencies)
         if implicit_dependencies:
             implicit_dependencies = ' | %s' % (' '.join(pathify(v) for v in implicit_dependencies))
         else:
@@ -219,6 +213,7 @@ class NinjaFile(object):
         order_dependencies = phase.build_if
         for n in build_if_from:
             order_dependencies += [v.file for v in phase_outputs[n]]
+        order_dependencies = dedup(order_dependencies)
         if order_dependencies:
             order_dependencies = ' || %s' % (' '.join(pathify(v) for v in order_dependencies))
         else:
@@ -231,7 +226,7 @@ class NinjaFile(object):
         inputs = dedup(inputs)
         
         # Outputs
-        combine_inputs, outputs = phase.get_outputs(self.output_path, inputs)
+        combine_inputs, outputs = phase.get_outputs(inputs)
 
         # Store outputs in state
         phase_outputs[phase_name] = outputs

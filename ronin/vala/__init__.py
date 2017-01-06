@@ -199,11 +199,11 @@ def _transpile_hook(executor):
 
 def _vala_base_path_var(output, inputs):
     with current_context() as ctx:
-        return ctx.paths.root
+        return ctx.current.phase.input_path
         
 def _vala_output_path_var(output, inputs):
     with current_context() as ctx:
-        return ctx.current.phase.get_output_path(ctx.current.output_path)
+        return ctx.current.phase.output_path
 
 def _vala_fast_vapis_var(apis):
     def var(output, inputs):
@@ -217,7 +217,7 @@ def _vala_fast_vapis_var(apis):
                 api_inputs = [v for v in api.inputs if v not in inputs]
     
                 # API outputs
-                _, api_outputs = api.get_outputs(ctx.current.output_path, api_inputs)
+                _, api_outputs = api.get_outputs(api_inputs)
                 outputs += api_outputs
         
         return ' '.join(['--use-fast-vapi=%s' % pathify(v.file) for v in outputs])

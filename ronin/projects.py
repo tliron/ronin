@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .contexts import current_context
 from .utils.platform import host_platform, platform_executable_extension, platform_shared_library_extension, platform_shared_library_prefix
 from .utils.strings import stringify
+from .utils.paths import join_path
 from collections import OrderedDict
 
 class Project(object):
@@ -55,12 +57,6 @@ class Project(object):
     def is_linux(self):
         return self.variant in ('linux64', 'linux32')
 
-    def get_phase_name(self, phase):
-        for k, v in self.phases.iteritems():
-            if v is phase:
-                return k
-        return None
-
     @property
     def executable_extension(self):
         return platform_executable_extension(self.variant)
@@ -72,3 +68,21 @@ class Project(object):
     @property
     def shared_library_prefix(self):
         return platform_shared_library_prefix(self.variant)
+    
+    @property
+    def output_path(self):
+        with current_context() as ctx:
+            return join_path(ctx.paths.output, self.path, self.variant)
+
+    def get_output_path(self, output_type):
+        with current_context() as ctx:
+            output_path = ctx.get('paths.%s' % output_type)
+        if output_path is None:
+            output_path = join_path(self.output_path, ctx.get('paths.%s_relative' % output_type))
+        return output_path
+
+    def get_phase_name(self, phase):
+        for k, v in self.phases.iteritems():
+            if v is phase:
+                return k
+        return None

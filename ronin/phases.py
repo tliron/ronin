@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .projects import Project
 from .executors import Executor
 from .extensions import Extension
 from .contexts import current_context
@@ -44,7 +45,6 @@ class Phase(object):
                  build_if=None,
                  build_if_from=None):
         if project:
-            from .projects import Project
             verify_type(project, Project)
             name = stringify(name)
             if name is None:
@@ -96,21 +96,34 @@ class Phase(object):
 
         return self.executor.command_as_str(filter)
 
-    def get_output_path(self, default_output_path):
-        output_path = self.output_path
-        if output_path is None:
-            output_type = self.executor.output_type
+    @property
+    def input_path(self):
+        input_path = self._input_path
+        if input_path is None:
             with current_context() as ctx:
-                output_path = ctx.get('paths.%s' % output_type)
-            if output_path is None:
-                output_path = join_path(default_output_path, ctx.get('paths.%s_relative' % output_type))
-        return output_path
+                input_path = ctx.paths.input
+        return input_path
 
-    def get_outputs(self, default_output_path, inputs):
+    @input_path.setter
+    def input_path(self, value):
+        self._input_path = value
+
+    @property
+    def output_path(self):
+        output_path = self._output_path
+        if output_path is None:
+            with current_context() as ctx:
+                output_path = ctx.current.project.get_output_path(self.executor.output_type)
+        return output_path
+    
+    @output_path.setter
+    def output_path(self, value):
+        self._output_path = value
+
+    def get_outputs(self, inputs):
         # Paths
-        with current_context() as ctx:
-            input_path = ctx.get('current.input_path')
-        output_path = self.get_output_path(default_output_path)
+        input_path = self.input_path
+        output_path = self.output_path
 
         # Extension
         output_extension = stringify(self.executor.output_extension)

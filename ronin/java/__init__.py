@@ -115,10 +115,9 @@ def _debug_hook(executor):
 def _compile_hook(executor):
     with current_context() as ctx:
         phase = ctx.current.phase
-        input_path = ctx.current.input_path
 
     executor.add_argument_unfiltered('-d', '$output_path')
-    executor.add_classpath(input_path)
+    executor.add_classpath(phase.input_path)
     phase.vars['output_path'] = _java_output_path_var
 
 def _classpath_hook(executor):
@@ -127,7 +126,7 @@ def _classpath_hook(executor):
 
 def _java_output_path_var(output, inputs):
     with current_context() as ctx:
-        return ctx.current.phase.get_output_path(ctx.current.output_path)
+        return ctx.current.phase.output_path
 
 def _java_jar_inputs_var(output, inputs):
     with current_context() as ctx:
