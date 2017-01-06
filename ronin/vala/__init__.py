@@ -220,5 +220,5 @@ def _vala_fast_vapis_var(apis):
                 _, api_outputs = api.get_outputs(api_inputs)
                 outputs += api_outputs
         
-        return ' '.join(['--use-fast-vapi=%s' % pathify(v.file) for v in outputs])
+        return ' '.join([u'--use-fast-vapi=%s' % pathify(v.file) for v in outputs])
     return var

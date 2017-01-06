@@ -55,4 +55,4 @@ def change_extension(path, new_extension):
     dot = path.rfind('.')
     if dot != -1:
         path = path[:dot]
-    return '%s.%s' % (path, new_extension)
+    return u'%s.%s' % (path, new_extension)

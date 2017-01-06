@@ -49,11 +49,11 @@ class Project(object):
         version = stringify(self.version)
         variant = stringify(self.variant)
         if version and variant:
-            return '%s %s (%s)' % (name, version, variant)
+            return u'%s %s (%s)' % (name, version, variant)
         elif version and not variant:
-            return '%s %s' % (name, version)
+            return u'%s %s' % (name, version)
         elif variant and not version:
-            return '%s (%s)' % (name, variant)
+            return u'%s (%s)' % (name, variant)
         else:
             return name
 

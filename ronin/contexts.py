@@ -216,9 +216,11 @@ class Context(object):
         return r
 
     def _write(self, f):
+        from .utils.strings import stringify
         for k, v in self._all.iteritems():
             if not k.startswith('_'):
-                f.write('%s=%s\n' % (k, v))
+                v = stringify(v)
+                f.write(u'%s=%s\n' % (k, v))
 
     def _push_thread_local(self):
         """
@@ -258,7 +260,7 @@ class Context(object):
 
 class ContextException(Exception):
     """
-    Base class for context excpetions.
+    Base class for context exceptions.
     """
 
     def __init__(self, message=None):
@@ -308,7 +310,7 @@ class _Namespace(object):
         if name in self.LOCAL:
             raise RuntimeError('namespace not initialized?')
         if self._context._parent is None:
-            raise NotInContextException('%s.%s' % (self._name, name))
+            raise NotInContextException(u'%s.%s' % (self._name, name))
         parent = getattr(self._context._parent, self._name)
         return getattr(parent, name)
 
@@ -340,7 +342,7 @@ class _ContextStack(object):
 
 class _ArgumentParser(ArgumentParser):
     def __init__(self, name, frame):
-        description = ('Build %s using Ronin') % name if name is not None else 'Build using Ronin'
+        description = (u'Build %s using Ronin' % name) if name is not None else 'Build using Ronin'
         prog = os.path.basename(inspect.getfile(sys._getframe(frame)))
         super(_ArgumentParser, self).__init__(description=description, prog=prog)
         self.add_argument('operation', nargs='*', default=['build'], help='"build", "clean", "ninja"')

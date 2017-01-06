@@ -122,7 +122,7 @@ def _compile_hook(executor):
 
 def _classpath_hook(executor):
     if executor.classpath:
-        executor.add_argument('-classpath', ':'.join([pathify(v) for v in executor.classpath]))
+        executor.add_argument('-classpath', u':'.join([pathify(v) for v in executor.classpath]))
 
 def _java_output_path_var(output, inputs):
     with current_context() as ctx:
@@ -146,8 +146,8 @@ def _java_jar_inputs_var(output, inputs):
 
         if the_file.startswith(path):
             the_file = the_file[path_length:]
-            return '-C %s %s' % (pathify(path), pathify(the_file))
+            return u'-C %s %s' % (pathify(path), pathify(the_file))
         else:
             return pathify(the_file)
 
-    return ' '.join([arg(v) for v in outputs])
+    return u' '.join([arg(v) for v in outputs])

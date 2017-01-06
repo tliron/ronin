@@ -48,16 +48,16 @@ with new_context(root_path=base_path(__file__),
     extensions = [Package('gtk+-3.0')]
     
     # Compile
-    compile = Phase()
-    compile.executor = GccCompile()
-    compile.inputs = glob('src/**/*.c')
-    compile.extensions += extensions
-    project.phases['compile'] = compile
+    comp = Phase()
+    comp.executor = GccCompile()
+    comp.inputs = glob('src/**/*.c')
+    comp.extensions += extensions
+    project.phases['compile'] = comp
 
     # Link
     link = Phase()
     link.executor = GccLink()
-    link.inputs_from.append(compile)
+    link.inputs_from.append(comp)
     link.extensions += extensions
     link.output = 'example_1'
     project.phases['link'] = link

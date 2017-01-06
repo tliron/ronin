@@ -63,9 +63,9 @@ class SDL(Extension):
         
         args = [sdl_config_command, flags]
         if sdl_config_prefix is not None:
-            args.append('--prefix=%s' % sdl_config_prefix)
+            args.append(u'--prefix=%s' % sdl_config_prefix)
         if sdl_config_exec_prefix is not None:
-            args.append('--exec-prefix=%s' % sdl_config_exec_prefix)
+            args.append(u'--exec-prefix=%s' % sdl_config_exec_prefix)
         
         try:
             output = check_output(args).strip()
