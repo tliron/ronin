@@ -51,15 +51,14 @@ with new_context(root_path=base_path(__file__),
     compile.executor = GccCompile()
     compile.inputs = glob('src/**/*.c')
     compile.extensions += extensions
+    project.phases['compile'] = compile
 
     # Link
     link = Phase()
     link.executor = GccLink()
-    link.inputs_from.append('compile')
+    link.inputs_from.append(compile)
     link.extensions += extensions
     link.output = 'example_1'
-
-    project.phases['compile'] = compile
     project.phases['link'] = link
     
     cli(project)

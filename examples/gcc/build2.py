@@ -29,17 +29,18 @@ with new_context(output_path_relative='build2') as ctx:
     extensions = [Package('gtk+-3.0')]
     
     # Compile
-    compile = Phase(GccCompile(),
-                    inputs=glob('src/**/*.c'),
-                    extensions=extensions)
+    Phase(project=project,
+          name='compile',
+          executor=GccCompile(),
+          inputs=glob('src/**/*.c'),
+          extensions=extensions)
 
     # Link
-    link = Phase(GccLink(),
-                 inputs_from=[compile],
-                 extensions=extensions,
-                 output='example_1')
-
-    project.phases['compile'] = compile
-    project.phases['link'] = link
+    Phase(project=project,
+          name='link',
+          executor=GccLink(),
+          inputs_from=['compile'],
+          extensions=extensions,
+          output='example_1')
     
     cli(project)

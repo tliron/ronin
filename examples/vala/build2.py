@@ -42,28 +42,33 @@ with new_context(output_path_relative='build2') as ctx:
     extensions = [ValaExtension('gtk+-3.0')]
     
     # API
-    api = Phase(ValaApi(),
-                inputs=inputs)
-    api.executor.enable_deprecated()
-    project.phases['api'] = api
+    executor = ValaApi()
+    executor.enable_deprecated()
+    Phase(project=project,
+          name='api',
+          executor=ValaApi(),
+          inputs=inputs)
     
     # Transpile
-    transpile = Phase(ValaTranspile(apis=[api]),
-                      inputs=inputs,
-                      extensions=extensions)
-    project.phases['transpile'] = transpile
+    Phase(project=project,
+          name='transpile',
+          executor=ValaTranspile(apis=['api']),
+          inputs=inputs,
+          extensions=extensions)
  
     # Compile
-    compile = Phase(ValaGccCompile(),
-                    inputs_from=[transpile],
-                    extensions=extensions)
-    project.phases['compile'] = compile
+    Phase(project=project,
+          name='compile',
+          executor=ValaGccCompile(),
+          inputs_from=['transpile'],
+          extensions=extensions)
 
     # Link
-    link = Phase(GccLink(),
-                 inputs_from=[compile],
-                 extensions=extensions,
-                 output='gtk-hello')
-    project.phases['link'] = link
+    Phase(project=project,
+          name='link',
+          executor=GccLink(),
+          inputs_from=['compile'],
+          extensions=extensions,
+          output='gtk-hello')
     
     cli(project)

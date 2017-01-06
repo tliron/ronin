@@ -23,8 +23,11 @@ from ronin.utils.paths import glob
 with new_context() as ctx:
     
     project = Project('gcc Cross-compilation Example')
-    build = Phase(GccBuild(platform=project),
-                  inputs=glob('src/**/*.c'),
-                  output='size')
-    project.phases['build'] = build
+
+    Phase(project=project,
+          name='build',
+          executor=GccBuild(platform=project),
+          inputs=glob('src/**/*.c'),
+          output='size')
+
     cli(project)

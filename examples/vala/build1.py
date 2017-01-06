@@ -32,11 +32,11 @@ with new_context(output_path_relative='build1') as ctx:
 
     project = Project('Vala GTK+ Hello World')
     
-    build = Phase(ValaBuild(),
-                  inputs=glob('src/**/*.vala'),
-                  extensions=[ValaExtension('gtk+-3.0')],
-                  output='gtk-hello')
-
-    project.phases['build'] = build
+    Phase(project=project,
+          name='build',
+          executor=ValaBuild(),
+          inputs=glob('src/**/*.vala'),
+          extensions=[ValaExtension('gtk+-3.0')],
+          output='gtk-hello')
     
     cli(project)

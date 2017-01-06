@@ -34,11 +34,11 @@ with new_context(output_path_relative='build2') as ctx:
 
     project = Project('Rust GTK+ Hello World')
     
-    build = Phase(CargoBuild(),
-                  inputs=[input_path('Cargo.toml')],
-                  rebuild_on=glob('src/hello2.rs'),
-                  output='hello2')
-
-    project.phases['build'] = build
+    Phase(project=project,
+          name='build',
+          executor=CargoBuild(),
+          inputs=[input_path('Cargo.toml')],
+          rebuild_on=glob('src/hello2.rs'),
+          output='hello2')
     
     cli(project)

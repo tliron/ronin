@@ -34,16 +34,18 @@ with new_context() as ctx:
     
     static = (ctx.get('sdl.static') == 'true')
     
-    build = Phase(GccBuild('g++'),
-                  inputs=glob('src/**/*.cpp'),
-                  extensions=[SDL(static=static)],
-                  output='hello')
-    build.executor.standard('c++0x')
+    executor = GccBuild('g++')
+    executor.standard('c++0x')
+    Phase(project=project,
+          name='build',
+          executor=executor,
+          inputs=glob('src/**/*.cpp'),
+          extensions=[SDL(static=static)],
+          output='hello')
 
-    resource = Phase(Copy(),
-                     inputs=glob('res/**'))
-
-    project.phases['build'] = build
-    project.phases['resource'] = resource
+    Phase(project=project,
+          name='resource',
+          executor=Copy(),
+          inputs=glob('res/**'))
     
     cli(project)

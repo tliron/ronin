@@ -207,15 +207,18 @@ def _vala_output_path_var(output, inputs):
 
 def _vala_fast_vapis_var(apis):
     def var(output, inputs):
-        outputs = []
-        for api in apis:
-            # All API inputs except ourselves
-            api_inputs = [v for v in api.inputs if v not in inputs]
-
-            # API outputs
-            with current_context() as ctx:
+        with current_context() as ctx:
+            outputs = []
+            for api in apis:
+                if not isinstance(api, Phase):
+                    api = ctx.current.project.phases[api]
+                
+                # All API inputs except ourselves
+                api_inputs = [v for v in api.inputs if v not in inputs]
+    
+                # API outputs
                 _, api_outputs = api.get_outputs(ctx.current.output_path, api_inputs)
-            outputs += api_outputs
+                outputs += api_outputs
         
         return ' '.join(['--use-fast-vapi=%s' % pathify(v.file) for v in outputs])
     return var

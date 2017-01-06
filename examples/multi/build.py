@@ -34,21 +34,25 @@ with new_context() as ctx:
 
     # Library
     library = Project('gcc Multi-Project Example: Library', file_name='library')
-    build_library = Phase(GccBuild(),
-                          inputs=glob('src/foo/**/*.c'),
-                          output='foo')
-    build_library.executor.create_shared_library()
-    build_library.executor.pic()
-    library.phases['build'] = build_library
+    executor = GccBuild()
+    executor.create_shared_library()
+    executor.pic()
+    Phase(project=library,
+          name='build',
+          executor=executor,
+          inputs=glob('src/foo/**/*.c'),
+          output='foo')
     
     # Main
     main = Project('Multi-Project Example: Main', file_name='main')
-    build_main = Phase(GccBuild(),
-                       inputs=glob('src/main/**/*.c'),
-                       extensions=[OutputsExtension(library, 'build')],
-                       output='main')
-    build_main.executor.add_include_path(input_path('src/foo'))
-    build_main.executor.linker_rpath_origin() # to load the .so file from executable's directory
-    main.phases['build'] = build_main
+    executor = GccBuild()
+    executor.add_include_path(input_path('src/foo'))
+    executor.linker_rpath_origin() # to load the .so file from executable's directory
+    Phase(project=main,
+          name='build',
+          executor=executor,
+          inputs=glob('src/main/**/*.c'),
+          extensions=[OutputsExtension(library, 'build')],
+          output='main')
     
     cli(library, main)

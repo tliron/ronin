@@ -32,15 +32,17 @@ with new_context() as ctx:
     project = Project('Java Swing Hello World')
     
     # Compile
-    compile = Phase(JavaCompile(),
-                    input_path=join_path(ctx.paths.root, 'src'),
-                    inputs=glob('**/*.java'))
-    project.phases['compile'] = compile
+    Phase(project=project,
+          name='compile',
+          executor=JavaCompile(),
+          input_path=join_path(ctx.paths.root, 'src'),
+          inputs=glob('**/*.java'))
     
     # Jar
-    jar = Phase(Jar(manifest=input_path('MANIFEST.MF')),
-                extensions=[JavaClasses(project, 'compile')],
-                output='hello')
-    project.phases['jar'] = jar
+    Phase(project=project,
+          name='jar',
+          executor=Jar(manifest=input_path('MANIFEST.MF')),
+          extensions=[JavaClasses(project, 'compile')],
+          output='hello')
     
     cli(project)

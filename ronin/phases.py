@@ -27,6 +27,8 @@ class Phase(object):
     """
     
     def __init__(self,
+                 project=None,
+                 name=None,
                  executor=None,
                  description=None,
                  inputs=None,
@@ -41,6 +43,13 @@ class Phase(object):
                  rebuild_on_from=None,
                  build_if=None,
                  build_if_from=None):
+        if project:
+            from .projects import Project
+            verify_type(project, Project)
+            name = stringify(name)
+            if name is None:
+                raise AttributeError('"name" cannot be None when "project" is specified')
+            project.phases[name] = self
         if executor:
             verify_type(executor, Executor)
         self.executor = executor

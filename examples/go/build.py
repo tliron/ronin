@@ -40,23 +40,26 @@ with new_context() as ctx:
     extensions = [GoPackage(project, 'compile_functions')]
     
     # Compile main
-    compile_main = Phase(GoCompile(),
-                         inputs=glob('src/main.go'),
-                         extensions=extensions,
-                         output='main')
-    project.phases['compile_main'] = compile_main
+    Phase(project=project,
+          name='compile_main',
+          executor=GoCompile(),
+          inputs=glob('src/main.go'),
+          extensions=extensions,
+          output='main')
 
     # Compile functions
-    compile_functions = Phase(GoCompile(),
-                              inputs=glob('src/functions.go'),
-                              output='ronin/functions')
-    project.phases['compile_functions'] = compile_functions
+    Phase(project=project,
+          name='compile_functions',
+          executor=GoCompile(),
+          inputs=glob('src/functions.go'),
+          output='ronin/functions')
 
     # Link
-    link = Phase(GoLink(),
-                 inputs_from=[compile_main],
-                 extensions=extensions,
-                 output='example')
-    project.phases['link'] = link
+    Phase(project=project,
+          name='link',
+          executor=GoLink(),
+          inputs_from=['compile_main'],
+          extensions=extensions,
+          output='example')
     
     cli(project)

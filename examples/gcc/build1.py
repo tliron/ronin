@@ -31,11 +31,11 @@ with new_context(output_path_relative='build1') as ctx:
 
     project = Project('gcc GTK+ Hello World')
     
-    build = Phase(GccBuild(),
-                  inputs=glob('src/**/*.c'),
-                  extensions=[Package('gtk+-3.0')],
-                  output='example_1')
-
-    project.phases['build'] = build
+    Phase(project=project,
+          name='build',
+          executor=GccBuild(),
+          inputs=glob('src/**/*.c'),
+          extensions=[Package('gtk+-3.0')],
+          output='example_1')
     
     cli(project)

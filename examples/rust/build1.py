@@ -33,10 +33,10 @@ with new_context(output_path_relative='build1') as ctx:
 
     project = Project('Rust Hello World')
     
-    build = Phase(RustBuild(),
-                  inputs=glob('src/hello1.rs'),
-                  output='hello1')
-
-    project.phases['build'] = build
+    Phase(project=project,
+          name='build',
+          executor=RustBuild(),
+          inputs=glob('src/hello1.rs'),
+          output='hello1')
     
     cli(project)
