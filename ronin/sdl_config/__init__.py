@@ -57,7 +57,7 @@ class SDL(Extension):
 
     def _parse(self, flags):
         with current_context() as ctx:
-            sdl_config_command = which(ctx.fallback(self.command, 'sdl_config.command', DEFAULT_SDL_CONFIG_COMMAND), True)
+            sdl_config_command = which(ctx.fallback(self.command, 'sdl_config.command', DEFAULT_SDL_CONFIG_COMMAND))
             sdl_config_prefix = stringify(ctx.fallback(self.prefix, 'sdl_config.prefix'))
             sdl_config_exec_prefix = stringify(ctx.fallback(self.exec_prefix, 'sdl_config.exec_prefix'))
         

@@ -115,7 +115,7 @@ class NinjaFile(object):
         self.generate()
         path = self.path
         with current_context() as ctx:
-            command = which(ctx.fallback(self.command, 'ninja.command', 'ninja'), True)
+            command = which(ctx.fallback(self.command, 'ninja.command', 'ninja'))
             verbose = ctx.get('cli.verbose', False)
         args = [command, '-f', path]
         if verbose:
@@ -136,7 +136,7 @@ class NinjaFile(object):
         path = self.path
         if os.path.isfile(path):
             with current_context() as ctx:
-                command = which(ctx.fallback(self.command, 'ninja.command', 'ninja'), True)
+                command = which(ctx.fallback(self.command, 'ninja.command', 'ninja'))
             args = [command, '-f', path, '-t', 'clean', '-g']
             try:
                 check_call(args)
@@ -269,8 +269,8 @@ class NinjaFile(object):
         elif outputs:
             w.line()
             for index, output in enumerate(outputs):
-                input = inputs[index]
-                build(output, [input])
+                the_input = inputs[index]
+                build(output, [the_input])
 
     def _get_phase_names(self, ctx, phase, attr):
         phase_names = []

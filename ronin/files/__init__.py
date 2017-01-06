@@ -29,6 +29,6 @@ class Copy(ExecutorWithArguments):
     
     def __init__(self, command=None):
         super(Copy, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'copy.command', DEFAULT_COPY_COMMAND), True)
+        self.command = lambda ctx: which(ctx.fallback(command, 'copy.command', DEFAULT_COPY_COMMAND))
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('$out')

@@ -44,7 +44,7 @@ def configure_which(command):
     with current_context(False) as ctx:
         ctx.platform.which_command = command or DEFAULT_WHICH_COMMAND
 
-def which(command, exception=False):
+def which(command, exception=True):
     command = stringify(command)
     try:
         with current_context() as ctx:

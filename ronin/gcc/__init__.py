@@ -39,10 +39,10 @@ def which_gcc(command, ccache, platform):
     if ccache:
         with current_context() as ctx:
             ccache_path = stringify(ctx.get('gcc.ccache_path', DEFAULT_CCACHE_PATH))
-        r = which(join_path(ccache_path, command))
+        r = which(join_path(ccache_path, command), False)
         if r is not None:
             return r
-    return which(command, True)
+    return which(command)
 
 def gcc_platform_command(command, platform):
     if isinstance(platform, Project):
@@ -130,11 +130,11 @@ class _GccExecutor(ExecutorWithArguments):
             value = value[:-3]
         elif value.endswith('.dll'):
             value = value[:-4]
-        dir, file = os.path.split(value)
-        if file.startswith('lib'):
-            file = file[3:]
-        self.add_library_path(dir)
-        self.add_library(file)
+        the_dir, the_file = os.path.split(value)
+        if the_file.startswith('lib'):
+            the_file = the_file[3:]
+        self.add_library_path(the_dir)
+        self.add_library(the_file)
 
     def add_library_path(self, *value):
         self.add_argument(interpolate_later('-L%s', join_path_later(*value)))

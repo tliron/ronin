@@ -73,7 +73,7 @@ class Package(Extension):
         try:
             with current_context() as ctx:
                 default = os.environ.get('PKG_CONFIG', DEFAULT_PKG_CONFIG_COMMAND)
-                pkg_config_command = which(ctx.fallback(self.command, 'pkg_config.command', default), True)
+                pkg_config_command = which(ctx.fallback(self.command, 'pkg_config.command', default))
                 pkg_config_path = stringify(ctx.fallback(self.path, 'pkg_config.path'))
                 if pkg_config_path is not None:
                     os.environ['PKG_CONFIG_PATH'] = pkg_config_path

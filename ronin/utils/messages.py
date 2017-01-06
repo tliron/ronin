@@ -12,19 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def announce(message):
-    print u'ronin: %s' % message
+from termcolor import colored
+
+def announce(message, color='green'):
+    prefix = 'ronin'
+    if color:
+        prefix = colored(prefix, color)
+    print u'%s: %s' % (prefix, message)
 
 def error(message):
     if isinstance(message, BaseException):
         the_type = type(message).__name__
         message = unicode(message)
         if message:
-            announce(u'%s: %s' % (the_type, message))
+            announce(u'%s: %s' % (the_type, message), 'red')
         else:
-            announce(the_type)
+            announce(the_type, 'red')
     else:
-        announce(u'Error: %s' % message)
+        announce(u'Error: %s' % message, 'red')
 
 def warning(message):
-    announce(u'Warning: %s' % message)
+    announce(u'Warning: %s' % message, 'yellow')

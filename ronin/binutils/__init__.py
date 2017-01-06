@@ -28,7 +28,7 @@ def which_windres(command, platform):
     command = stringify(command)
     if platform:
         command = windres_platform_command(platform, command)
-    return which(command, True)
+    return which(command)
 
 def windres_platform_command(platform, command):
     if isinstance(platform, Project):

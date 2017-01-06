@@ -45,4 +45,5 @@ setup(
     packages=['ronin'],
     
     install_requires=[
-        'glob2==0.5'])
+        'glob2==0.5',
+        'termcolor==1.1.0'])
