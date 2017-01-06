@@ -13,18 +13,18 @@
 # limitations under the License.
 
 def announce(message):
-    print "ronin: %s" % message
+    print u'ronin: %s' % message
 
 def error(message):
     if isinstance(message, BaseException):
         the_type = type(message).__name__
-        message = str(message)
+        message = unicode(message)
         if message:
-            announce('%s: %s' % (the_type, message))
+            announce(u'%s: %s' % (the_type, message))
         else:
             announce(the_type)
     else:
-        announce('Error: %s' % message)
+        announce(u'Error: %s' % message)
 
 def warning(message):
-    announce('Warning: %s' % message)
+    announce(u'Warning: %s' % message)

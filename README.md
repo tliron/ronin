@@ -4,14 +4,11 @@ Rōnin
 A straightforward but powerful build system based on [Ninja](https://ninja-build.org/) and
 [Python](https://www.python.org/), suitable for projects both big and small.
 
-Rōnin comes with [frustration-free packaging](https://en.wikipedia.org/wiki/Wrap_rage). Let's build
+Rōnin comes in [frustration-free packaging](https://en.wikipedia.org/wiki/Wrap_rage). Let's build
 all the things!
 
-"Based on Python" means that not only is it written in Python, but also it uses Python as the DSL
-for build scripts. Many build systems invent their own DSLs, but Rōnin intentionally uses a language
-that already exists. There's no hidden cost to this design choice: build scripts are pretty much
-as concise and coherent as any specialized DSL. You _don't_ need to be an expert in Python to use
-Rōnin, but the power is at your fingertips if you need it.
+Features
+--------
 
 Currently supported out-of-the-box:
 all [gcc](https://gcc.gnu.org/) languages,
@@ -22,6 +19,26 @@ all [gcc](https://gcc.gnu.org/) languages,
 [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/),
 [sdl2-config](https://wiki.libsdl.org/Installation), and
 [binutils](https://sourceware.org/binutils/docs/binutils/).
+
+"Based on Python" means that not only is it written in Python, but also it uses
+**Python as the DSL** for build scripts. Many build systems invent their own DSLs, but Rōnin
+intentionally uses a language that already exists. There's no hidden cost to this design choice:
+build scripts are pretty much as concise and coherent as any specialized DSL. You _don't_ need to be
+an expert in Python to use Rōnin, but there's power is at your fingertips if you need it.
+
+Rōnin supports **Unicode** throughout: Ninja files are created in UTF-8 by default and you can
+include Unicode characters in your build scripts.
+
+User Manual
+-----------
+
+Full documentation on the [wiki](https://github.com/tliron/ronin/wiki).
+Or quickstart [here](https://github.com/tliron/ronin/wiki/Quick-Start).
+
+(API docs coming soon!)
+
+Feelings
+-------- 
 
 Guiding lights:
 
@@ -41,15 +58,6 @@ Design principles:
 3. **Don't reinvent wheels**: if Python or Ninja do something for us, use it. The build script is a
    plain Python program without any unnecessary cleverness. The generated Ninja file looks like
    something you could have created manually.
-
-User Manual
------------
-
-Full documentation on the [wiki](https://github.com/tliron/ronin/wiki).
-Or quickstart [here](https://github.com/tliron/ronin/wiki/Quick-Start).
-
-(API docs coming soon!)
-
 
 FAQ
 ---
@@ -76,7 +84,6 @@ FAQ
   [not much](http://david.rothlis.net/ninja-benchmark/) 
   [faster](http://hamelot.io/programming/make-vs-ninja-performance-comparison/)
   than Make. For a similarly minimalist build system, see [tup](http://gittup.org/tup/).
-
 
 Similar Projects
 ----------------

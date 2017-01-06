@@ -23,16 +23,28 @@ class Project(object):
     An interrelated set of build phases.
     """
     
-    def __init__(self, name, path=None, file_name=None, version=None, variant=None, phases=None):
+    def __init__(self,
+                 name,
+                 input_path=None,
+                 input_path_relative=None,
+                 output_path=None,
+                 output_path_relative=None,
+                 file_name=None,
+                 version=None,
+                 variant=None,
+                 phases=None):
         self.name = name
-        self.path = path
+        self.input_path = input_path
+        self.input_path_relative = input_path_relative
+        self.output_path = output_path
+        self.output_path_relative = output_path_relative
         self.file_name = file_name
         self.version = version
         self.phases = phases or OrderedDict()
         self.hooks = []
         self._variant = variant or (lambda ctx: ctx.get('projects.default_variant', host_platform()))
 
-    def __str__(self):
+    def __unicode__(self):
         name = stringify(self.name)
         version = stringify(self.version)
         variant = stringify(self.variant)
@@ -68,13 +80,33 @@ class Project(object):
     @property
     def shared_library_prefix(self):
         return platform_shared_library_prefix(self.variant)
-    
+
+    @property
+    def input_path(self):
+        input_path = stringify(self._input_path)
+        if input_path is None:
+            with current_context() as ctx:
+                input_path = join_path(ctx.paths.input, self.input_path_relative)
+        return input_path
+
+    @input_path.setter
+    def input_path(self, value):
+        self._input_path = value
+
     @property
     def output_path(self):
-        with current_context() as ctx:
-            return join_path(ctx.paths.output, self.path, self.variant)
+        output_path = stringify(self._output_path)
+        if output_path is None:
+            with current_context() as ctx:
+                output_path = join_path(ctx.paths.output, self.output_path_relative, self.variant)
+        return output_path
+
+    @output_path.setter
+    def output_path(self, value):
+        self._output_path = value
 
     def get_output_path(self, output_type):
+        output_type = stringify(output_type)
         with current_context() as ctx:
             output_path = ctx.get('paths.%s' % output_type)
         if output_path is None:

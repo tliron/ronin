@@ -87,7 +87,7 @@ class Package(Extension):
                 output = check_output(args).strip()
                 return UNESCAPED_STRING_RE.split(output)
             except CalledProcessError:
-                raise Exception("failed to run: '%s'" % ' '.join(args))
+                raise Exception(u"failed to run: '%s'" % ' '.join(args))
         finally:
             if original_pkg_config_path is not None:
                 os.environ['PKG_CONFIG_PATH'] = original_pkg_config_path

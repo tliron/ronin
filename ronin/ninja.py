@@ -22,23 +22,25 @@ from .utils.platform import which
 from .utils.collections import dedup
 from .utils.types import verify_type
 from .utils.messages import announce
-from cStringIO import StringIO
+from StringIO import StringIO
 from os import makedirs
 from subprocess import check_call, CalledProcessError
 from datetime import datetime
 from textwrap import wrap
-import sys, os
+import sys, os, io
 
 # See:
 # https://ninja-build.org/manual.html#_ninja_file_reference
 # https://github.com/ninja-build/ninja/blob/master/misc/ninja_syntax.py
 
 DEFAULT_NAME = 'build.ninja'
+DEFAULT_ENCODING = 'utf-8'
 DEFAULT_COLUMNS = 100
 
-def configure_ninja(command=None, file_name=None, columns=None, strict=None):
+def configure_ninja(command=None, encoding=None, file_name=None, columns=None, strict=None):
     with current_context(False) as ctx:
         ctx.ninja.command = command
+        ctx.ninja.encoding = encoding
         ctx.ninja.file_name = file_name
         ctx.ninja.file_columns = columns
         ctx.ninja.file_strict = strict
@@ -56,28 +58,44 @@ class NinjaFile(object):
     Manages a `Ninja build system <https://ninja-build.org/>`__ file.
     """
     
-    def __init__(self, project, command=None, file_name=None, columns=None, strict=None):
+    def __init__(self, project, command=None, encoding=None, file_name=None, columns=None, strict=None):
         verify_type(project, Project)
         self._project = project
-        self.command = None
-        self.file_name = file_name or ('%s.ninja' % project.file_name if project.file_name is not None else None)
-        self.columns = None
-        self.strict = None
+        self.command = command
+        self.encoding = encoding
+        self.file_name = file_name
+        self.columns = columns
+        self.strict = strict
     
-    def __str__(self):
-        io = StringIO()
+    def __unicode__(self):
+        f = StringIO()
         try:
-            self.write(io)
-            v = io.getvalue()
+            self.write(f)
+            v = f.getvalue()
         finally:
-            io.close()
+            f.close()
         return v
     
     @property
     def path(self):
-        with current_context() as ctx:
-            file_name = stringify(ctx.fallback(self.file_name, 'ninja.file_name', DEFAULT_NAME))
+        file_name = stringify(self.file_name)
+        if file_name is None:
+            file_name = stringify(self._project.file_name)
+            if file_name is not None:
+                file_name = '%s.ninja' % file_name
+        if file_name is None:
+            with current_context() as ctx:
+                file_name = stringify(ctx.get('ninja.file_name', DEFAULT_NAME))
         return join_path(self._project.output_path, file_name)
+
+    @property
+    def encoding(self):
+        with current_context() as ctx:
+            return ctx.fallback(self._encoding, 'ninja.encoding', DEFAULT_ENCODING)
+    
+    @encoding.setter
+    def encoding(self, value):
+        self._encoding = value
 
     def generate(self):
         output_path = self._project.output_path
@@ -85,8 +103,8 @@ class NinjaFile(object):
         announce("Generating '%s'" % path)
         if not os.path.isdir(output_path):
             makedirs(output_path)
-        with open(path, 'w') as io:
-            self.write(io)
+        with io.open(path, 'w', encoding=self.encoding) as f:
+            self.write(f)
 
     def remove(self):
         path = self.path
@@ -130,14 +148,14 @@ class NinjaFile(object):
     def delegate(self):
         sys.exit(self.build())
 
-    def write(self, io):
+    def write(self, f):
         with new_child_context() as ctx:
             columns = ctx.fallback(self.columns, 'ninja.file_columns', DEFAULT_COLUMNS)
             strict = ctx.fallback(self.strict, 'ninja.file_columns_strict', False)
             if strict and (columns is not None) and (columns < _MINIMUM_COLUMNS_STRICT):
                 columns = _MINIMUM_COLUMNS_STRICT
 
-            with _Writer(io, columns, strict) as w:
+            with _Writer(f, columns, strict) as w:
                 ctx.current.writer = w
                 ctx.current.phase_outputs = {}
                 ctx.current.project = self._project
@@ -281,8 +299,8 @@ _MINIMUM_COLUMNS_STRICT = 30 # lesser than this can lead to breakage
 _INDENT = '  '
 
 class _Writer(object):
-    def __init__(self, io, columns, strict):
-        self._io = io
+    def __init__(self, f, columns, strict):
+        self._f = f
         self._columns = columns
         self._strict = strict
 
@@ -295,7 +313,7 @@ class _Writer(object):
     def line(self, line='', indent=0):
         indentation = _INDENT * indent
         if self._columns is None:
-            self._io.write('%s%s\n' % (indentation, line))
+            self._f.write(u'%s%s\n' % (indentation, line))
         else:
             leading_space_length = len(indentation)
             broken = False
@@ -320,7 +338,7 @@ class _Writer(object):
 
                 if space != -1:
                     # Break at space
-                    self._io.write('%s%s $\n' % (indentation, line[:space]))
+                    self._f.write(u'%s%s $\n' % (indentation, line[:space]))
                     line = line[space + 1:]
                     if not broken:
                         # Indent                               
@@ -330,21 +348,21 @@ class _Writer(object):
                 elif self._strict:
                     # Break anywhere
                     width += 1
-                    self._io.write('%s%s$\n' % (indentation, line[:width]))
+                    self._f.write(u'%s%s$\n' % (indentation, line[:width]))
                     line = line[width:]
                 else:
                     break
 
-            self._io.write('%s%s\n' % (indentation, line))
+            self._f.write(u'%s%s\n' % (indentation, line))
 
     def comment(self, line):
         if self._columns is None:
-            self._io.write('# %s\n' % line)
+            self._f.write(u'# %s\n' % line)
         else:
             width = self._columns - 2
             lines = wrap(line, width, break_long_words=self._strict, break_on_hyphens=False)
             for line in lines:
-                self._io.write('# %s\n' % line)
+                self._f.write(u'# %s\n' % line)
 
     @staticmethod        
     def _is_unescaped(line, i):

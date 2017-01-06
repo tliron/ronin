@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from .utils.strings import stringify, join_later
-from cStringIO import StringIO
+from StringIO import StringIO
 
 class Executor(object):
     """
@@ -31,18 +31,18 @@ class Executor(object):
         self._deps_file = None
         self._deps_type = None
 
-    def write_command(self, io, filter=None):
+    def write_command(self, f, filter=None):
         for hook in self.hooks:
             hook(self)
-        io.write(stringify(self.command))
+        f.write(stringify(self.command))
     
     def command_as_str(self, filter=None):
-        io = StringIO()
+        f = StringIO()
         try:
-            self.write_command(io, filter)
-            v = io.getvalue()
+            self.write_command(f, filter)
+            v = f.getvalue()
         finally:
-            io.close()
+            f.close()
         return v
 
     def add_input(self, value):
@@ -57,8 +57,8 @@ class ExecutorWithArguments(Executor):
         super(ExecutorWithArguments, self).__init__()
         self._arguments = []
 
-    def write_command(self, io, filter=None):
-        super(ExecutorWithArguments, self).write_command(io, filter)
+    def write_command(self, f, filter=None):
+        super(ExecutorWithArguments, self).write_command(f, filter)
         arguments = []
         for append, to_filter, argument in self._arguments:
             argument = stringify(argument)
@@ -70,8 +70,8 @@ class ExecutorWithArguments(Executor):
             else:
                 arguments.remove(argument)
         if arguments:
-            io.write(' ')
-            io.write(' '.join(arguments))
+            f.write(' ')
+            f.write(' '.join(arguments))
 
     def add_argument(self, *value):
         self._argument(True, True, *value)

@@ -32,6 +32,7 @@ with new_context(root_path=base_path(__file__),
                        source_path_relative='src') as ctx:
 
     configure_ninja(command='ninja',
+                    encoding='utf8',
                     file_name='build.ninja',
                     columns=100,
                     strict=False)

@@ -15,7 +15,7 @@
 from .utils.types import verify_type
 from .utils.argparse import ArgumentParser
 from .utils.messages import error
-from cStringIO import StringIO
+from StringIO import StringIO
 from collections import OrderedDict
 import threading, sys, inspect, os
 
@@ -100,11 +100,11 @@ def configure_context(root_path=None,
         if ctx.cli.args.set:
             for value in ctx.cli.args.set:
                 if '=' not in value:
-                    error("'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
+                    error(u"'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
                     sys.exit(1)
                 k, v = value.split('=', 2)
                 if '.' not in k:
-                    error("'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
+                    error(u"'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
                     sys.exit(1)
                 namespace, k = k.split('.', 2)
                 namespace = getattr(ctx, namespace)
@@ -140,13 +140,13 @@ class Context(object):
         self._immutable = immutable
         self._namespaces = {}
     
-    def __str__(self):
-        io = StringIO()
+    def __unicode__(self):
+        f = StringIO()
         try:
-            self._write(io)
-            v = io.getvalue()
+            self._write(f)
+            v = f.getvalue()
         finally:
-            io.close()
+            f.close()
         return v
 
     def __enter__(self):
@@ -212,10 +212,10 @@ class Context(object):
                 r['%s.%s' % (namespace_name, k)] = v
         return r
 
-    def _write(self, io):
+    def _write(self, f):
         for k, v in self._all.iteritems():
             if not k.startswith('_'):
-                io.write('%s=%s\n' % (k, v))
+                f.write('%s=%s\n' % (k, v))
 
     def _push_thread_local(self):
         """

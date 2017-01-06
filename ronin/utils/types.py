@@ -15,8 +15,8 @@
 from inspect import isclass
 
 def type_name(the_type):
-    module = str(the_type.__module__)
-    name = str(the_type.__name__)
+    module = unicode(the_type.__module__)
+    name = unicode(the_type.__name__)
     return name if module == '__builtin__' else '%s.%s' % (module, name)
 
 def verify_type(value, the_type):

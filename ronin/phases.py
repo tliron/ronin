@@ -35,9 +35,11 @@ class Phase(object):
                  inputs=None,
                  inputs_from=None,
                  input_path=None,
+                 input_path_relative=None,
                  extensions=None,
                  output=None,
                  output_path=None,
+                 output_path_relative=None,
                  output_strip_prefix=None,
                  output_transform=None,
                  rebuild_on=None,
@@ -57,9 +59,11 @@ class Phase(object):
         self.inputs = inputs or []
         self.inputs_from = inputs_from or []
         self.input_path = input_path
+        self.input_path_relative = input_path_relative
         self.extensions = extensions or []
         self.output = output
         self.output_path = output_path
+        self.output_path_relative = output_path_relative
         self.output_strip_prefix = output_strip_prefix
         self.output_transform = output_transform
         self.rebuild_on = rebuild_on or []
@@ -98,10 +102,14 @@ class Phase(object):
 
     @property
     def input_path(self):
-        input_path = self._input_path
+        input_path = stringify(self._input_path)
         if input_path is None:
             with current_context() as ctx:
-                input_path = ctx.paths.input
+                input_path_relative = stringify(self.input_path_relative)
+                if input_path_relative is not None:
+                    input_path = join_path(ctx.paths.input, input_path_relative)
+                else:
+                    input_path = ctx.current.project.input_path
         return input_path
 
     @input_path.setter
@@ -110,10 +118,14 @@ class Phase(object):
 
     @property
     def output_path(self):
-        output_path = self._output_path
+        output_path = stringify(self._output_path)
         if output_path is None:
             with current_context() as ctx:
-                output_path = ctx.current.project.get_output_path(self.executor.output_type)
+                output_path_relative = stringify(self.output_path_relative)
+                if output_path_relative is not None:
+                    output_path = join_path(ctx.paths.output, output_path_relative)
+                else:
+                    output_path = ctx.current.project.get_output_path(self.executor.output_type)
         return output_path
     
     @output_path.setter

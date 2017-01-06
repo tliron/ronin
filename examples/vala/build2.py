@@ -23,7 +23,7 @@
 # pkg_config.Package to translate the Vala package into a library that gcc can use. In most cases
 # the name of the Vala package is specifically made to be the same as what is used in
 # pkg_config.Package, but we've seen quite a few exceptions. Check the documentation for
-# ValaExtension to make sure you configure your packages correctly for four-phase builds.
+# ValaPackage to make sure you configure your packages correctly for four-phase builds.
 #
 
 from ronin.cli import cli
@@ -31,7 +31,7 @@ from ronin.contexts import new_context
 from ronin.gcc import GccLink
 from ronin.phases import Phase
 from ronin.projects import Project
-from ronin.vala import ValaApi, ValaTranspile, ValaGccCompile, ValaExtension
+from ronin.vala import ValaApi, ValaTranspile, ValaGccCompile, ValaPackage
 from ronin.utils.paths import glob
 
 with new_context(output_path_relative='build2') as ctx:
@@ -39,7 +39,7 @@ with new_context(output_path_relative='build2') as ctx:
     project = Project('Vala GTK+ Hello World')
     
     inputs = glob('src/**/*.vala')
-    extensions = [ValaExtension('gtk+-3.0')]
+    extensions = [ValaPackage('gtk+-3.0')]
     
     # API
     executor = ValaApi()

@@ -38,13 +38,13 @@ def cli(*projects, **kwargs):
 
         with current_context() as ctx:
             if ctx.get('cli.verbose', False):
-                sys.stdout.write(str(ctx))
+                sys.stdout.write(unicode(ctx))
             operations = ctx.cli.args.operation
 
         for operation in operations:
             if operation in ('build', 'clean', 'ninja'):
                 for project in projects:
-                    announce('%s' % project)
+                    announce(u'%s' % project)
                     ninja_file = NinjaFile(project)
     
                     if operation == 'build':
@@ -58,7 +58,7 @@ def cli(*projects, **kwargs):
                     elif operation == 'ninja':
                         ninja_file.generate()
             else:
-                error("Unsupported operation: '%s'" % operation)
+                error(u"Unsupported operation: '%s'" % operation)
                 sys.exit(1)
     except Exception as ex:
         if ctx.get('cli.verbose', False):

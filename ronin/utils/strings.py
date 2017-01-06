@@ -28,7 +28,7 @@ def stringify(value):
             value = value(ctx)
         return stringify(value)
     else:
-        return str(value)
+        return unicode(value)
 
 def bool_stringify(value):
     if value is None:
@@ -40,7 +40,7 @@ def bool_stringify(value):
     else:
         if isinstance(value, bool):
             return value
-        return str(value).lower() == 'true'
+        return unicode(value).lower() == 'true'
 
 def join_later(values, separator=' '):
     return lambda _: separator.join(stringify_list(values))

@@ -55,7 +55,7 @@ def which(command, exception=False):
         return command
     except CalledProcessError:
         if exception:
-            raise Exception("'which' could not find '%s'" % command)
+            raise Exception(u"'which' could not find '%s'" % command)
         return None
 
 def configure_platform(prefixes):

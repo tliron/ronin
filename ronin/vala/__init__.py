@@ -135,9 +135,9 @@ class ValaGccCompile(GccCompile):
         self.disable_warning('discarded-qualifiers')
         self.disable_warning('format-extra-args')
 
-class ValaExtension(Extension):
+class ValaPackage(Extension):
     def __init__(self, name=None, package=True, vapi_paths=None, c_compile_arguments=None, c_link_arguments=None):
-        super(ValaExtension, self).__init__()
+        super(ValaPackage, self).__init__()
         self.name = name
         if isinstance(package, Package):
             self.package = package
