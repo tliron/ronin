@@ -31,15 +31,15 @@ class Executor(object):
         self._deps_file = None
         self._deps_type = None
 
-    def write_command(self, f, filter=None):
+    def write_command(self, f, argument_filter=None):
         for hook in self.hooks:
             hook(self)
         f.write(stringify(self.command))
     
-    def command_as_str(self, filter=None):
+    def command_as_str(self, argument_filter=None):
         f = StringIO()
         try:
-            self.write_command(f, filter)
+            self.write_command(f, argument_filter)
             v = f.getvalue()
         finally:
             f.close()
@@ -57,13 +57,13 @@ class ExecutorWithArguments(Executor):
         super(ExecutorWithArguments, self).__init__()
         self._arguments = []
 
-    def write_command(self, f, filter=None):
-        super(ExecutorWithArguments, self).write_command(f, filter)
+    def write_command(self, f, argument_filter=None):
+        super(ExecutorWithArguments, self).write_command(f, argument_filter)
         arguments = []
         for append, to_filter, argument in self._arguments:
             argument = stringify(argument)
-            if to_filter and filter:
-                argument = filter(argument)
+            if to_filter and argument_filter:
+                argument = argument_filter(argument)
             if append:
                 if argument not in arguments:
                     arguments.append(argument)

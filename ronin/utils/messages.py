@@ -12,12 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from termcolor import colored
+from blessings import Terminal
+import colorama, atexit
+
+colorama.init()
+terminal = Terminal()
+
+def _restore_terminal():
+    colorama.deinit()
+    
+atexit.register(_restore_terminal)
 
 def announce(message, color='green'):
     prefix = 'ronin'
     if color:
-        prefix = colored(prefix, color)
+        prefix = getattr(terminal, color)(prefix)
     print u'%s: %s' % (prefix, message)
 
 def error(message):

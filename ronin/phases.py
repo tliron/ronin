@@ -87,7 +87,7 @@ class Phase(object):
         for hook in self.hooks:
             hook(self)
 
-    def command_as_str(self, filter=None):
+    def command_as_str(self, argument_filter=None):
         def apply_extensions(extensions):
             for extension in extensions:
                 verify_type_or_subclass(extension, Extension)
@@ -98,7 +98,7 @@ class Phase(object):
 
         apply_extensions(self.extensions)
 
-        return self.executor.command_as_str(filter)
+        return self.executor.command_as_str(argument_filter)
 
     @property
     def input_path(self):
@@ -161,8 +161,8 @@ class Phase(object):
             output_strip_prefix_length = len(output_strip_prefix)
     
             outputs = []            
-            for input in inputs:
-                output = input
+            for the_input in inputs:
+                output = the_input
                 if output.startswith(output_strip_prefix):
                     output = output[output_strip_prefix_length:]
                 output = change_extension(output, output_extension)
@@ -176,6 +176,6 @@ class Phase(object):
         return False, []
 
 class Output(object):
-    def __init__(self, path, file):
+    def __init__(self, path, the_file):
         self.path = path
-        self.file = file
+        self.file = the_file

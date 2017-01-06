@@ -131,7 +131,7 @@ class Context(object):
     modify any of the properties.
     """
     
-    LOCAL = ('_parent', '_immutable', '_namespaces')
+    LOCAL = ('_parent', '_immutable', '_namespaces', '_exit_hooks')
     
     def __init__(self, parent=None, immutable=False):
         if parent:
@@ -139,6 +139,7 @@ class Context(object):
         self._parent = parent
         self._immutable = immutable
         self._namespaces = {}
+        self._exit_hooks = []
     
     def __unicode__(self):
         f = StringIO()
@@ -154,6 +155,8 @@ class Context(object):
         return self
     
     def __exit__(self, the_type, value, traceback):
+        for hook in self._exit_hooks:
+            hook(self)
         self._pop_thread_local()
 
     def __getattr__(self, name):

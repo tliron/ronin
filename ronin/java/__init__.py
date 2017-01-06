@@ -138,16 +138,16 @@ def _java_jar_inputs_var(output, inputs):
     
     def arg(output):
         path = output.path
-        file = output.file
+        the_file = output.file
         
         if not path.endswith(os.sep):
             path += os.sep
         path_length = len(path)
 
-        if file.startswith(path):
-            file = file[path_length:]
-            return '-C %s %s' % (pathify(path), pathify(file))
+        if the_file.startswith(path):
+            the_file = the_file[path_length:]
+            return '-C %s %s' % (pathify(path), pathify(the_file))
         else:
-            return pathify(file)
+            return pathify(the_file)
 
     return ' '.join([arg(v) for v in outputs])

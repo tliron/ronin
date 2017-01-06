@@ -45,11 +45,11 @@ def bool_stringify(value):
 def join_later(values, separator=' '):
     return lambda _: separator.join(stringify_list(values))
 
-def interpolate_later(format, *args):
-    def closure(format, args):
+def interpolate_later(the_format, *args):
+    def closure(the_format, args):
         args = stringify_list(args)
         if None in args:
             return None
-        format = stringify(format)
-        return format % tuple(stringify_list(args))
-    return lambda _: closure(format, args) 
+        the_format = stringify(the_format)
+        return the_format % tuple(stringify_list(args))
+    return lambda _: closure(the_format, args) 
