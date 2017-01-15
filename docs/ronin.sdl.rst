@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-`ronin.sdl_config`
-##################
+:mod:`ronin.sdl`
+################
 
-.. automodule:: ronin.sdl_config
+.. automodule:: ronin.sdl

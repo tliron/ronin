@@ -13,21 +13,32 @@
 # limitations under the License.
 
 from .utils.strings import stringify, join_later
+from .utils.collections import StrictList
 from StringIO import StringIO
 
 class Executor(object):
     """
     Base class for executors.
+    
+    :ivar command: command
+    :vartype command: function|string
+    :ivar command_types: command types supported (used by extensions)
+    :vartype command_types: [string]
+    :ivar output_extension: when calculating outputs, change extension to this
+    :vartype output_extension: function|string
+    :ivar output_prefix: when calculating outputs, prefix this to filename
+    :vartype output_prefix: function|string
+    :ivar hooks: called when generating the Ninja file
+    :vartype hooks: [function]
     """
     
     def __init__(self):
         self.command = None
-        self.command_types = []
+        self.command_types = StrictList(value_class=basestring)
         self.output_extension = None
         self.output_prefix = None
         self.output_type = 'binary'
-        self.get_outputs_fn = False
-        self.hooks = []
+        self.hooks = StrictList(value_class='types.FunctionType')
         self._deps_file = None
         self._deps_type = None
 

@@ -13,42 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-:mod:`ronin`
-############
+:mod:`ronin.qt`
+###############
 
-.. automodule:: ronin
-
-:mod:`ronin.cli`
-****************
-
-.. automodule:: ronin.cli
-
-:mod:`ronin.contexts`
-*********************
-
-.. automodule:: ronin.contexts
-
-:mod:`ronin.executors`
-**********************
-
-.. automodule:: ronin.executors
-
-:mod:`ronin.extensions`
-***********************
-
-.. automodule:: ronin.extensions
-
-:mod:`ronin.ninja`
-******************
-
-.. automodule:: ronin.ninja
-
-:mod:`ronin.phases`
-*******************
-
-.. automodule:: ronin.phases
-
-:mod:`ronin.projects`
-*********************
-
-.. automodule:: ronin.projects
+.. automodule:: ronin.qt

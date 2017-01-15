@@ -15,8 +15,9 @@ all [gcc](https://gcc.gnu.org/) languages,
 [Java](https://www.oracle.com/java/),
 [Rust](https://www.rust-lang.org/),
 [Go](https://golang.org/),
-[Vala](https://wiki.gnome.org/Projects/Vala) (and [Genie](https://wiki.gnome.org/Projects/Genie)),
+[Vala](https://wiki.gnome.org/Projects/Vala)/[Genie](https://wiki.gnome.org/Projects/Genie),
 [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/),
+[Qt tools](https://www.qt.io/),
 [sdl2-config](https://wiki.libsdl.org/Installation), and
 [binutils](https://sourceware.org/binutils/docs/binutils/).
 
@@ -29,13 +30,32 @@ an expert in Python to use Rōnin, but there's power is at your fingertips if yo
 Rōnin supports **Unicode** throughout: Ninja files are created in UTF-8 by default and you can
 include Unicode characters in your build scripts.
 
-User Manual
------------
+Download
+--------
 
-Full documentation on the [wiki](https://github.com/tliron/ronin/wiki).
-Or quickstart [here](https://github.com/tliron/ronin/wiki/Quick-Start).
+Available on [PyPI](https://pypi.python.org/pypi/ronin), so you can install with `pip`,
+`easy_install`, or `setuptools`. On Debian/Ubuntu: 
 
-(API docs coming soon!)
+	sudo apt install python-setuptools
+	sudo -H easy_install pip
+	sudo -H pip2 install ronin
+
+Since Ninja is just one small self-contained executable, it's easy to get it by downloading the
+[latest release](https://github.com/ninja-build/ninja/releases). Just make sure it's in your
+execution path, or run your build script with `--set ninja.command=` and give it the full path to
+`ninja`. Older versions (they work fine) are also available on Debian/Ubuntu:
+
+	sudo apt install ninja-build 
+
+Documentation
+-------------
+
+An undocumented system is a broken system. We strive for coherent, comprehensive, and up-to-date
+documentation.
+
+A detailed user manual is available on the [wiki](https://github.com/tliron/ronin/wiki).
+
+Rich API docs available on [Read the Docs](http://ronin.readthedocs.io/en/latest/).
 
 Feelings
 -------- 

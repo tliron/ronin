@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 # Copyright 2016-2017 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +19,9 @@ from .projects import Project
 from .phases import Phase
 from .executors import Executor
 from .utils.paths import join_path
-from .utils.strings import stringify
+from .utils.strings import stringify, stringify_list
 from .utils.platform import which
-from .utils.collections import dedup
+from .utils.collections import dedup, StrictDict
 from .utils.types import verify_type
 from .utils.messages import announce
 from StringIO import StringIO
@@ -33,23 +35,54 @@ import sys, os, io
 # https://ninja-build.org/manual.html#_ninja_file_reference
 # https://github.com/ninja-build/ninja/blob/master/misc/ninja_syntax.py
 
-DEFAULT_NAME = 'build.ninja'
+DEFAULT_NAME = 'build'
 DEFAULT_ENCODING = 'utf-8'
 DEFAULT_COLUMNS = 100
 
-def configure_ninja(command=None, encoding=None, file_name=None, columns=None, strict=None):
+def configure_ninja(ninja_command=None, encoding=None, file_name=None, columns=None, strict=None):
+    """
+    :param ninja_command: ``ninja`` command; defaults to "ninja"
+    :type ninja_command: string|function
+    :param encoding: Ninja file encoding; defaults to "utf-8"
+    :type encoding: string|function
+    :param file_name: Ninja filename (without ".ninja" extension); defaults to "build"
+    :type file_name: string|function
+    :param columns: number of columns in Ninja file; defaults to 100
+    :type columns: integer
+    :param strict: strict column mode; defaults to False
+    :type strict: boolean
+    """
+    
     with current_context(False) as ctx:
-        ctx.ninja.command = command
+        ctx.ninja.command = ninja_command
         ctx.ninja.encoding = encoding
         ctx.ninja.file_name = file_name
         ctx.ninja.file_columns = columns
         ctx.ninja.file_strict = strict
 
 def escape(value):
+    """
+    Escapes special characters for literal inclusion in a Ninja file.
+    
+    :param value: literal value to escape
+    :type value: string|function
+    :returns: escaped value
+    :rtype: string
+    """
+    
     value = stringify(value)
     return value.replace('$', '$$')
 
 def pathify(value):
+    """
+    Escapes special characters for inclusion in a Ninja file where paths are expected.
+    
+    :param value: path value to escape
+    :type value: string|function
+    :returns: escaped value
+    :rtype: string
+    """
+    
     value = stringify(value)
     return value.replace('$ ', '$$ ').replace(' ', '$ ').replace(':', '$:')
 
@@ -59,6 +92,22 @@ class NinjaFile(object):
     """
     
     def __init__(self, project, command=None, encoding=None, file_name=None, columns=None, strict=None):
+        """
+        :param project: project
+        :type project: :class:`ronin.projects.Project`
+        :param command: Ninja command; defaults to the context's ``ninja.command``
+        :type command: string|function
+        :param encoding: Ninja file encoding; defaults to the context's ``ninja.encoding``
+        :type encoding: string|function
+        :param file_name: Ninja filename (without ".ninja" extension); defaults to the context's
+                          ``ninja.file_name``
+        :type file_name: string|function
+        :param columns: number of columns in Ninja file; defaults to the context's ``ninja.columns``
+        :type columns: integer
+        :param strict: strict column mode; defaults to the context's ``ninja.strict``
+        :type strict: boolean
+        """
+        
         verify_type(project, Project)
         self._project = project
         self.command = command
@@ -77,16 +126,39 @@ class NinjaFile(object):
         return v
     
     @property
-    def path(self):
-        file_name = stringify(self.file_name)
+    def file_name(self):
+        """
+        The Ninja file name, not including the path. The ``file_name`` if set, or else the project's
+        ``file_name``, or else ``ninja.file_name`` in the context.
+        
+        :returns: Ninja file name
+        :rtype: string
+        """
+        
+        file_name = stringify(self._file_name)
         if file_name is None:
             file_name = stringify(self._project.file_name)
-            if file_name is not None:
-                file_name = u'%s.ninja' % file_name
         if file_name is None:
             with current_context() as ctx:
                 file_name = stringify(ctx.get('ninja.file_name', DEFAULT_NAME))
-        return join_path(self._project.output_path, file_name)
+        if file_name is not None:
+            file_name = u'%s.ninja' % file_name
+        return file_name
+    
+    @file_name.setter
+    def file_name(self, value):
+        self._file_name = value
+    
+    @property
+    def path(self):
+        """
+        Full path to the Ninja file. A join of the project's ``output_path`` and :attr:`file_name`. 
+        
+        :returns: full path to Ninja file
+        :rtype: string
+        """
+        
+        return join_path(self._project.output_path, self.file_name)
 
     @property
     def encoding(self):
@@ -98,6 +170,11 @@ class NinjaFile(object):
         self._encoding = value
 
     def generate(self):
+        """
+        Writes the Ninja file to :attr:`path`, overwriting existing contents and making sure to
+        make parent directories.
+        """
+        
         output_path = self._project.output_path
         path = self.path
         announce(u"Generating '%s'" % path)
@@ -107,11 +184,22 @@ class NinjaFile(object):
             self.write(f)
 
     def remove(self):
+        """
+        Deletes the Ninja file at :attr:`path` if it exists.
+        """
+        
         path = self.path
         if os.path.isfile(path):
             os.remove(path)
 
     def build(self):
+        """
+        Calls :meth:`generate` and runs Ninja as a subprocess in build mode.
+        
+        :returns: subprocess exit code
+        :rtype: integer
+        """
+
         self.generate()
         path = self.path
         with current_context() as ctx:
@@ -127,6 +215,14 @@ class NinjaFile(object):
         return 0
 
     def clean(self):
+        """
+        Runs Ninja as a subprocess in clean mode, and then deletes the Ninja file if successful.
+        Also makes sure to clean any temporary state for the project in the context.
+        
+        :returns: subprocess exit code
+        :rtype: integer
+        """
+        
         with current_context() as ctx:
             project_outputs = ctx.get('current.project_outputs')
             if project_outputs is not None:
@@ -146,9 +242,20 @@ class NinjaFile(object):
         return 0
 
     def delegate(self):
+        """
+        Calls :meth:`build` and then exits the process with the correct exit code.
+        """
+        
         sys.exit(self.build())
 
     def write(self, f):
+        """
+        Writes the Nina file content.
+        
+        :param f: where to write
+        :type f: file-like
+        """
+        
         with new_child_context() as ctx:
             columns = ctx.fallback(self.columns, 'ninja.file_columns', DEFAULT_COLUMNS)
             strict = ctx.fallback(self.strict, 'ninja.file_columns_strict', False)
@@ -157,13 +264,13 @@ class NinjaFile(object):
 
             with _Writer(f, columns, strict) as w:
                 ctx.current.writer = w
-                ctx.current.phase_outputs = {}
+                ctx.current.phase_outputs = StrictDict(key_class=basestring, value_class=list)
                 ctx.current.project = self._project
                 ctx.current.project_outputs[self._project] = ctx.current.phase_outputs
                 
                 # Header
                 w.comment(u'Ninja file for %s' % self._project)
-                w.comment(u'Generated by Ronin on %s' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
+                w.comment(u'Generated by Rōnin on %s' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
                 if columns is not None:
                     w.comment(u'Columns: %d (%s)' % (columns, 'strict' if strict else 'non-strict'))
                 
@@ -238,7 +345,7 @@ class NinjaFile(object):
             order_dependencies = u''
             
         # Inputs
-        inputs = phase.inputs
+        inputs = stringify_list(phase.inputs)
         for n in inputs_from:
             inputs += [v.file for v in phase_outputs[n]]
         inputs = dedup(inputs)
@@ -279,14 +386,14 @@ class NinjaFile(object):
                 p_name = self._project.get_phase_name(value)
                 p = value
                 if p_name is None:
-                    raise AttributeError(u'%s contains a phase that is not in the project' % attr)
+                    raise ValueError(u'%s contains a phase that is not in the project' % attr)
             else:
                 p_name = stringify(value)
                 p = self._project.phases.get(p_name)
                 if p is None:
-                    raise AttributeError(u'%s "%s" is not a phase in the project' % (attr, p_name))
+                    raise ValueError(u'%s "%s" is not a phase in the project' % (attr, p_name))
             if p is phase:
-                raise AttributeError(u'%s contains self' % attr)
+                raise ValueError(u'%s contains self' % attr)
 
             phase_names.append(p_name)
             

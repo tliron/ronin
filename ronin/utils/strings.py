@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 # Copyright 2016-2017 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,10 +19,24 @@ import re
 
 UNESCAPED_STRING_RE = re.compile(r'(?<!\\) ')
 
-def stringify_list(values):
-    return [stringify(v) for v in values]
-
 def stringify(value):
+    """
+    Casts the value to a Unicode string. If the value is a function, calls it function using
+    :func:`ronin.contexts.current_context` as its only argument, and recurses until a
+    non-function value is returned.
+    
+    None values are preserved, whether None is directly sent to this function or is the return
+    value of a sent function.
+    
+    This function is the heart of Rōnin's deferred value capability, as it allows lambdas to be
+    passed around instead of strings.
+    
+    :param value: valueor None
+    :type value: string|function
+    :returns: stringified value or None
+    :rtype: string
+    """
+    
     if value is None:
         return None
     elif hasattr(value, '__call__'):
@@ -31,9 +47,30 @@ def stringify(value):
         try:
             return unicode(value)
         except UnicodeDecodeError:
-            return str(value).decode('utf-8')
+            return str(value).decode(_ENCODING)
+
+def stringify_list(values):
+    """
+    Calls :func:`stringify` on all elements. Return values of None are preserved.
+    
+    :param values: values
+    :type values: []
+    :returns: values
+    :rtype: list of strings
+    """
+    
+    return [stringify(v) for v in values]
 
 def bool_stringify(value):
+    """
+    Like :func:`stringify`, except checks if the return value equals, ignoring case, to ``true``. 
+    
+    :param value: value
+    :type value: string|function
+    :returns: True if the stringified value is ``true``
+    :rtype: boolean
+    """
+    
     if value is None:
         return False
     elif hasattr(value, '__call__'):
@@ -46,17 +83,36 @@ def bool_stringify(value):
         try:
             value = unicode(value)
         except UnicodeDecodeError:
-            value = str(value).decode('utf-8')
+            value = str(value).decode(_ENCODING)
         return value.lower() == 'true'
 
 def join_later(values, separator=' '):
-    return lambda _: separator.join(stringify_list(values))
+    """
+    Creates a lambda that calls :func:`stringify_list` and joins the results on ``separator``.
+    
+    :param values: values
+    :type values: []
+    :param separator: separator
+    :type separator: string|function
+    :returns: lambda returning the joined string
+    :rtype: function
+    """
+    
+    return lambda _: stringify(separator).join(stringify_list(values))
 
-def interpolate_later(the_format, *args):
-    def closure(the_format, args):
-        args = stringify_list(args)
-        if None in args:
-            return None
-        the_format = stringify(the_format)
-        return the_format % tuple(stringify_list(args))
-    return lambda _: closure(the_format, args) 
+def interpolate_later(the_format, *values):
+    """
+    Creates a lambda that calls :func:`stringify_list` and interpolates the results on
+    ``the_format``.
+    
+    :param the_format: format string
+    :type the_format: string|function
+    :param values: values
+    :type values: []
+    :returns: lambda returning the interpolated string
+    :rtype: function
+    """
+    
+    return lambda _: stringify(the_format) % tuple(stringify_list(values)) 
+
+_ENCODING = 'utf-8'

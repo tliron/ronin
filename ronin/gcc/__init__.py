@@ -23,33 +23,86 @@ import os
 DEFAULT_GCC_COMMAND = 'gcc'
 DEFAULT_CCACHE_PATH = '/usr/lib/ccache'
 
-def configure_gcc(command=None,
+def configure_gcc(gcc_command=None,
                   ccache=None,
                   ccache_path=None):
+    """
+    Configures the current context's `gcc <https://gcc.gnu.org/>`__ support.
+    
+    :param gcc_command: ``gcc`` (or ``g++``, etc.) command; defaults to "gcc"
+    :type gcc_command: string|function
+    :param ccache: whether to use ccache; defaults to True
+    :type ccache: boolean
+    :param ccache_path: ccache path; defaults to "/usr/lib/ccache"
+    :type ccache_path: string|function
+    """
+    
     with current_context(False) as ctx:
-        ctx.gcc.command = command or DEFAULT_GCC_COMMAND
+        ctx.gcc.gcc_command = gcc_command or DEFAULT_GCC_COMMAND
         ctx.gcc.ccache = ccache
         ctx.gcc.ccache_path = ccache_path or DEFAULT_CCACHE_PATH
 
-def which_gcc(command, ccache, platform):
-    command = stringify(command)
+def which_gcc(command, ccache, platform, exception=True):
+    """
+    A specialized version of :func:`ronin.utils.platform.which` for `gcc <https://gcc.gnu.org/>`__
+    that supports cross-compiling and `ccache <https://ccache.samba.org/>`__.
+    
+    Behind the scenes uses :func:`gcc_platform_command`.
+    
+    :param command: ``gcc`` (or ``g++``, etc.) command
+    :type command: string|function
+    :param ccache: set to True to attempt to use ccache; if a ccache version is not found,
+                   will silently try to use the standard gcc command
+    :type ccache: boolean
+    :param platform: target platform or project
+    :type platform: string|function|:class:`ronin.projects.Project`
+    :param exception: set to False in order to return None upon failure, instead of raising an
+                      exception
+    :type exception: boolean
+    :returns: absolute path to command
+    :rtype: string
+    :raises WhichException: if ``exception`` is True and could not find command
+    """
+    
     ccache = bool_stringify(ccache)
     if platform:
         command = gcc_platform_command(command, platform)
     if ccache:
         with current_context() as ctx:
             ccache_path = stringify(ctx.get('gcc.ccache_path', DEFAULT_CCACHE_PATH))
-        r = which(join_path(ccache_path, command), False)
+        r = which(join_path(ccache_path, command), exception=False)
         if r is not None:
             return r
-    return which(command)
+    return which(command, exception=exception)
 
 def gcc_platform_command(command, platform):
+    """
+    Finds the `gcc <https://gcc.gnu.org/>`__ command name for a specific target platform. 
+    
+    Behind the scenes uses :func:`ronin.utils.platform.platform_command`.
+
+    :param command: ``gcc`` (or ``g++``, etc.) command
+    :type command: string|function
+    :param platform: target platform or project
+    :type platform: string|function|:class:`ronin.projects.Project`
+    :returns: command
+    :rtype: string
+    """
+    
     if isinstance(platform, Project):
         platform = platform.variant
     return platform_command(command, platform)
 
 def gcc_platform_machine_bits(platform):
+    """
+    Bits for target platform.
+    
+    :param platform: target platform or project
+    :type platform: string|function|:class:`ronin.projects.Project`
+    :returns: '64' or '32'
+    :rtype: string
+    """
+    
     if isinstance(platform, Project):
         platform = platform.variant
     platform = stringify(platform)
@@ -60,7 +113,7 @@ def gcc_platform_machine_bits(platform):
             return '32'
     return None
 
-class _GccExecutor(ExecutorWithArguments):
+class GccExecutor(ExecutorWithArguments):
     """
     Base class for `gcc <https://gcc.gnu.org/>`__ executors.
     
@@ -69,10 +122,19 @@ class _GccExecutor(ExecutorWithArguments):
     """
     
     def __init__(self, command=None, ccache=True, platform=None):
-        super(_GccExecutor, self).__init__()
+        """
+        :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
+        :type command: string|function
+        :param ccache: whether to use ccache; defaults to True
+        :type ccache: boolean
+        :param platform: target platform or project
+        :type platform: string|function|:class:`ronin.projects.Project`
+        """
+        
+        super(GccExecutor, self).__init__()
         if platform is not None:
             self.set_machine(lambda _: gcc_platform_machine_bits(platform))
-        self.command = lambda ctx: which_gcc(ctx.fallback(command, 'gcc.command', DEFAULT_GCC_COMMAND),
+        self.command = lambda ctx: which_gcc(ctx.fallback(command, 'gcc.gcc_command', DEFAULT_GCC_COMMAND),
                                              ctx.fallback(ccache, 'gcc.cache', True),
                                              platform)
         self.add_argument_unfiltered('$in')
@@ -232,12 +294,21 @@ class _GccExecutor(ExecutorWithArguments):
         else:
             self.add_argument(interpolate_later('-M%s', value))
 
-class _GccWithMakefile(_GccExecutor):
+class _GccWithMakefile(GccExecutor):
     """
-    Base class for gcc executors that also create a makefile.
+    Base class for `gcc <https://gcc.gnu.org/>`__ executors that also create a deps makefile.
     """
     
     def __init__(self, command=None, ccache=True, platform=None):
+        """
+        :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
+        :type command: string|function
+        :param ccache: whether to use ccache; defaults to True
+        :type ccache: boolean
+        :param platform: target platform or project
+        :type platform: string|function|:class:`ronin.projects.Project`
+        """
+        
         super(_GccWithMakefile, self).__init__(command, ccache, platform)
         self.create_makefile_ignore_system()
         self.add_argument_unfiltered('-MF', '$out.d') # set_makefile_path
@@ -246,10 +317,23 @@ class _GccWithMakefile(_GccExecutor):
 
 class GccBuild(_GccWithMakefile):
     """
-    gcc command supporting both compilation and linking phases.
+    `gcc <https://gcc.gnu.org/>`__ executor combining compilation and linking.
+    
+    The phase inputs are ".c" source files. The phase output is an executable (the default), an
+    ".so" or ".dll" shared library (call :meth:`GccExecutor.create_shared_library`), or a static
+    library (".a").
     """
     
     def __init__(self, command=None, ccache=True, platform=None):
+        """
+        :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
+        :type command: string|function
+        :param ccache: whether to use ccache; defaults to True
+        :type ccache: boolean
+        :param platform: target platform or project
+        :type platform: string|function|:class:`ronin.projects.Project`
+        """
+
         super(GccBuild, self).__init__(command, ccache, platform)
         self.command_types = ['gcc_compile', 'gcc_link']
         if platform is not None:
@@ -261,10 +345,21 @@ class GccBuild(_GccWithMakefile):
 
 class GccCompile(_GccWithMakefile):
     """
-    gcc command supporting compilation phase only.
+    `gcc <https://gcc.gnu.org/>`__ compile executor.
+    
+    The phase inputs are ".c" source files. The phase outputs are ".o" object files.
     """
 
     def __init__(self, command=None, ccache=True, platform=None):
+        """
+        :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
+        :type command: string|function
+        :param ccache: whether to use ccache; defaults to True
+        :type ccache: boolean
+        :param platform: target platform or project
+        :type platform: string|function|:class:`ronin.projects.Project`
+        """
+
         super(GccCompile, self).__init__(command, ccache, platform)
         self.command_types = ['gcc_compile']
         self.output_type = 'object'
@@ -272,12 +367,24 @@ class GccCompile(_GccWithMakefile):
         self.compile_only()
         self.hooks.append(_debug_hook)
 
-class GccLink(_GccExecutor):
+class GccLink(GccExecutor):
     """
-    gcc command supporting linking phase only.
+    `gcc <https://gcc.gnu.org/>`__ link executor.
+    
+    The phase inputs are ".o" object files. The phase output is an executable (the default), an
+    ".so" or ".dll" shared library (call ``create_shared_library``), or a static library (".a").
     """
 
     def __init__(self, command=None, ccache=True, platform=None):
+        """
+        :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
+        :type command: string|function
+        :param ccache: whether to use ccache; defaults to True
+        :type ccache: boolean
+        :param platform: target platform or project
+        :type platform: string|function|:class:`ronin.projects.Project`
+        """
+
         super(GccLink, self).__init__(command, ccache, platform)
         self.command_types = ['gcc_link']
         if platform is not None:

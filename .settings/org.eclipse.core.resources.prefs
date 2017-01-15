@@ -1,3 +1,11 @@
 eclipse.preferences.version=1
 encoding//docs/conf.py=utf-8
 encoding//examples/unicode/build.py=utf-8
+encoding//ronin/cli.py=utf-8
+encoding//ronin/contexts.py=utf-8
+encoding//ronin/ninja.py=utf-8
+encoding//ronin/phases.py=utf-8
+encoding//ronin/projects.py=utf-8
+encoding//ronin/utils/messages.py=utf-8
+encoding//ronin/utils/strings.py=utf-8
+encoding/setup.py=utf-8

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-
+# -*- coding: utf-8 -*-
+#
 # Copyright 2016-2017 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +16,33 @@
 # limitations under the License.
 
 from setuptools import setup
-import sys
+from sys import version_info
+import os
 
-if sys.version_info < (2, 7):
-    sys.exit('Ronin requires Python 2.7+')
-if sys.version_info >= (3, 0):
-    sys.exit('Ronin does not support Python 3')
+if version_info < (2, 7):
+    exit(u'Rōnin requires Python 2.7+')
+if version_info >= (3, 0):
+    exit(u'Rōnin does not support Python 3')
+
+HERE = os.path.dirname(__file__)
+
+try:
+    # This is a nice little hack to get a ReST version of the README.md file to show up on PyPI.
+    # Requires: 
+    #   sudo apt install pandoc
+    #   pip install pypandoc
+    import pypandoc # @UnresolvedImport
+    long_description = pypandoc.convert(os.path.join(HERE, 'README.md'), 'rst')
+except(IOError, ImportError):
+    long_description = open(os.path.join(HERE, 'README.md')).read()
+
+execfile(os.path.join(HERE, 'ronin', 'version.py'))
 
 setup(
     name='ronin',
-    version='0.1',
-    description='Ronin',
+    version=VERSION, # @UndefinedVariable
+    description=u'Rōnin',
+    long_description=long_description,
     license='Apache License Version 2.0',
 
     author='Tal Liron',
@@ -34,7 +51,7 @@ setup(
     url='https://github.com/tliron/ronin',
 
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
@@ -42,7 +59,18 @@ setup(
         'Programming Language :: Python',
         'Topic :: Software Development :: Build Tools'],
 
-    packages=['ronin'],
+    packages=['ronin',
+              'ronin.binutils',
+              'ronin.files',
+              'ronin.gcc',
+              'ronin.go',
+              'ronin.java',
+              'ronin.pkg_config',
+              'ronin.qt',
+              'ronin.rust',
+              'ronin.sdl',
+              'ronin.utils',
+              'ronin.vala'],
     
     install_requires=[
         'blessings==1.6',

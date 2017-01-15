@@ -17,8 +17,12 @@ Rōnin
 =====
 
 A straightforward but powerful build system based on `Ninja <https://ninja-build.org/>`__ and
-Python, suitable for projects both big and small.
+`Python <https://www.python.org/>`__, suitable for projects both big and small.
 
+This is the API documentation. The complete user manual is on the
+`wiki <https://github.com/tliron/ronin/wiki>`__.
+
+Get source code and report issues on `GitHub <https://github.com/tliron/ronin>`__.
 
 Packages
 --------
@@ -33,8 +37,9 @@ Packages
    ronin.go
    ronin.java
    ronin.pkg_config
+   ronin.qt
    ronin.rust
-   ronin.sdl_config
+   ronin.sdl
    ronin.utils
    ronin.vala
 

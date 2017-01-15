@@ -13,8 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-`ronin.pkg_config`
-##################
+:mod:`ronin.pkg_config`
+#######################
 
 .. automodule:: ronin.pkg_config
-

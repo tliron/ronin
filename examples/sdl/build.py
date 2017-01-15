@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# g++ SDL Hello World
+# gcc SDL Hello World
 #
 # build.py
 #
@@ -18,6 +18,9 @@
 # The script also supports linking SDL as a static library if you specify "--set sdl.static=true"
 # in the command line.
 #
+# This is also an example of using the Copy executor. Note the use of the phase's
+# "input_path_relative" in order to strip the input prefix. 
+#
 
 from ronin.cli import cli
 from ronin.contexts import new_context
@@ -25,27 +28,26 @@ from ronin.files import Copy
 from ronin.gcc import GccBuild
 from ronin.phases import Phase
 from ronin.projects import Project
-from ronin.sdl_config import SDL
+from ronin.sdl import SDL
 from ronin.utils.paths import glob
 
 with new_context() as ctx:
 
-    project = Project('g++ SDL Hello World')
+    project = Project('gcc SDL Hello World')
     
     static = (ctx.get('sdl.static') == 'true')
     
-    executor = GccBuild('g++')
-    executor.standard('c++0x')
     Phase(project=project,
           name='build',
-          executor=executor,
-          inputs=glob('src/**/*.cpp'),
+          executor=GccBuild(),
+          inputs=glob('src/**/*.c'),
           extensions=[SDL(static=static)],
           output='hello')
 
     Phase(project=project,
           name='resource',
           executor=Copy(),
+          input_path_relative='res',
           inputs=glob('res/**'))
     
     cli(project)

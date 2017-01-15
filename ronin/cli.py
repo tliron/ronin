@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 # Copyright 2016-2017 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,14 +22,15 @@ from .utils.messages import announce, error
 from traceback import print_exc
 import sys
 
-def cli(*projects, **kwargs):
+def cli(*projects):
     """
-    Delegates control to the Ronin CLI on one or more projects.
+    Delegates control to the Rōnin CLI on one or more projects.
     
     Note that the process is expected to exit after running the CLI, so this should only normally
-    be used as the last call of your application.
+    be used as the last call of your build script.
     
-    :param projects: :class:`Project` instances
+    :param projects: projects
+    :type projects: list of :class:`ronin.projects.Project` 
     """
     
     try:
@@ -60,7 +63,7 @@ def cli(*projects, **kwargs):
             else:
                 error(u"Unsupported operation: '%s'" % operation)
                 sys.exit(1)
-    except Exception as ex:
+    except BaseException as ex:
         if ctx.get('cli.verbose', False):
             print_exc()
         else:

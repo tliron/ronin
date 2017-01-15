@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# 浪人 Unicode Example
+# 浪人 gcc Unicode Example
 #
 # build.py
 #
@@ -27,7 +27,7 @@ from ronin.utils.paths import glob
 
 with new_context() as ctx:
     
-    project = Project(u'浪人 Unicode Example')
+    project = Project(u'浪人 gcc Unicode Example')
 
     # Compile
     Phase(project=project,

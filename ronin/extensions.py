@@ -13,16 +13,22 @@
 # limitations under the License.
 
 from .contexts import current_context
-from .projects import Project
 from .utils.types import verify_type
+from .utils.collections import StrictList
+from .utils.strings import stringify
 
 class Extension(object):
     """
     Base class for extensions.
+    
+    Extensions can nest child extensions (and so can they).
+    
+    :ivar extensions: child extensions
+    :vartype command: [:class:`Extension`]
     """
     
     def __init__(self):
-        self.extensions = []
+        self.extensions = StrictList(value_class=Extension)
 
     def apply_to_phase(self, phase):
         pass
@@ -35,10 +41,24 @@ class Extension(object):
 
 class ExplicitExtension(Extension):
     """
-    An extension with explicitly stated data.
+    An extension with explicitly stated data to support gcc-like executors.
     """
     
     def __init__(self, inputs=[], include_paths=None, defines=None, library_paths=None, libraries=None):
+        """
+        :param inputs: input paths; note that these should be *absolute* paths
+        :type inputs: [string|function]
+        :param include_paths: include paths; note that these should be *absolute* paths
+        :type include_paths: [string|function]
+        :param defines: defines in a (name, value) tuple format; use None for value if the define
+                        does not have a value
+        :type defines: (string|function, string|function)
+        :param library_paths: include paths; note that these should be *absolute* paths
+        :type library_paths: [string|function]
+        :param libraries: library names
+        :type libraries: [string|function]
+        """
+        
         super(ExplicitExtension, self).__init__()
         self.inputs = inputs or []
         self.include_paths = include_paths or []
@@ -63,12 +83,19 @@ class ExplicitExtension(Extension):
 
 class OutputsExtension(Extension):
     """
-    An extension that adds outputs from another build phase.
+    An extension that pulls in outputs from another build phase.
     """
     
     def __init__(self, project, phase_name):
+        """
+        :param project: project
+        :type project: :class:`ronin.projects.Project`
+        :param phase_name: phase name in project
+        :type phase_name: string|function
+        """
+        
         super(OutputsExtension, self).__init__()
-        verify_type(project, Project)
+        verify_type(project, 'ronin.projects.Project')
         self._project = project
         self._phase_name = phase_name
     
@@ -80,7 +107,7 @@ class OutputsExtension(Extension):
         phase_outputs = project_outputs.get(self._project)
         if phase_outputs is None:
             return
-        outputs = phase_outputs.get(self._phase_name)
+        outputs = phase_outputs.get(stringify(self._phase_name))
         if outputs is None:
             return
         for output in outputs:

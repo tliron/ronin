@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-`ronin.vala`
-############
+:mod:`ronin.vala`
+#################
 
 .. automodule:: ronin.vala

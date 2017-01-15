@@ -26,7 +26,7 @@ class ArgumentParser(BaseArgumentParser):
 
     def add_flag_argument(self, name, help_true=None, help_false=None, default=False):
         """
-        Adds a flag argument as two arguments: :code:`--my-flag` and :code:`--no-my-flag`.
+        Adds a flag argument as two arguments: ``--my-flag`` and ``--no-my-flag``.
         """
 
         dest = name.replace('-', '_')
