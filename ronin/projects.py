@@ -55,7 +55,7 @@ class Project(object):
         :type name: string|function
         :param version: project version
         :type version: string|function
-        :param variant: override project variant; defaults to the context's ``project.default_variant``
+        :param variant: override project variant; defaults to the context's ``projects.default_variant``
                         or :func:`ronin.utils.platform.host_platform`
         :type variant: string|function
         :param input_path: override input path; defaults to the context's ``paths.input_path``
