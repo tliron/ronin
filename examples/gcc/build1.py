@@ -36,6 +36,7 @@ with new_context(output_path_relative='build1') as ctx:
           executor=GccBuild(),
           inputs=glob('src/**/*.c'),
           extensions=[Package('gtk+-3.0')],
-          output='example_1')
+          output='example_1',
+          run_output=1 if ctx.build.run else 0)
     
     cli(project)

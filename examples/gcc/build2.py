@@ -41,6 +41,7 @@ with new_context(output_path_relative='build2') as ctx:
           executor=GccLink(),
           inputs_from=['compile'],
           extensions=extensions,
-          output='example_1')
+          output='example_1',
+          run_output=1 if ctx.build.run else 0)
     
     cli(project)

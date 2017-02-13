@@ -43,6 +43,7 @@ with new_context(output_path_relative='build2') as ctx:
           executor=CargoBuild(),
           inputs=[input_path('Cargo.toml')],
           rebuild_on=glob('src/hello2.rs'),
-          output='hello2')
+          output='hello2',
+          run_output=1 if ctx.build.run else 0)
     
     cli(project)

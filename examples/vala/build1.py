@@ -37,6 +37,7 @@ with new_context(output_path_relative='build1') as ctx:
           executor=ValaBuild(),
           inputs=glob('src/**/*.vala'),
           extensions=[ValaPackage('gtk+-3.0')],
-          output='gtk-hello')
+          output='gtk-hello',
+          run_output=1 if ctx.build.run else 0)
     
     cli(project)

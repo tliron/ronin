@@ -23,7 +23,7 @@ def configure_files(copy_command=None):
     Configures the current context's files support.
     
     :param copy_command: copy command; defaults to "cp"
-    :type copy_command: string|function
+    :type copy_command: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -42,7 +42,7 @@ class Copy(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``cp`` command; default's to context's ``files.cp_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         """
         
         super(Copy, self).__init__()

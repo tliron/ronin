@@ -48,9 +48,9 @@ class Phase(object):
     automatically be added to that project. You can do this manually instead.
 
     :ivar vars: custom Ninja variables
-    :vartype vars: {string, function|string}
+    :vartype vars: {basestring, FunctionType|basestring}
     :ivar hooks: called when generating the Ninja file
-    :vartype hooks: [function]
+    :vartype hooks: [FunctionType]
     """
     
     def __init__(self,
@@ -68,6 +68,8 @@ class Phase(object):
                  output_path_relative=None,
                  output_strip_prefix=None,
                  output_transform=None,
+                 run_output=False,
+                 run_command=None,
                  rebuild_on=None,
                  rebuild_on_from=None,
                  build_if=None,
@@ -77,47 +79,51 @@ class Phase(object):
         :type project: :class:`ronin.projects.Project`
         :param name: name in project to which this phase will be added (if set must also set
                      ``project``)
-        :type name: string|function
+        :type name: basestring|FunctionType
         :param executor: executor
         :type executor: :class:`ronin.executors.Executor`
         :param description: Ninja description; may include Ninja variables, such as ``$out``;
                             defaults to "[phase name] $out"
-        :type description: string|function
+        :type description: basestring|FunctionType
         :param inputs: input paths; note that these should be *absolute* paths
-        :type inputs: [string|function]
+        :type inputs: [basestring|FunctionType]
         :param inputs_from: names or instances of other phases in the project, the outputs of which
                             we add to this phase's ``inputs``
-        :type inputs_from: [string|function|:class:`Phase`]
+        :type inputs_from: [basestring|FunctionType|:class:`Phase`]
         :param extensions: extensions
         :type extensions: [:class:`ronin.extensions.Extension`]
         :param output: specifies that the phase has a *single* output; note that actual path of the
                        output will be based on this parameter but not identical to it, for example
                        "lib" might be added as a prefix, ".dll" as an extension, etc., according to
                        the executor and/or project variant
-        :type output: string|function
+        :type output: basestring|FunctionType
         :param output_path: override project's ``output_path``; otherwise will be based on the
                             executor's ``output_type``
-        :type output_path: string|function
+        :type output_path: basestring|FunctionType
         :param output_path_relative: joined to the context's ``paths.output``
-        :type output_path_relative: string|function
+        :type output_path_relative: basestring|FunctionType
         :param output_strip_prefix: stripped from outputs if they begin with this
-        :type output_strip_prefix: string|function
-        :param output_transform: called on all outputs 
-        :type output_transform: function
+        :type output_strip_prefix: basestring|FunctionType
+        :param output_transform: called on all outputs
+        :param run_output: set to non-zero to run the output after a successful build in sequence
+        :type  run_output: int
+        :param run_command: arguments for the run command; use "{output}" to insert output 
+        :type run_command: [basestring|FunctionType]
+        :type output_transform: FunctionType
         :param rebuild_on: similar to ``inputs`` but used as "implicit dependencies" in Ninja
                            (single pipe), meaning that the ``build`` will be re-triggered when these
                            files change
-        :type rebuild_on: [string|function]
+        :type rebuild_on: [basestring|FunctionType]
         :param rebuild_on_from: names or instances of other phases in the project, the outputs of
                                 which we add to this phase's ``rebuild_on``
-        :type rebuild_on_from: [string|function|:class:`Phase`]
+        :type rebuild_on_from: [basestring|FunctionType|:class:`Phase`]
         :param build_if: similar to ``inputs`` but used as "order dependencies" in Ninja (double
                          pipe), meaning that the ``build`` will be triggered only after these files
                          are built
-        :type build_if: [string|function]
+        :type build_if: [basestring|FunctionType]
         :param build_if_from: names or instances of other phases in the project, the outputs of
                               which we add to this phase's ``build_if``
-        :type build_if_from: [string|function|:class:`Phase`]
+        :type build_if_from: [basestring|FunctionType|:class:`Phase`]
         """
         
         if project:
@@ -128,6 +134,10 @@ class Phase(object):
             project.phases[name] = self
         if executor:
             verify_type(executor, Executor)
+        if run_output and (not output):
+            raise ValueError('"run_output" cannot be True or non-zero when "output" is None')
+        if run_command and (not output):
+            raise ValueError('"run_command" cannot be set when "output" is None')
         self.executor = executor
         self.description = description
         self.inputs = inputs or []
@@ -140,6 +150,8 @@ class Phase(object):
         self.output_path_relative = output_path_relative
         self.output_strip_prefix = output_strip_prefix
         self.output_transform = output_transform
+        self.run_output = run_output
+        self.run_command = run_command
         self.rebuild_on = rebuild_on or []
         self.rebuild_on_from = rebuild_on_from or []
         self.build_if = build_if or []
@@ -170,7 +182,7 @@ class Phase(object):
         Applies all extensions to the executor and calls its ``command_as_str``.
         
         :returns: command as string
-        :rtype: string
+        :rtype: basestring
         """
         
         def apply_extensions(extensions):
@@ -192,7 +204,7 @@ class Phase(object):
         or the project's ``input_path``.
         
         :returns: input path
-        :rtype: string
+        :rtype: basestring
         """
         
         input_path = stringify(self._input_path)
@@ -217,7 +229,7 @@ class Phase(object):
         ``output_type``.
         
         :returns: input path
-        :rtype: string
+        :rtype: basestring
         """
 
         output_path = stringify(self._output_path)
@@ -240,10 +252,10 @@ class Phase(object):
         extension from the executor and finally the calling the ``output_transform`` function.
         
         :param inputs: inputs
-        :type inputs: [string]
+        :type inputs: [basestring]
         :returns: (True if "single-output", outputs); length of ```outputs`` will always be 1 in
                   "single-output" mode, otherwise it will be the same length as ``inputs``
-        :rtype: (boolean, [:class:`Output`])
+        :rtype: (bool, [:class:`Output`])
         """
         
         # Paths
@@ -261,7 +273,16 @@ class Phase(object):
             
             if self.output_transform:
                 output = self.output_transform(output)
-                
+            
+            if self.run_output:
+                if self.run_command:
+                    verify_type(self.run_command, list)
+                    run_command = [stringify(v).format(output=output) for v in self.run_command]
+                else:
+                    run_command = [output]
+                with current_context() as ctx:
+                    ctx.current.project.run[self.run_output] = run_command
+            
             return True, [Output(output_path, output)]
         elif inputs:
             # Each input matches an output
@@ -307,9 +328,9 @@ class Output(object):
     def __init__(self, path, the_file):
         """
         :param path: absolute path
-        :type path: string
+        :type path: basestring
         :param the_file: file name
-        :type the_file: string
+        :type the_file: basestring
         """
         
         self.path = path

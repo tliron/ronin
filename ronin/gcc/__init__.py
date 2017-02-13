@@ -15,7 +15,7 @@
 from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..projects import Project
-from ..utils.strings import stringify, stringify_list, bool_stringify, interpolate_later, join_later
+from ..utils.strings import stringify, stringify_list, bool_stringify, format_later, join_later
 from ..utils.paths import join_path, join_path_later
 from ..utils.platform import which, platform_command, platform_executable_extension, platform_shared_library_extension, platform_shared_library_prefix
 import os
@@ -30,11 +30,11 @@ def configure_gcc(gcc_command=None,
     Configures the current context's `gcc <https://gcc.gnu.org/>`__ support.
     
     :param gcc_command: ``gcc`` (or ``g++``, etc.) command; defaults to "gcc"
-    :type gcc_command: string|function
+    :type gcc_command: basestring|FunctionType
     :param ccache: whether to use ccache; defaults to True
-    :type ccache: boolean
+    :type ccache: bool
     :param ccache_path: ccache path; defaults to "/usr/lib/ccache"
-    :type ccache_path: string|function
+    :type ccache_path: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -50,17 +50,17 @@ def which_gcc(command, ccache, platform, exception=True):
     Behind the scenes uses :func:`gcc_platform_command`.
     
     :param command: ``gcc`` (or ``g++``, etc.) command
-    :type command: string|function
+    :type command: basestring|FunctionType
     :param ccache: set to True to attempt to use ccache; if a ccache version is not found,
                    will silently try to use the standard gcc command
-    :type ccache: boolean
+    :type ccache: bool
     :param platform: target platform or project
-    :type platform: string|function|:class:`ronin.projects.Project`
+    :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
     :param exception: set to False in order to return None upon failure, instead of raising an
                       exception
-    :type exception: boolean
+    :type exception: bool
     :returns: absolute path to command
-    :rtype: string
+    :rtype: basestring
     :raises WhichException: if ``exception`` is True and could not find command
     """
     
@@ -82,11 +82,11 @@ def gcc_platform_command(command, platform):
     Behind the scenes uses :func:`ronin.utils.platform.platform_command`.
 
     :param command: ``gcc`` (or ``g++``, etc.) command
-    :type command: string|function
+    :type command: basestring|FunctionType
     :param platform: target platform or project
-    :type platform: string|function|:class:`ronin.projects.Project`
+    :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
     :returns: command
-    :rtype: string
+    :rtype: basestring
     """
     
     if isinstance(platform, Project):
@@ -98,9 +98,9 @@ def gcc_platform_machine_bits(platform):
     Bits for target platform.
     
     :param platform: target platform or project
-    :type platform: string|function|:class:`ronin.projects.Project`
+    :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
     :returns: '64' or '32'
-    :rtype: string
+    :rtype: basestring
     """
     
     if isinstance(platform, Project):
@@ -124,11 +124,11 @@ class GccExecutor(ExecutorWithArguments):
     def __init__(self, command=None, ccache=True, platform=None):
         """
         :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param ccache: whether to use ccache; defaults to True
-        :type ccache: boolean
+        :type ccache: bool
         :param platform: target platform or project
-        :type platform: string|function|:class:`ronin.projects.Project`
+        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
         """
         
         super(GccExecutor, self).__init__()
@@ -144,40 +144,43 @@ class GccExecutor(ExecutorWithArguments):
     def enable_threads(self):
         self.add_argument('-pthread') # both compiler flags and linker libraries
 
+    def enable_openmp(self):
+        self.add_argument('-fopenmp')
+
     # Compiler
     
     def compile_only(self):
         self.add_argument('-c')
     
     def add_include_path(self, *value):
-        self.add_argument(interpolate_later('-I%s', join_path_later(*value)))
+        self.add_argument(format_later('-I{}', join_path_later(*value)))
 
     def standard(self, value):
-        self.add_argument(interpolate_later('-std=%s', value))
+        self.add_argument(format_later('-std={}', value))
 
     def define(self, name, value=None):
         if value is None:
-            self.add_argument(interpolate_later('-D%s', name))
+            self.add_argument(format_later('-D{name}', name=name))
         else:
-            self.add_argument(interpolate_later('-D%s=%s', name, value))
+            self.add_argument(format_later('-D{name}={value}', name=name, value=value))
 
     def enable_warning(self, value='all'):
-        self.add_argument(interpolate_later('-W%s', value))
+        self.add_argument(format_later('-W{}', value))
 
     def disable_warning(self, value):
-        self.add_argument(interpolate_later('-Wno-%s', value))
+        self.add_argument(format_later('-Wno-{}', value))
     
     def set_machine(self, value):
-        self.add_argument(interpolate_later('-m%s', value))
+        self.add_argument(format_later('-m{}', value))
 
     def set_machine_tune(self, value):
-        self.add_argument(interpolate_later('-mtune=%s', value))
+        self.add_argument(format_later('-mtune={}', value))
 
     def set_machine_floating_point(self, value):
-        self.add_argument(interpolate_later('-mfpmath=%s', value))
+        self.add_argument(format_later('-mfpmath={}', value))
 
     def optimize(self, value):
-        self.add_argument(interpolate_later('-O%s', value))
+        self.add_argument(format_later('-O{}', value))
 
     def enable_debug(self):
         self.add_argument('-g')
@@ -199,13 +202,13 @@ class GccExecutor(ExecutorWithArguments):
         self.add_library(the_file)
 
     def add_library_path(self, *value):
-        self.add_argument(interpolate_later('-L%s', join_path_later(*value)))
+        self.add_argument(format_later('-L{}', join_path_later(*value)))
 
     def add_library(self, value):
-        self.add_argument(interpolate_later('-l%s', value))
+        self.add_argument(format_later('-l{}', value))
     
     def use_linker(self, value):
-        self.add_argument(interpolate_later('-fuse-ld=%s', value))
+        self.add_argument(format_later('-fuse-ld={}', value))
 
     def link_static_only(self):
         self.add_argument('-static')
@@ -222,19 +225,19 @@ class GccExecutor(ExecutorWithArguments):
             if value is None:
                 self.add_argument('-Xlinker', name)
             else:
-                self.add_argument('-Xlinker', interpolate_later('%s=%s', name, value))
+                self.add_argument('-Xlinker', format_later('{name}={value}', name=name, value=value))
         else:
             if value is None:
-                self.add_argument(interpolate_later('-Wl,%s', name))
+                self.add_argument(format_later('-Wl,{}', name))
             else:
-                self.add_argument(interpolate_later('-Xl,%s,%s', name, value))
+                self.add_argument(format_later('-Xl,{name},{value}', name=name, value=value))
     
     def linker_rpath(self, value):
         """
         Add a directory to the runtime library search path.
         """
         
-        self.add_linker_argument('-rpath', interpolate_later("'%s'", value))
+        self.add_linker_argument('-rpath', format_later("'{}'", value))
 
     def linker_rpath_origin(self):
         self.linker_rpath('$ORIGIN')
@@ -290,9 +293,9 @@ class GccExecutor(ExecutorWithArguments):
 
     def _makefile(self, value, arg=None):
         if arg is not None:
-            self.add_argument(interpolate_later('-M%s', value), arg)
+            self.add_argument(format_later('-M{}', value), arg)
         else:
-            self.add_argument(interpolate_later('-M%s', value))
+            self.add_argument(format_later('-M{}', value))
 
 class _GccWithMakefile(GccExecutor):
     """
@@ -302,11 +305,11 @@ class _GccWithMakefile(GccExecutor):
     def __init__(self, command=None, ccache=True, platform=None):
         """
         :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param ccache: whether to use ccache; defaults to True
-        :type ccache: boolean
+        :type ccache: bool
         :param platform: target platform or project
-        :type platform: string|function|:class:`ronin.projects.Project`
+        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
         """
         
         super(_GccWithMakefile, self).__init__(command, ccache, platform)
@@ -327,11 +330,11 @@ class GccBuild(_GccWithMakefile):
     def __init__(self, command=None, ccache=True, platform=None):
         """
         :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param ccache: whether to use ccache; defaults to True
-        :type ccache: boolean
+        :type ccache: bool
         :param platform: target platform or project
-        :type platform: string|function|:class:`ronin.projects.Project`
+        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
         """
 
         super(GccBuild, self).__init__(command, ccache, platform)
@@ -353,11 +356,11 @@ class GccCompile(_GccWithMakefile):
     def __init__(self, command=None, ccache=True, platform=None):
         """
         :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param ccache: whether to use ccache; defaults to True
-        :type ccache: boolean
+        :type ccache: bool
         :param platform: target platform or project
-        :type platform: string|function|:class:`ronin.projects.Project`
+        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
         """
 
         super(GccCompile, self).__init__(command, ccache, platform)
@@ -378,11 +381,11 @@ class GccLink(GccExecutor):
     def __init__(self, command=None, ccache=True, platform=None):
         """
         :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param ccache: whether to use ccache; defaults to True
-        :type ccache: boolean
+        :type ccache: bool
         :param platform: target platform or project
-        :type platform: string|function|:class:`ronin.projects.Project`
+        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
         """
 
         super(GccLink, self).__init__(command, ccache, platform)

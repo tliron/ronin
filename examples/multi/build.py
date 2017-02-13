@@ -53,6 +53,7 @@ with new_context() as ctx:
           executor=executor,
           inputs=glob('src/main/**/*.c'),
           extensions=[OutputsExtension(library, 'build')],
-          output='main')
+          output='main',
+          run_output=1 if ctx.build.run else 0)
     
     cli(library, main)

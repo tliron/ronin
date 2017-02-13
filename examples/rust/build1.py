@@ -37,6 +37,7 @@ with new_context(output_path_relative='build1') as ctx:
           name='build',
           executor=RustBuild(),
           inputs=glob('src/hello1.rs'),
-          output='hello1')
+          output='hello1',
+          run_output=1 if ctx.build.run else 0)
     
     cli(project)

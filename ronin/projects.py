@@ -35,9 +35,11 @@ class Project(object):
     can also use the :class:`ronin.ninja.NinjaFile` class directly instead.
     
     :ivar phases: phases
-    :vartype phases: {string, :class:`ronin.phases.Phase`}
+    :vartype phases: {basestring, :class:`ronin.phases.Phase`}
     :ivar hooks: called when generating the Ninja file
-    :vartype hooks: [function]
+    :vartype hooks: [FunctionType]
+    :ivar run: executed in order after a successful build
+    :vartype run: {int, [basestring|FunctionType]}
     """
     
     def __init__(self,
@@ -52,24 +54,24 @@ class Project(object):
                  phases=None):
         """
         :param name: project name
-        :type name: string|function
+        :type name: basestring|FunctionType
         :param version: project version
-        :type version: string|function
+        :type version: basestring|FunctionType
         :param variant: override project variant; defaults to the context's ``projects.default_variant``
                         or :func:`ronin.utils.platform.host_platform`
-        :type variant: string|function
+        :type variant: basestring|FunctionType
         :param input_path: override input path; defaults to the context's ``paths.input_path``
-        :type input_path: string|function
+        :type input_path: basestring|FunctionType
         :param input_path_relative: override input path (relative)
-        :type input_path_relative: string|function
+        :type input_path_relative: basestring|FunctionType
         :param output_path: override output path generation
-        :type output_path: string|function
+        :type output_path: basestring|FunctionType
         :param output_path_relative: override output path generation (relative)
-        :type output_path_relative: string|function
+        :type output_path_relative: basestring|FunctionType
         :param file_name: override Ninja file name; defaults to the context's ``ninja.file_name``
-        :type file_name: string|function
+        :type file_name: basestring|FunctionType
         :param phases: project phases
-        :type phases: {string, :class:`ronin.phases.Phase`}
+        :type phases: {basestring, :class:`ronin.phases.Phase`}
         """
         
         self.name = name
@@ -81,6 +83,7 @@ class Project(object):
         self.file_name = file_name
         self.phases = phases or StrictDict(key_class=basestring, value_class='ronin.phases.Phase')
         self.hooks = StrictList(value_class='types.FunctionType')
+        self.run = StrictDict(key_class=int, value_class=list)
         self._variant = variant or (lambda ctx: ctx.get('projects.default_variant', host_platform()))
 
     def __unicode__(self):
@@ -88,11 +91,11 @@ class Project(object):
         version = stringify(self.version)
         variant = stringify(self.variant)
         if version and variant:
-            return u'%s %s (%s)' % (name, version, variant)
+            return u'{name} {version} ({variant})'.format(name=name, version=version, variant=variant)
         elif version and not variant:
-            return u'%s %s' % (name, version)
+            return u'{name} {version}'.format(name=name, version=version)
         elif variant and not version:
-            return u'%s (%s)' % (name, variant)
+            return u'{name} ({variant})'.format(name=name, variant=variant)
         else:
             return name
 
@@ -101,7 +104,7 @@ class Project(object):
         """
         Project variant.
         
-        :rtype: string
+        :rtype: basestring
         """
         
         return stringify(self._variant)
@@ -111,7 +114,7 @@ class Project(object):
         """
         True if :attr:`variant` is a Windows platform.
         
-        :rtype: boolean
+        :rtype: bool
         """
 
         return self.variant in ('win64', 'win32')
@@ -121,7 +124,7 @@ class Project(object):
         """
         True if :attr:`variant` is a Linux platform.
         
-        :rtype: boolean
+        :rtype: bool
         """
 
         return self.variant in ('linux64', 'linux32')
@@ -133,7 +136,7 @@ class Project(object):
         
         See: :func:`ronin.utils.platform.platform_executable_extension`.
         
-        :rtype: string
+        :rtype: basestring
         """
         
         return platform_executable_extension(self.variant)
@@ -145,7 +148,7 @@ class Project(object):
         
         See: :func:`ronin.utils.platform.platform_shared_library_extension`.
         
-        :rtype: string
+        :rtype: basestring
         """
 
         return platform_shared_library_extension(self.variant)
@@ -157,7 +160,7 @@ class Project(object):
         
         See: :func:`ronin.utils.platform.platform_shared_library_prefix`.
         
-        :rtype: string
+        :rtype: basestring
         """
 
         return platform_shared_library_prefix(self.variant)
@@ -168,7 +171,7 @@ class Project(object):
         The set ``input_path``, or the context's ``paths.input``.
         
         :returns: input path
-        :rtype: string 
+        :rtype: basestring 
         """
         
         input_path = stringify(self._input_path)
@@ -188,7 +191,7 @@ class Project(object):
         ``output_path_relative`` and :attr:`variant`.
         
         :returns: output path
-        :rtype: string 
+        :rtype: basestring 
         """
         
         output_path = stringify(self._output_path)
@@ -207,16 +210,16 @@ class Project(object):
         context's ``paths.[output_type]_relative``.
         
         :param output_type: output type
-        :type output_type: string|function
+        :type output_type: basestring|FunctionType
         :returns: output path for output the type
-        :rtype: string 
+        :rtype: basestring 
         """
 
         output_type = stringify(output_type)
         with current_context() as ctx:
-            output_path = ctx.get('paths.%s' % output_type)
+            output_path = ctx.get('paths.{}'.format(output_type))
         if output_path is None:
-            output_path = join_path(self.output_path, ctx.get('paths.%s_relative' % output_type))
+            output_path = join_path(self.output_path, ctx.get('paths.{}_relative'.format(output_type)))
         return output_path
 
     def get_phase_name(self, phase):
@@ -226,7 +229,7 @@ class Project(object):
         :param phase: phase
         :type phase: :class:`ronin.phases.Phase`
         :returns: phase name or None
-        :rtype: string
+        :rtype: basestring
         """
         
         for k, v in self.phases.iteritems():

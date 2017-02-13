@@ -69,6 +69,7 @@ with new_context(output_path_relative='build2') as ctx:
           executor=GccLink(),
           inputs_from=['compile'],
           extensions=extensions,
-          output='gtk-hello')
+          output='gtk-hello',
+          run_output=1 if ctx.build.run else 0)
     
     cli(project)

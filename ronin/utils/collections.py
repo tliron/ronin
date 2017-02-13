@@ -66,10 +66,10 @@ class StrictList(list):
     :param value_class: type required for list values
     :type value_class: type
     :param wrapper_function: calls this optional function on all values before added to the list
-    :type wrapper_function: function
+    :type wrapper_function: FunctionType
     :param unwrapper_function: calls this optional function on all values when retrieved from the
                                list
-    :type unwrapper_function: function
+    :type unwrapper_function: FunctionType
     """
 
     def __init__(self, items=None, value_class=None, wrapper_function=None, unwrapper_function=None):
@@ -81,7 +81,7 @@ class StrictList(list):
         if isinstance(value_class, basestring):
             value_class = import_symbol(value_class)
             if not isclass(value_class):
-                raise ValueError(u'%s is not a type' % value_class)
+                raise ValueError(u'{} is not a type'.format(value_class))
         self.value_class = value_class
         self.wrapper_function = wrapper_function
         self.unwrapper_function = unwrapper_function
@@ -91,7 +91,7 @@ class StrictList(list):
 
     def _wrap(self, value):
         if (self.value_class is not None) and (not isinstance(value, self.value_class)):
-            raise TypeError(u'value must be a "%s": %s' % (type_name(self.value_class), repr(value)))
+            raise TypeError(u'value must be a "{}": {!r}'.format(type_name(self.value_class), value))
         if self.wrapper_function is not None:
             value = self.wrapper_function(value)
         return value
@@ -138,10 +138,10 @@ class StrictDict(OrderedDict):
     :param value_class: type required for dict values
     :type value_class: type
     :param wrapper_function: calls this optional function on all values before added to the list
-    :type wrapper_function: function
+    :type wrapper_function: FunctionType
     :param unwrapper_function: calls this optional function on all values when retrieved from the
                                list
-    :type unwrapper_function: function
+    :type unwrapper_function: FunctionType
     """
 
     def __init__(self, items=None, key_class=None, value_class=None, wrapper_function=None,
@@ -155,11 +155,11 @@ class StrictDict(OrderedDict):
         if isinstance(key_class, basestring):
             key_class = import_symbol(key_class)
             if not isclass(key_class):
-                raise ValueError(u'%s is not a type' % key_class)
+                raise ValueError(u'{} is not a type'.format(key_class))
         if isinstance(value_class, basestring):
             value_class = import_symbol(value_class)
             if not isclass(value_class):
-                raise ValueError(u'%s is not a type' % value_class)
+                raise ValueError(u'{} is not a type'.format(value_class))
         self.key_class = key_class
         self.value_class = value_class
         self.wrapper_function = wrapper_function
@@ -170,7 +170,7 @@ class StrictDict(OrderedDict):
 
     def __getitem__(self, key):
         if (self.key_class is not None) and (not isinstance(key, self.key_class)):
-            raise TypeError(u'key must be a "%s": %s' % (type_name(self.key_class), repr(key)))
+            raise TypeError(u'key must be a "{}": {!r}'.format(type_name(self.key_class), key))
         value = super(StrictDict, self).__getitem__(key)
         if self.unwrapper_function is not None:
             value = self.unwrapper_function(value)
@@ -178,9 +178,9 @@ class StrictDict(OrderedDict):
 
     def __setitem__(self, key, value, **_):
         if (self.key_class is not None) and (not isinstance(key, self.key_class)):
-            raise TypeError(u'key must be a "%s": %s' % (type_name(self.key_class), repr(key)))
+            raise TypeError(u'key must be a "{}": {!r}'.format(type_name(self.key_class), key))
         if (self.value_class is not None) and (not isinstance(value, self.value_class)):
-            raise TypeError(u'value must be a "%s": %s' % (type_name(self.value_class), repr(value)))
+            raise TypeError(u'value must be a "{}": {!r}'.format(type_name(self.value_class), value))
         if self.wrapper_function is not None:
             value = self.wrapper_function(value)
         return super(StrictDict, self).__setitem__(key, value)

@@ -20,8 +20,8 @@ from ..ninja import pathify
 from ..pkg_config import Package
 from ..gcc import GccCompile
 from ..utils.platform import which
-from ..utils.paths import join_path, join_path_later
-from ..utils.strings import interpolate_later
+from ..utils.paths import join_path_later
+from ..utils.strings import format_later
 
 DEFAULT_VALAC_COMMAND = 'valac'
 
@@ -30,7 +30,7 @@ def configure_vala(valac_command=None):
     Configures the current context's `Vala <https://wiki.gnome.org/Projects/Vala>`__ support.
     
     :param valac_command: valac command; defaults to "valac"
-    :type valac_command: string|function
+    :type valac_command: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -44,7 +44,7 @@ class ValaExecutor(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``valac`` command; defaults to the context's ``vala.valac_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         """
         
         super(ValaExecutor, self).__init__()
@@ -52,7 +52,7 @@ class ValaExecutor(ExecutorWithArguments):
         self.add_argument_unfiltered('$in')
 
     def set_output_directory(self, *value):
-        self.add_argument(interpolate_later('--directory=%s', join_path_later(*value)))
+        self.add_argument(format_later('--directory={}', join_path_later(*value)))
         
     def compile_only(self):
         self.add_argument('--compile')
@@ -61,25 +61,25 @@ class ValaExecutor(ExecutorWithArguments):
         self.add_argument('--ccode')
     
     def create_c_header(self, *value):
-        self.add_argument(interpolate_later('--header=%s', join_path_later(*value)))
+        self.add_argument(format_later('--header={}', join_path_later(*value)))
 
     def create_fast_vapi(self, *value):
-        self.add_argument(interpolate_later('--fast-vapi=%s', join_path_later(*value)))
+        self.add_argument(format_later('--fast-vapi={}', join_path_later(*value)))
         
     def create_deps(self, *value):
-        self.add_argument(interpolate_later('--deps=%s', join_path_later(*value)))
+        self.add_argument(format_later('--deps={}', join_path_later(*value)))
     
     def add_source_path(self, *value):
-        self.add_argument(interpolate_later('--basedir=%s', join_path_later(*value)))
+        self.add_argument(format_later('--basedir={}', join_path_later(*value)))
         
     def add_vapi_path(self, *value):
-        self.add_argument(interpolate_later('--vapidir=%s', join_path_later(*value)))
+        self.add_argument(format_later('--vapidir={}', join_path_later(*value)))
 
     def add_gir_path(self, *value):
-        self.add_argument(interpolate_later('--girdir=%s', join_path_later(*value)))
+        self.add_argument(format_later('--girdir={}', join_path_later(*value)))
         
     def add_package(self, value):
-        self.add_argument(interpolate_later('--pkg=%s', value))
+        self.add_argument(format_later('--pkg={}', value))
     
     def enable_threads(self):
         self.add_argument('--thread')
@@ -94,15 +94,15 @@ class ValaExecutor(ExecutorWithArguments):
         self.add_argument('--enable-deprecated')
         
     def target_glib(self, value):
-        self.add_argument(interpolate_later('--target-glib=%s', value))
+        self.add_argument(format_later('--target-glib={}', value))
 
     # cc
 
     def add_cc_argument(self, value):
-        self.add_argument(interpolate_later('--Xcc=%s', value))
+        self.add_argument(format_later('--Xcc={}', value))
 
     def remove_cc_argument(self, value):
-        self.remove_argument(interpolate_later('--Xcc=%s', value))
+        self.remove_argument(format_later('--Xcc={}', value))
 
     def disable_cc_warnings(self):
         self.add_cc_argument('-w')
@@ -121,7 +121,7 @@ class ValaBuild(ValaExecutor):
     def __init__(self, command=None):
         """
         :param command: ``valac`` command; defaults to the context's ``vala.valac_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         """
         
         super(ValaBuild, self).__init__(command)
@@ -142,7 +142,7 @@ class ValaApi(ValaExecutor):
     def __init__(self, command=None):
         """
         :param command: ``valac`` command; defaults to the context's ``vala.valac_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         """
         
         super(ValaApi, self).__init__(command)
@@ -167,9 +167,9 @@ class ValaTranspile(ValaExecutor):
     def __init__(self, command=None, apis=None):
         """
         :param command: ``valac`` command; defaults to the context's ``vala.valac_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param apis: phases with :class:`ValaApi` executors
-        :type apis: [string|:class:`ronin.phases.Phase`]
+        :type apis: [basestring|:class:`ronin.phases.Phase`]
         """
         
         super(ValaTranspile, self).__init__(command)
@@ -192,11 +192,11 @@ class ValaGccCompile(GccCompile):
     def __init__(self, command=None, ccache=True, platform=None):
         """
         :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param ccache: whether to use ccache; defaults to True
-        :type ccache: boolean
+        :type ccache: bool
         :param platform: target platform or project
-        :type platform: string|function|:class:`ronin.projects.Project`
+        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
         """
 
         super(ValaGccCompile, self).__init__(command, ccache, platform)
@@ -216,15 +216,15 @@ class ValaPackage(Extension):
     def __init__(self, name=None, vapi_paths=None, c=True, c_compile_arguments=None, c_link_arguments=None):
         """
         :param name: package name
-        :type name: string|function
+        :type name: basestring|FunctionType
         :param c: set to True (default) to automatically include a :class:`ronin.pkg_config.Package`
                   of the same name (used by gcc-compatible phases), False to disable, or provide
                   any arbitrary extension
-        :type c: boolean|:class:`ronin.extensions.Extension`
+        :type c: bool|:class:`ronin.extensions.Extension`
         :param c_compile_arguments: arguments to add to gcc-compatible compile executors
-        :type c_compile_arguments: [string|function]
+        :type c_compile_arguments: [basestring|FunctionType]
         :param c_link_arguments: arguments to add to gcc-compatible link executors
-        :type c_link_arguments: [string|function]
+        :type c_link_arguments: [basestring|FunctionType]
         """
         
         super(ValaPackage, self).__init__()
@@ -304,5 +304,5 @@ def _vala_fast_vapis_var(apis):
                 _, api_outputs = api.get_outputs(api_inputs)
                 outputs += api_outputs
         
-        return ' '.join([u'--use-fast-vapi=%s' % pathify(v.file) for v in outputs])
+        return ' '.join([u'--use-fast-vapi={}'.format(pathify(v.file)) for v in outputs])
     return var

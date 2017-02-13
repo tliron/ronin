@@ -42,7 +42,8 @@ with new_context() as ctx:
           executor=GccBuild(),
           inputs=glob('src/**/*.c'),
           extensions=[SDL(static=static)],
-          output='hello')
+          output='hello',
+          run_output=1 if ctx.build.run else 0)
 
     Phase(project=project,
           name='resource',

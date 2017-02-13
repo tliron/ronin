@@ -19,7 +19,7 @@ def import_symbol(name):
     Imports a symbol based on its fully qualified name.
     
     :param name: symbol name
-    :type name: string
+    :type name: basestring
     :returns: symbol
     :raises ImportError: if could not import the module
     :raises AttributeError: if could not find the symbol in the module
@@ -28,7 +28,7 @@ def import_symbol(name):
     if name and ('.' in name):
         module_name, name = name.rsplit('.', 1)
         return getattr(__import__(module_name, fromlist=[name], level=0), name)
-    raise ImportError('import not found: %s' % name)
+    raise ImportError('import not found: {}'.format(name))
 
 def type_name(the_type):
     """
@@ -37,12 +37,12 @@ def type_name(the_type):
     :param the_type: type
     :type the_type: type
     :returns: name of type
-    :rtype: string
+    :rtype: basestring
     """
     
     module = unicode(the_type.__module__)
     name = unicode(the_type.__name__)
-    return name if module == '__builtin__' else u'%s.%s' % (module, name)
+    return name if module == '__builtin__' else u'{}.{}'.format(module, name)
 
 def verify_type(value, the_type):
     """
@@ -50,7 +50,7 @@ def verify_type(value, the_type):
 
     :param value: value
     :param the_type: type or type name
-    :type the_type: type|string
+    :type the_type: type|basestring
     :raises TypeError: if ``value`` is not an instance of ``the_type``
     :raises ValueError: if ``the_type`` is invalid
     :raises ImportError: if could not import the module
@@ -60,10 +60,10 @@ def verify_type(value, the_type):
     if isinstance(the_type, basestring):
         the_type = import_symbol(the_type)
         if not isclass(the_type):
-            raise ValueError(u'%s is not a type' % the_type)
+            raise ValueError(u'{} is not a type'.format(the_type))
     
     if not isinstance(value, the_type):
-        raise TypeError(u'not an instance of %s: %s' % (type_name(the_type), type_name(type(value)))) 
+        raise TypeError(u'not an instance of {}: {}'.format(type_name(the_type), type_name(type(value)))) 
 
 def verify_subclass(value, the_type):
     """
@@ -71,7 +71,7 @@ def verify_subclass(value, the_type):
 
     :param value: value
     :param the_type: type or type name
-    :type the_type: type|string
+    :type the_type: type|basestring
     :raises TypeError: if ``value`` is not a subclass of ``the_type``
     :raises ValueError: if ``the_type`` is invalid
     :raises ImportError: if could not import the module
@@ -81,10 +81,10 @@ def verify_subclass(value, the_type):
     if isinstance(the_type, basestring):
         the_type = import_symbol(the_type)
         if not isclass(the_type):
-            raise ValueError(u'%s is not a type' % the_type)
+            raise ValueError(u'{} is not a type'.format(the_type))
     
     if not issubclass(value, the_type):
-        raise TypeError(u'not a subclass of %s: %s' % (type_name(the_type), type_name(type(value))))
+        raise TypeError(u'not a subclass of {}: {}'.format(type_name(the_type), type_name(type(value))))
 
 def verify_type_or_subclass(value, the_type):
     """
@@ -92,7 +92,7 @@ def verify_type_or_subclass(value, the_type):
 
     :param value: value
     :param the_type: type or type name
-    :type the_type: type|string
+    :type the_type: type|basestring
     :raises TypeError: if ``value`` is not an instance or subclass of ``the_type``
     :raises ValueError: if ``the_type`` is invalid
     :raises ImportError: if could not import the module

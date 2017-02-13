@@ -28,9 +28,9 @@ def configure_pkg_config(pkg_config_command=None,
     /pkg-config/>`__ support.
     
     :param pkg_config_command: ``pkg-config`` command; defaults to "pkg-config"
-    :type pkg_config_command: string|function
+    :type pkg_config_command: basestring|FunctionType
     :param pkg_config_path: ``pkg-config`` path
-    :type pkg_config_path: string|function
+    :type pkg_config_path: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -48,13 +48,13 @@ class Package(Extension):
     def __init__(self, name, command=None, path=None, static=False):
         """
         :param name: package name
-        :type name: string|function
+        :type name: basestring|FunctionType
         :param command: ``pkg-config`` command; defaults to the context's ``pkg_config.pkg_config_command`` 
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param path: ``pkg-config`` path; defaults to the context's ``pkg_config.path``
-        :type path: string|function
+        :type path: basestring|FunctionType
         :param static: set to True to use static library linking
-        :type static: boolean
+        :type static: bool
         """
         
         super(Package, self).__init__()
@@ -91,7 +91,7 @@ class Package(Extension):
                 output = check_output(args).strip()
                 return UNESCAPED_STRING_RE.split(output)
             except CalledProcessError:
-                raise Exception(u"failed to run: '%s'" % ' '.join(args))
+                raise Exception(u"failed to run: '{}'".format(' '.join(args)))
         finally:
             if original_pkg_config_path is not None:
                 os.environ['PKG_CONFIG_PATH'] = original_pkg_config_path

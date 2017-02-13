@@ -60,6 +60,7 @@ with new_context() as ctx:
           executor=GoLink(),
           inputs_from=['compile_main'],
           extensions=extensions,
-          output='example')
+          output='example',
+          run_output=1 if ctx.build.run else 0)
     
     cli(project)

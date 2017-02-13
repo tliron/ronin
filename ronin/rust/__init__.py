@@ -15,7 +15,6 @@
 from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
-from ..utils.strings import join_later, interpolate_later
 from ..utils.paths import join_path
 from multiprocessing import cpu_count
 
@@ -27,9 +26,9 @@ def configure_rust(rustc_command=None, cargo_command=None):
     Configures the current context's `Rust <https://www.rust-lang.org/>`__ support.
     
     :param rustc_command: ``rustc`` command; defaults to "rustc"
-    :type rustc_command: string|function
+    :type rustc_command: basestring|FunctionType
     :param cargo_command: ``cargo`` command; defaults to "cargo"
-    :type cargo_command: string|function
+    :type cargo_command: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -47,7 +46,7 @@ class RustBuild(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``rustc`` command; defaults to the context's ``rust.rustc_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         """
         
         super(RustBuild, self).__init__()
@@ -73,7 +72,7 @@ class CargoBuild(ExecutorWithArguments):
     def __init__(self, command=None, jobs=None):
         """
         :param command: ``cargo`` command; defaults to the context's ``rust.cargo_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param jobs: number of jobs; defaults to cpu_count + 1
         :type jobs: integer
         """

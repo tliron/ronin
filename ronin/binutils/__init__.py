@@ -25,7 +25,7 @@ def configure_binutils(windres_command=None):
     support.
     
     :param windres_command: ``windres`` command; defaults to "windres"
-    :type windres_command: string|function
+    :type windres_command: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -38,14 +38,14 @@ def which_windres(command, platform, exception=True):
     Behind the scenes uses :func:`windres_platform_command`.
     
     :param command: ``windres`` command
-    :type command: string|function
+    :type command: basestring|FunctionType
     :param platform: target platform or project
-    :type platform: string|function|:class:`ronin.projects.Project`
+    :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
     :param exception: set to False in order to return None upon failure, instead of raising an
                       exception
-    :type exception: boolean
+    :type exception: bool
     :returns: absolute path to command
-    :rtype: string
+    :rtype: basestring
     :raises WhichException: if ``exception`` is True and could not find command
     """
     
@@ -60,11 +60,11 @@ def windres_platform_command(command, platform):
     Behind the scenes uses :func:`ronin.utils.platform.platform_command`.
 
     :param command: ``windres`` command
-    :type command: string|function
+    :type command: basestring|FunctionType
     :param platform: target platform or project
-    :type platform: string|function|:class:`ronin.projects.Project`
+    :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
     :returns: command
-    :rtype: string
+    :rtype: basestring
     """
     
     if isinstance(platform, Project):
@@ -80,11 +80,11 @@ class WindRes(ExecutorWithArguments):
     def __init__(self, command=None, extension=None, platform=None):
         """
         :param command: ``windres`` command; default's to context's ``binutils.windres_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :extension extension: output extensions; defaults to 'o'
-        :type extension: string|function
+        :type extension: basestring|FunctionType
         :param platform: target platform or project
-        :type platform: string|function|:class:`ronin.projects.Project`
+        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
         """
         
         super(WindRes, self).__init__()

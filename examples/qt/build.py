@@ -44,6 +44,7 @@ with new_context() as ctx:
           inputs=glob('src/**/*.cpp'),
           inputs_from=['meta'],
           extensions=[Package('QtGui')],
-          output='hello')
+          output='hello',
+          run_output=1 if ctx.build.run else 0)
 
     cli(project)

@@ -16,11 +16,8 @@ from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..extensions import Extension
 from ..projects import Project
-from ..phases import Phase
 from ..ninja import pathify
 from ..utils.platform import which
-from ..utils.paths import join_path
-from ..utils.strings import join_later, interpolate_later
 from ..utils.types import verify_type
 import os
 
@@ -32,9 +29,9 @@ def configure_java(javac_command=None, jar_command=None):
     Configures the current context's `Java <https://www.oracle.com/java/>`__ support.
     
     :param javac_command: ``javac`` command; defaults to "javac"
-    :type javac_command: string|function
+    :type javac_command: basestring|FunctionType
     :param jar_command: ``jar`` command; defaults to "jar"
-    :type jar_command: string|function
+    :type jar_command: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -51,9 +48,9 @@ class JavaCompile(ExecutorWithArguments):
     def __init__(self, command=None, classpath=[]):
         """
         :param command: ``javac`` command; defaults to the context's ``java.javac_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param classpath: initial classpath
-        :type classpath: [string|function]
+        :type classpath: [basestring|FunctionType]
         """
         
         super(JavaCompile, self).__init__()
@@ -82,9 +79,9 @@ class Jar(ExecutorWithArguments):
     def __init__(self, command=None, manifest=None):
         """
         :param command: ``jar`` command; defaults to the context's ``java.jar_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param manifest: absolute path to manifest file
-        :type manifest: string|function
+        :type manifest: basestring|FunctionType
         """
         
         super(Jar, self).__init__()
@@ -121,7 +118,7 @@ class JavaClasses(Extension):
         :param project: project
         :type project: :class:`ronin.projects.Project`
         :param phase_name: phase name in project
-        :type phase_name: string|function
+        :type phase_name: basestring|FunctionType
         """
         
         super(JavaClasses, self).__init__()
@@ -190,7 +187,7 @@ def _java_jar_inputs_var(output, inputs):
 
         if the_file.startswith(path):
             the_file = the_file[path_length:]
-            return u'-C %s %s' % (pathify(path), pathify(the_file))
+            return u'-C {path} {file}'.format(path=pathify(path), file=pathify(the_file))
         else:
             return pathify(the_file)
 

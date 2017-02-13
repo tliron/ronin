@@ -33,9 +33,9 @@ def configure_platform(prefixes=None, which_command=None):
     
     :param prefixes: overrides for the default platform prefixes; unspecified keys will remain
                      unchanged from their defaults
-    :type prefixes: dict of string, string or function
+    :type prefixes: {basestring, basestring|FunctionType}
     :param which_command: absolute path to :func:`which` command; defaults to "/usr/bin/which"
-    :type which_command: string|function
+    :type which_command: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -49,15 +49,15 @@ def platform_command(command, platform):
     The command prefixed for the platform, from :func:`platform_prefixes`.
     
     :param command: command
-    :type command: string|function
+    :type command: basestring|FunctionType
     :param platform: platform
-    :type platform: string|function
+    :type platform: basestring|FunctionType
     :returns: prefixed command
-    :rtype: string
+    :rtype: basestring
     """
 
     command = stringify(command)
-    return '%s%s' % (platform_prefix(platform), command)
+    return '{}{}'.format(platform_prefix(platform), command)
 
 def platform_executable_extension(platform):
     """
@@ -65,9 +65,9 @@ def platform_executable_extension(platform):
     platforms.
     
     :param platform: platform
-    :type platform: string|function
+    :type platform: basestring|FunctionType
     :returns: executable extension or None
-    :rtype: string
+    :rtype: basestring
     """
     
     platform = stringify(platform)
@@ -81,9 +81,9 @@ def platform_shared_library_extension(platform):
     platforms.
     
     :param platform: platform
-    :type platform: string|function
+    :type platform: basestring|FunctionType
     :returns: shared library extension or None
-    :rtype: string
+    :rtype: basestring
     """
 
     platform = stringify(platform)
@@ -96,9 +96,9 @@ def platform_shared_library_prefix(platform):
     The shared library extension for the platform, e.g. ``lib`` for \*nix and None for Windows.
     
     :param platform: platform
-    :type platform: string|function
+    :type platform: basestring|FunctionType
     :returns: shared library prefix or None
-    :rtype: string
+    :rtype: basestring
     """
 
     platform = stringify(platform)
@@ -112,7 +112,7 @@ def platform_prefixes():
     :func:`configure_platform`.
     
     :returns: platform prefixes
-    :rtype: dict of string, string or function
+    :rtype: {basestring, basestring|FunctionType}
     """
     
     with current_context() as ctx:
@@ -123,9 +123,9 @@ def platform_prefix(platform):
     The prefix for the platform, from :func:`platform_prefixes`.
     
     :param platform: platform
-    :type platform: string|function
+    :type platform: basestring|FunctionType
     :returns: platform prefixes or ''
-    :rtype: string
+    :rtype: basestring
     """
 
     platform = stringify(platform)
@@ -137,17 +137,17 @@ def host_platform():
     :func:`host_operating_system_prefix` and :func:`host_bits`.
 
     :returns: host platform
-    :rtype: string
+    :rtype: basestring
     """
     
-    return '%s%d' % (host_operating_system_prefix(), host_bits())
+    return '{}{:d}'.format(host_operating_system_prefix(), host_bits())
 
 def host_operating_system_prefix():
     """
     The operating system prefix for the host machine on which we are running.
 
     :returns: operating system
-    :rtype: string
+    :rtype: basestring
     """
 
     operating_system = sys.platform
@@ -174,12 +174,12 @@ def which(command, exception=True):
     ``platform.which_command``. See also :func:`configure_which`.
 
     :param command: command
-    :type command: string|function
+    :type command: basestring|FunctionType
     :param exception: set to False in order to return None upon failure, instead of raising an
                       exception
-    :type exception: boolean
+    :type exception: bool
     :returns: absolute path to command
-    :rtype: string
+    :rtype: basestring
     :raises WhichException: if ``exception`` is True and could not find command
     """
 
@@ -191,12 +191,12 @@ def which(command, exception=True):
         command = check_output([which_command, command]).strip()
         if not command:
             if exception:
-                raise WhichException(u"could not find '%s'" % command)
+                raise WhichException(u"could not find '{}'".format(command))
             return None
         return command
     except CalledProcessError:
         if exception:
-            raise WhichException(u"could not find '%s'" % command)
+            raise WhichException(u"could not find '{}'".format(command))
         return None
 
 class WhichException(Exception):

@@ -16,7 +16,7 @@ from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
 from ..utils.paths import join_path_later
-from ..utils.strings import interpolate_later
+from ..utils.strings import format_later
 
 DEFAULT_MOC_COMMAND = 'moc'
 
@@ -25,7 +25,7 @@ def configure_qt(moc_command=None):
     Configures the current context's `Qt <https://www.qt.io/>`__ support.
     
     :param moc_command: ``moc`` command; defaults to "moc"
-    :type moc_command: string|function
+    :type moc_command: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -42,7 +42,7 @@ class QtMetaObjectCompile(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``moc`` command; defaults to the context's ``qt.moc_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         """
         
         super(QtMetaObjectCompile, self).__init__()
@@ -55,13 +55,13 @@ class QtMetaObjectCompile(ExecutorWithArguments):
         self.add_argument_unfiltered('$in')
 
     def add_include_path(self, *value):
-        self.add_argument(interpolate_later('-I%s', join_path_later(*value)))
+        self.add_argument(format_later('-I{}', join_path_later(*value)))
 
     def add_framework_path(self, *value):
-        self.add_argument(interpolate_later('-F%s', join_path_later(*value)))
+        self.add_argument(format_later('-F{}', join_path_later(*value)))
 
     def define(self, name, value=None):
         if value is None:
-            self.add_argument(interpolate_later('-D%s', name))
+            self.add_argument(format_later('-D{name}', name=name))
         else:
-            self.add_argument(interpolate_later('-D%s=%s', name, value))
+            self.add_argument(format_later('-D{name}={value}', name=name, value=value))

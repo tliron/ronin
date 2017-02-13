@@ -60,6 +60,8 @@ with new_context(root_path=base_path(__file__),
     link.inputs_from.append(comp)
     link.extensions += extensions
     link.output = 'example_1'
+    if ctx.build.run:
+        link.run_output = 1
     project.phases['link'] = link
     
     cli(project)

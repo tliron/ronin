@@ -43,8 +43,8 @@ class ArgumentParser(BaseArgumentParser):
                 help_false = '(default)'
 
         group = self.add_mutually_exclusive_group()
-        group.add_argument('--%s' % name, action='store_true', help=help_true)
-        group.add_argument('--no-%s' % name, dest=dest, action='store_false', help=help_false)
+        group.add_argument('--{}'.format(name), action='store_true', help=help_true)
+        group.add_argument('--no-{}'.format(name), dest=dest, action='store_false', help=help_false)
 
         self.set_defaults(**{dest: default})
 

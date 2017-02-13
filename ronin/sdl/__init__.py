@@ -29,13 +29,13 @@ def configure_sdl(config_command=None,
     Configures the current context's `SDL <https://www.libsdl.org/>`__ support.
     
     :param config_command: config command; defaults to "sdl2-config"
-    :type config_command: string|function
+    :type config_command: basestring|FunctionType
     :param static: whether to link statically; defaults to False
-    :type static: boolean
+    :type static: bool
     :param prefix: sdl-config prefix
-    :type prefix: string|function
+    :type prefix: basestring|FunctionType
     :param exec_prefix: sdl-config exec-prefix
-    :type exec_prefix: string|function
+    :type exec_prefix: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -56,13 +56,13 @@ class SDL(Extension):
     def __init__(self, command=None, static=None, prefix=None, exec_prefix=None):
         """
         :param command: ``sdl-config`` command; defaults to the context's ``sdl.config_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param static: whether to link statically; defaults to the context's ``sdl.config_static``
-        :type static: boolean
+        :type static: bool
         :param prefix: sdl-config prefix; defaults to the context's ``sdl.prefix``
-        :type prefix: string|function
+        :type prefix: basestring|FunctionType
         :param exec_prefix: sdl-config exec-prefix; defaults to the context's ``sdl.exec_prefix``
-        :type exec_prefix: string|function
+        :type exec_prefix: basestring|FunctionType
         """
         
         super(SDL, self).__init__()
@@ -87,12 +87,12 @@ class SDL(Extension):
         
         args = [sdl_config_command, flags]
         if sdl_config_prefix is not None:
-            args.append(u'--prefix=%s' % sdl_config_prefix)
+            args.append(u'--prefix={}'.format(sdl_config_prefix))
         if sdl_config_exec_prefix is not None:
-            args.append(u'--exec-prefix=%s' % sdl_config_exec_prefix)
+            args.append(u'--exec-prefix={}'.format(sdl_config_exec_prefix))
         
         try:
             output = check_output(args).strip()
             return UNESCAPED_STRING_RE.split(output)
         except CalledProcessError:
-            raise Exception(u"failed to run: '%s'" % ' '.join(args))
+            raise Exception(u"failed to run: '{}'".format(' '.join(args)))

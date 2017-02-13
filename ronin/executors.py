@@ -21,15 +21,15 @@ class Executor(object):
     Base class for executors.
     
     :ivar command: command
-    :vartype command: function|string
+    :vartype command: basestring|FunctionType
     :ivar command_types: command types supported (used by extensions)
-    :vartype command_types: [string]
+    :vartype command_types: [basestring]
     :ivar output_extension: when calculating outputs, change extension to this
-    :vartype output_extension: function|string
+    :vartype output_extension: basestring|FunctionType
     :ivar output_prefix: when calculating outputs, prefix this to filename
-    :vartype output_prefix: function|string
+    :vartype output_prefix: basestring|FunctionType
     :ivar hooks: called when generating the Ninja file
-    :vartype hooks: [function]
+    :vartype hooks: [FunctionType]
     """
     
     def __init__(self):

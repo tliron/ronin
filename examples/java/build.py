@@ -17,7 +17,9 @@
 # hierarchy that matches the package structure, and also set "input_path=".
 #
 # The jar command is similarly finicky about paths, however the JavaClasses extension will make sure
-# to do the right thing. Take a look at the generated "build.ninja" for details. 
+# to do the right thing. Take a look at the generated "build.ninja" for details.
+#
+# This is also a nice example of using "run_command=" in order to run our output Jar.
 #
 
 from ronin.cli import cli
@@ -26,6 +28,7 @@ from ronin.java import JavaCompile, Jar, JavaClasses
 from ronin.phases import Phase
 from ronin.projects import Project
 from ronin.utils.paths import glob, input_path, join_path
+from ronin.utils.platform import which
 
 with new_context() as ctx:
 
@@ -43,6 +46,8 @@ with new_context() as ctx:
           name='jar',
           executor=Jar(manifest=input_path('MANIFEST.MF')),
           extensions=[JavaClasses(project, 'compile')],
-          output='hello')
+          output='hello',
+          run_output=1 if ctx.build.run else 0,
+          run_command=[which('java'), '-jar', '{output}'])
     
     cli(project)

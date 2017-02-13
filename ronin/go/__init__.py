@@ -29,7 +29,7 @@ def configure_go(go_command=None):
     Configures the current context's `Go <https://golang.org/>`__ support.
     
     :param go_command: ``go`` command; defaults to "go"
-    :type go_command: string|function
+    :type go_command: basestring|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -43,7 +43,7 @@ class GoExecutor(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``go`` command; defaults to the context's ``go.go_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         """
         
         super(GoExecutor, self).__init__()
@@ -60,7 +60,7 @@ class GoCompile(GoExecutor):
     def __init__(self, command=None):
         """
         :param command: ``go`` command; defaults to the context's ``go.go_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         """
 
         super(GoCompile, self).__init__(command)
@@ -121,9 +121,9 @@ class GoLink(GoExecutor):
     def __init__(self, command=None, platform=None):
         """
         :param command: ``go`` command; defaults to the context's ``go.go_command``
-        :type command: string|function
+        :type command: basestring|FunctionType
         :param platform: target platform or project
-        :type platform: string|function|:class:`ronin.projects.Project`
+        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
         """
 
         super(GoLink, self).__init__(command)
@@ -183,7 +183,7 @@ class GoPackage(Extension):
         :param project: project
         :type project: :class:`ronin.projects.Project`
         :param phase_name: phase name in project
-        :type phase_name: string|function
+        :type phase_name: basestring|FunctionType
         """
         
         super(GoPackage, self).__init__()

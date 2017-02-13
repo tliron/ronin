@@ -13,6 +13,7 @@ HERE=$(dirname "$(readlink -f "$0")")
 "$HERE/rust/build1.py" "$@"
 "$HERE/rust/build2.py" "$@"
 "$HERE/sdl/build.py" "$@"
+"$HERE/testing/build.py" "$@"
 "$HERE/unicode/build.py" "$@"
 "$HERE/vala/build1.py" "$@"
 "$HERE/vala/build2.py" "$@"

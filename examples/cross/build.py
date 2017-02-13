@@ -28,6 +28,7 @@ with new_context() as ctx:
           name='build',
           executor=GccBuild(platform=project),
           inputs=glob('src/**/*.c'),
-          output='size')
+          output='size',
+          run_output=1 if ctx.build.run else 0)
 
     cli(project)

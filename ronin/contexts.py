@@ -33,24 +33,24 @@ def new_context(**kwargs):
 
     :param root_path: the root of the input/output directory structure; defaults to the directory
                       in which the calling script resides
-    :type root_path: string or function
+    :type root_path: basestring|FunctionType
     :param input_path_relative: the default input path relative to the root; defaults to the root
                                 itself
-    :type input_path_relative: string or function
+    :type input_path_relative: basestring|FunctionType
     :param output_path_relative: the default base output path relative to the root; defaults to
                                  'build'
-    :type output_path_relative: string or function
+    :type output_path_relative: basestring|FunctionType
     :param binary_path_relative: the default binary output base path relative to the output path;
                                  defaults to 'bin'
-    :type binary_path_relative: string or function
+    :type binary_path_relative: basestring|FunctionType
     :param object_path_relative: the default object output base path relative to the output path;
                                  defaults to 'obj'
-    :type object_path_relative: string or function
+    :type object_path_relative: basestring|FunctionType
     :param source_path_relative: the default source output base path relative to the output path;
                                  defaults to 'src'
-    :type source_path_relative: string or function
+    :type source_path_relative: basestring|FunctionType
     :param name: optional name to use for descriptions
-    :type name: string or function
+    :type name: basestring|FunctionType
     :param frame: how many call frames to wind back to in order to find the calling script
     :type frame: integer
     """
@@ -80,7 +80,7 @@ def current_context(immutable=True):
     By default, the context will be treated as immutable.
     
     :param immutable: set to False in order to allow changes to the context
-    :type immutable: boolean
+    :type immutable: bool
     :returns: current context
     :rtype: :class:`Context`
     """
@@ -103,24 +103,24 @@ def configure_context(root_path=None,
     
     :param root_path: the root of the input/output directory structure; defaults to the directory
                       in which the calling script resides
-    :type root_path: string or function
+    :type root_path: basestring|FunctionType
     :param input_path_relative: the default input path relative to the root; defaults to the root
                                 itself
-    :type input_path_relative: string or function
+    :type input_path_relative: basestring|FunctionType
     :param output_path_relative: the default base output path relative to the root; defaults to
                                  'build'
-    :type output_path_relative: string or function
+    :type output_path_relative: basestring|FunctionType
     :param binary_path_relative: the default binary output base path relative to the output path;
                                  defaults to 'bin'
-    :type binary_path_relative: string or function
+    :type binary_path_relative: basestring|FunctionType
     :param object_path_relative: the default object output base path relative to the output path;
                                  defaults to 'obj'
-    :type object_path_relative: string or function
+    :type object_path_relative: basestring|FunctionType
     :param source_path_relative: the default source output base path relative to the output path;
                                  defaults to 'src'
-    :type source_path_relative: string or function
+    :type source_path_relative: basestring|FunctionType
     :param name: optional name to use for descriptions
-    :type name: string or function
+    :type name: basestring|FunctionType
     :param frame: how many call frames to wind back to in order to find the calling script
     :type frame: integer
     """
@@ -132,6 +132,9 @@ def configure_context(root_path=None,
         ctx.cli.verbose = ctx.cli.args.verbose
 
         ctx.build.debug = ctx.cli.args.debug
+        ctx.build.install = ctx.cli.args.install
+        ctx.build.test = ctx.cli.args.test
+        ctx.build.run = ctx.cli.args.run
 
         ctx.current.project_outputs = StrictDict(key_class='ronin.projects.Project', value_class=dict)
 
@@ -141,11 +144,11 @@ def configure_context(root_path=None,
         if ctx.cli.args.set:
             for value in ctx.cli.args.set:
                 if '=' not in value:
-                    error(u"'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
+                    error(u"'--set' argument is not formatted as 'ns.k=v': '{}'".format(value))
                     sys.exit(1)
                 k, v = value.split('=', 2)
                 if '.' not in k:
-                    error(u"'--set' argument is not formatted as 'ns.k=v': '%s'" % value)
+                    error(u"'--set' argument is not formatted as 'ns.k=v': '{}'".format(value))
                     sys.exit(1)
                 namespace, k = k.split('.', 2)
                 namespace = getattr(ctx, namespace)
@@ -179,7 +182,7 @@ class Context(object):
         :param parent: parent context or None
         :type parent: :class:`Context`
         :param immutable: set to True to make immutable
-        :type immutable: boolean
+        :type immutable: bool
         """
         
         if parent:
@@ -218,7 +221,7 @@ class Context(object):
 
     def __setattr__(self, name, value):
         if name not in self._LOCAL:
-            raise IncorrectUseOfContextException('namespaces cannot be assigned values: "%s"' % name)
+            raise IncorrectUseOfContextException('namespaces cannot be assigned values: "{}"'.format(name))
         super(Context, self).__setattr__(name, value)
 
     def get(self, name, default=None):
@@ -230,7 +233,7 @@ class Context(object):
         Note that if the value is defined and is None, then None is returned and *not* ``default``.
         
         :param name: name in the format "ns.k"
-        :type name: string
+        :type name: basestring
         :param default: default value
         :returns: value, default, or None
         """
@@ -250,7 +253,7 @@ class Context(object):
 
         :param value: value
         :param name: name in the format "key.property"
-        :type name: string
+        :type name: basestring
         :param default: default value
         :returns: value, default, or None
         """
@@ -264,7 +267,7 @@ class Context(object):
         Convenience method to append a property in the context, if it exists, to ``sys.path``.
         
         :param name: name in the format "key.property"
-        :type name: string
+        :type name: basestring
         :param default: default value
         """
         
@@ -279,7 +282,7 @@ class Context(object):
             r.update(self._parent._all)
         for namespace_name, namespace in sorted(self._namespaces.items()):
             for k, v in sorted(namespace._all_local.items()):
-                r['%s.%s' % (namespace_name, k)] = v
+                r['{}.{}'.format(namespace_name, k)] = v
         return r
 
     def _write(self, f):
@@ -287,7 +290,7 @@ class Context(object):
         for k, v in self._all.iteritems():
             if not k.startswith('_'):
                 v = stringify(v)
-                f.write(u'%s=%s\n' % (k, v))
+                f.write(u'{}={}\n'.format(k, v))
 
     def _push_thread_local(self):
         """
@@ -403,7 +406,7 @@ class _Namespace(object):
         if name in self._LOCAL:
             raise RuntimeError('namespace not initialized?')
         if self._context._parent is None:
-            raise NotInContextException(u'%s.%s' % (self._name, name))
+            raise NotInContextException(u'{}.{}'.format(self._name, name))
         parent = getattr(self._context._parent, self._name)
         return getattr(parent, name)
 
@@ -437,11 +440,14 @@ class _ArgumentParser(ArgumentParser):
     def __init__(self, name, frame):
         from .utils.strings import stringify
         name = stringify(name)
-        description = (u'Build %s using Rōnin %s' % (name, VERSION)) if name is not None else u'Build using Rōnin %s' % VERSION
+        description = (u'Build {} using Rōnin {}'.format(name, VERSION)) if name is not None else u'Build using Rōnin {}'.format(VERSION)
         prog = os.path.basename(inspect.getfile(sys._getframe(frame)))
         super(_ArgumentParser, self).__init__(description=description, prog=prog)
         self.add_argument('operation', nargs='*', default=['build'], help='"build", "clean", "ninja"')
         self.add_flag_argument('debug', help_true='enable debug build', help_false='disable debug build')
+        self.add_flag_argument('install', help_true='enable installing', help_false='disable installing')
+        self.add_flag_argument('test', help_true='enable testing', help_false='disable testing')
+        self.add_flag_argument('run', help_true='enable running', help_false='disable running')
         self.add_argument('--variant', help='override default project variant (defaults to host platform, e.g. "linux64")')
         self.add_argument('--set', nargs='*', metavar='ns.k=v', help='set values in the context')
         self.add_flag_argument('verbose', help_true='enable verbose output', help_false='disable verbose output')

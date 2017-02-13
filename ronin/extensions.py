@@ -35,7 +35,7 @@ class Extension(object):
     
     def apply_to_executor(self, executor):
         for command_type in executor.command_types:
-            fn = getattr(self, 'apply_to_executor_%s' % command_type, None)
+            fn = getattr(self, 'apply_to_executor_{}'.format(command_type), None)
             if fn:
                 fn(executor)
 
@@ -47,16 +47,16 @@ class ExplicitExtension(Extension):
     def __init__(self, inputs=[], include_paths=None, defines=None, library_paths=None, libraries=None):
         """
         :param inputs: input paths; note that these should be *absolute* paths
-        :type inputs: [string|function]
+        :type inputs: [basestring|FunctionType]
         :param include_paths: include paths; note that these should be *absolute* paths
-        :type include_paths: [string|function]
+        :type include_paths: [basestring|FunctionType]
         :param defines: defines in a (name, value) tuple format; use None for value if the define
                         does not have a value
-        :type defines: (string|function, string|function)
+        :type defines: (basestring|FunctionType, basestring|FunctionType)
         :param library_paths: include paths; note that these should be *absolute* paths
-        :type library_paths: [string|function]
+        :type library_paths: [basestring|FunctionType]
         :param libraries: library names
-        :type libraries: [string|function]
+        :type libraries: [basestring|FunctionType]
         """
         
         super(ExplicitExtension, self).__init__()
@@ -91,7 +91,7 @@ class OutputsExtension(Extension):
         :param project: project
         :type project: :class:`ronin.projects.Project`
         :param phase_name: phase name in project
-        :type phase_name: string|function
+        :type phase_name: basestring|FunctionType
         """
         
         super(OutputsExtension, self).__init__()

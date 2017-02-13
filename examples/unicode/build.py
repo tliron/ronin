@@ -40,6 +40,7 @@ with new_context() as ctx:
           name='link',
           executor=GccLink(),
           inputs_from=['compile'],
-          output='size')
+          output='長さ',
+          run_output=1 if ctx.build.run else 0)
 
     cli(project)
