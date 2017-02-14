@@ -236,3 +236,29 @@ class Project(object):
             if v is phase:
                 return k
         return None
+
+    def get_phase_for(self, value, attr):
+        """
+        Gets a phase and its name in the project. The argument is a phase name or a phase in the
+        project.
+        
+        :param value: phase name or phase
+        :type value: basestring|FunctionType|:class:`Phase`
+        :param attr: name of attribute from which the value was taken (for error messages)
+        :type value: basestring
+        :returns: phase name, phase
+        :rtype: basestring, :class:`Phase`
+        :raises ValueError: if phase not found in project
+        """
+        from .phases import Phase
+        if isinstance(value, Phase):
+            p_name = self.get_phase_name(value)
+            p = value
+            if p_name is None:
+                raise ValueError(u'{} contains a phase that is not in the project'.format(attr))
+        else:
+            p_name = stringify(value)
+            p = self.phases.get(p_name)
+            if p is None:
+                raise ValueError(u'"{}" in {} is not a phase in the project'.format(p_name, attr))
+        return p_name, p

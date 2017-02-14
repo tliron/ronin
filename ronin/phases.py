@@ -67,6 +67,7 @@ class Phase(object):
                  output_path=None,
                  output_path_relative=None,
                  output_strip_prefix=None,
+                 output_strip_prefix_from=None,
                  output_transform=None,
                  run_output=False,
                  run_command=None,
@@ -104,6 +105,9 @@ class Phase(object):
         :type output_path_relative: basestring|FunctionType
         :param output_strip_prefix: stripped from outputs if they begin with this
         :type output_strip_prefix: basestring|FunctionType
+        :param output_strip_prefix_from: name or instance of other phase in project, from which the
+                                         output path is used as this phase's ``output_strip_prefix``
+        :type output_strip_prefix_from: basestring|FunctionType|:class:`Phase`
         :param output_transform: called on all outputs
         :param run_output: set to non-zero to run the output after a successful build in sequence
         :type  run_output: int
@@ -149,6 +153,7 @@ class Phase(object):
         self.output_path = output_path
         self.output_path_relative = output_path_relative
         self.output_strip_prefix = output_strip_prefix
+        self.output_strip_prefix_from = output_strip_prefix_from
         self.output_transform = output_transform
         self.run_output = run_output
         self.run_command = run_command
@@ -253,7 +258,7 @@ class Phase(object):
         
         :param inputs: inputs
         :type inputs: [basestring]
-        :returns: (True if "single-output", outputs); length of ```outputs`` will always be 1 in
+        :returns: (True if "single-output", outputs); length of ``outputs`` will always be 1 in
                   "single-output" mode, otherwise it will be the same length as ``inputs``
         :rtype: (bool, [:class:`Output`])
         """
@@ -288,7 +293,15 @@ class Phase(object):
             # Each input matches an output
             
             # Strip prefix
-            output_strip_prefix = self.output_strip_prefix
+            if self.output_strip_prefix_from:
+                with current_context() as ctx:
+                    _, p = ctx.current.project.get_phase_for(self.output_strip_prefix_from, 'output_strip_prefix_from')
+                    if p:
+                        output_strip_prefix = p.output_path
+                    else:
+                        output_strip_prefix = None
+            else:
+                output_strip_prefix = stringify(self.output_strip_prefix)
             if output_strip_prefix is None:
                 output_strip_prefix = input_path
             if not output_strip_prefix.endswith(os.sep):

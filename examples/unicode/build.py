@@ -20,7 +20,7 @@
 
 from ronin.cli import cli
 from ronin.contexts import new_context
-from ronin.gcc import GccCompile, GccLink
+from ronin.gcc import GccBuild
 from ronin.phases import Phase
 from ronin.projects import Project
 from ronin.utils.paths import glob
@@ -29,17 +29,10 @@ with new_context() as ctx:
     
     project = Project(u'浪人 gcc Unicode Example')
 
-    # Compile
     Phase(project=project,
-          name='compile',
-          executor=GccCompile(),
-          inputs=glob(u'ソース/**/*.c'))
-
-    # Link
-    Phase(project=project,
-          name='link',
-          executor=GccLink(),
-          inputs_from=['compile'],
+          name='build', # cannot be Unicode!
+          executor=GccBuild(),
+          inputs=glob(u'ソース/**/*.c'),
           output='長さ',
           run_output=1 if ctx.build.run else 0)
 

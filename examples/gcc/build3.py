@@ -33,7 +33,7 @@ with new_context(root_path=base_path(__file__),
 
     configure_ninja(ninja_command='ninja',
                     encoding='utf8',
-                    file_name='build.ninja',
+                    file_name='build',
                     columns=100,
                     strict=False)
     

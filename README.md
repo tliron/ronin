@@ -21,6 +21,9 @@ all [gcc](https://gcc.gnu.org/) languages,
 [sdl2-config](https://wiki.libsdl.org/Installation), and
 [binutils](https://sourceware.org/binutils/docs/binutils/).
 
+It's also easy to integrate your favorite
+[testing framework](https://github.com/tliron/ronin/wiki/Testing%20and%20Running).
+
 "Based on Python" means that not only is it written in Python, but also it uses
 **Python as the DSL** for build scripts. Many build systems invent their own DSLs, but Rōnin
 intentionally uses a language that already exists. There's no hidden cost to this design choice:

@@ -16,7 +16,7 @@ from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
 
-DEFAULT_CP_COMMAND = 'cp'
+DEFAULT_COPY_COMMAND = 'cp'
 
 def configure_files(copy_command=None):
     """
@@ -27,7 +27,7 @@ def configure_files(copy_command=None):
     """
     
     with current_context(False) as ctx:
-        ctx.files.cp_command = copy_command or DEFAULT_CP_COMMAND
+        ctx.files.copy_command = copy_command or DEFAULT_COPY_COMMAND
 
 class Copy(ExecutorWithArguments):
     """
@@ -35,17 +35,17 @@ class Copy(ExecutorWithArguments):
     
     The phase inputs are copied to the phase outputs.
     
-    Use the phase's ``input_path_relative`` if you need to strip the input paths from the output
+    Use the phase's ``output_strip_prefix`` if you need to strip the input paths from the output
     paths.
     """
     
     def __init__(self, command=None):
         """
-        :param command: ``cp`` command; default's to context's ``files.cp_command``
+        :param command: ``cp`` command; default's to context's ``files.copy_command``
         :type command: basestring|FunctionType
         """
         
         super(Copy, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'files.cp_command', DEFAULT_CP_COMMAND))
+        self.command = lambda ctx: which(ctx.fallback(command, 'files.copy_command', DEFAULT_COPY_COMMAND))
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('$out')

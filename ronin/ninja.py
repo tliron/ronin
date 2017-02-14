@@ -382,22 +382,13 @@ class NinjaFile(object):
     def _get_phase_names(self, ctx, phase, attr):
         phase_names = []
         for value in getattr(phase, attr):
-            if isinstance(value, Phase):
-                p_name = self._project.get_phase_name(value)
-                p = value
-                if p_name is None:
-                    raise ValueError(u'{} contains a phase that is not in the project'.format(attr))
-            else:
-                p_name = stringify(value)
-                p = self._project.phases.get(p_name)
-                if p is None:
-                    raise ValueError(u'{} "{}" is not a phase in the project'.format(attr, p_name))
+            p_name, p = self._project.get_phase_for(value, attr)
             if p is phase:
                 raise ValueError(u'{} contains self'.format(attr))
 
             phase_names.append(p_name)
             
-            # Write this phase first, so we have results to collect
+            # Write this phase so we have results to collect
             self._write_rule(ctx, p_name, p)
             
         return phase_names
