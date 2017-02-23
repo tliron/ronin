@@ -74,5 +74,5 @@ setup(
     
     install_requires=[
         'blessings==1.6',
-        'colorama==0.2.4',
+        'colorama==0.3.7',
         'glob2==0.5'])
