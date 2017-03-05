@@ -70,7 +70,7 @@ def stringify_dict(values):
     :param values: values
     :type values: {}
     :returns: values
-    :rtype: {object, basestring}
+    :rtype: {object: basestring}
     """
     
     return {k: stringify(v) for k, v in values.iteritems()}

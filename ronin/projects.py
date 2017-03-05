@@ -35,11 +35,11 @@ class Project(object):
     can also use the :class:`ronin.ninja.NinjaFile` class directly instead.
     
     :ivar phases: phases
-    :vartype phases: {basestring, :class:`ronin.phases.Phase`}
+    :vartype phases: {basestring: :class:`ronin.phases.Phase`}
     :ivar hooks: called when generating the Ninja file
     :vartype hooks: [FunctionType]
     :ivar run: executed in order after a successful build
-    :vartype run: {int, [basestring|FunctionType]}
+    :vartype run: {int: [basestring|FunctionType]}
     """
     
     def __init__(self,
@@ -71,7 +71,7 @@ class Project(object):
         :param file_name: override Ninja file name; defaults to the context's ``ninja.file_name``
         :type file_name: basestring|FunctionType
         :param phases: project phases
-        :type phases: {basestring, :class:`ronin.phases.Phase`}
+        :type phases: {basestring: :class:`ronin.phases.Phase`}
         """
         
         self.name = name

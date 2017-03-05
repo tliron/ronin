@@ -48,7 +48,7 @@ class Phase(object):
     automatically be added to that project. You can do this manually instead.
 
     :ivar vars: custom Ninja variables
-    :vartype vars: {basestring, FunctionType|basestring}
+    :vartype vars: {basestring: FunctionType|basestring}
     :ivar hooks: called when generating the Ninja file
     :vartype hooks: [FunctionType]
     """

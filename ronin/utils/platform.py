@@ -33,7 +33,7 @@ def configure_platform(prefixes=None, which_command=None):
     
     :param prefixes: overrides for the default platform prefixes; unspecified keys will remain
                      unchanged from their defaults
-    :type prefixes: {basestring, basestring|FunctionType}
+    :type prefixes: {basestring: basestring|FunctionType}
     :param which_command: absolute path to :func:`which` command; defaults to "/usr/bin/which"
     :type which_command: basestring|FunctionType
     """
@@ -112,7 +112,7 @@ def platform_prefixes():
     :func:`configure_platform`.
     
     :returns: platform prefixes
-    :rtype: {basestring, basestring|FunctionType}
+    :rtype: {basestring: basestring|FunctionType}
     """
     
     with current_context() as ctx:
