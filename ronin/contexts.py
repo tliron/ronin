@@ -136,7 +136,7 @@ def configure_context(root_path=None,
         ctx.build.test = ctx.cli.args.test
         ctx.build.run = ctx.cli.args.run
 
-        ctx.current.project_outputs = StrictDict(key_class='ronin.projects.Project', value_class=dict)
+        ctx.current.project_outputs = StrictDict(key_type='ronin.projects.Project', value_type=dict)
 
         if ctx.cli.args.variant:
             ctx.projects.default_variant = ctx.cli.args.variant
@@ -189,8 +189,8 @@ class Context(object):
             verify_type(parent, Context)
         self._parent = parent
         self._immutable = immutable
-        self._namespaces = StrictDict(key_class=basestring, value_class=_Namespace)
-        self._exit_hooks = StrictList(value_class='types.FunctionType')
+        self._namespaces = StrictDict(key_type=basestring, value_type=_Namespace)
+        self._exit_hooks = StrictList(value_type='types.FunctionType')
     
     def __unicode__(self):
         f = StringIO()
@@ -425,7 +425,7 @@ class _ContextStack(object):
     """
     
     def __init__(self):
-        self._stack = StrictList(value_class=Context)
+        self._stack = StrictList(value_type=Context)
     
     def push(self, context):
         self._stack.append(context)

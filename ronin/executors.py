@@ -34,11 +34,11 @@ class Executor(object):
     
     def __init__(self):
         self.command = None
-        self.command_types = StrictList(value_class=basestring)
+        self.command_types = StrictList(value_type=basestring)
         self.output_extension = None
         self.output_prefix = None
         self.output_type = 'binary'
-        self.hooks = StrictList(value_class='types.FunctionType')
+        self.hooks = StrictList(value_type='types.FunctionType')
         self._deps_file = None
         self._deps_type = None
 

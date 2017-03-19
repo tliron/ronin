@@ -81,9 +81,9 @@ class Project(object):
         self.output_path = output_path
         self.output_path_relative = output_path_relative
         self.file_name = file_name
-        self.phases = phases or StrictDict(key_class=basestring, value_class='ronin.phases.Phase')
-        self.hooks = StrictList(value_class='types.FunctionType')
-        self.run = StrictDict(key_class=int, value_class=list)
+        self.phases = StrictDict(phases, key_type=basestring, value_type='ronin.phases.Phase')
+        self.hooks = StrictList(value_type='types.FunctionType')
+        self.run = StrictDict(key_type=int, value_type=list)
         self._variant = variant or (lambda ctx: ctx.get('projects.default_variant', host_platform()))
 
     def __unicode__(self):

@@ -32,14 +32,18 @@ def import_symbol(name):
 
 def type_name(the_type):
     """
-    Human-readable name of type. Built-in types will avoid the "__builtin__" prefix.
+    Human-readable name of type(s). Built-in types will avoid the "__builtin__" prefix.
+
+    Tuples are always handled as a join of "|". 
     
-    :param the_type: type
-    :type the_type: type
-    :returns: name of type
+    :param the_type: type(s)
+    :type the_type: type|(type)
+    :returns: name of type(s)
     :rtype: basestring
     """
-    
+
+    if isinstance(the_type, tuple):
+        return u'|'.join([type_name(v) for v in the_type])    
     module = unicode(the_type.__module__)
     name = unicode(the_type.__name__)
     return name if module == '__builtin__' else u'{}.{}'.format(module, name)

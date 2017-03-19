@@ -63,8 +63,8 @@ class StrictList(list):
     
     :param items: initial list
     :type items: list
-    :param value_class: type required for list values
-    :type value_class: type
+    :param value_type: type(s) required for list values
+    :type value_type: type|basestring|(type|basestring)
     :param wrapper_function: calls this optional function on all values before added to the list
     :type wrapper_function: FunctionType
     :param unwrapper_function: calls this optional function on all values when retrieved from the
@@ -72,17 +72,13 @@ class StrictList(list):
     :type unwrapper_function: FunctionType
     """
 
-    def __init__(self, items=None, value_class=None, wrapper_function=None, unwrapper_function=None):
+    def __init__(self, items=None, value_type=None, wrapper_function=None, unwrapper_function=None):
         super(StrictList, self).__init__()
         if isinstance(items, StrictList):
-            self.value_class = items.value_class
+            self.value_type = items.value_type
             self.wrapper_function = items.wrapper_function
             self.unwrapper_function = items.unwrapper_function
-        if isinstance(value_class, basestring):
-            value_class = import_symbol(value_class)
-            if not isclass(value_class):
-                raise ValueError(u'{} is not a type'.format(value_class))
-        self.value_class = value_class
+        self.value_type = _convert_type(value_type)
         self.wrapper_function = wrapper_function
         self.unwrapper_function = unwrapper_function
         if items:
@@ -90,8 +86,8 @@ class StrictList(list):
                 self.append(item)
 
     def _wrap(self, value):
-        if (self.value_class is not None) and (not isinstance(value, self.value_class)):
-            raise TypeError(u'value must be a "{}": {!r}'.format(type_name(self.value_class), value))
+        if (self.value_type is not None) and (not isinstance(value, self.value_type)):
+            raise TypeError(u'value must be a "{}": {!r}'.format(type_name(self.value_type), value))
         if self.wrapper_function is not None:
             value = self.wrapper_function(value)
         return value
@@ -133,10 +129,10 @@ class StrictDict(OrderedDict):
     
     :param items: initial dict
     :type items: dict
-    :param key_class: type required for dict keys
-    :type key_class: type
-    :param value_class: type required for dict values
-    :type value_class: type
+    :param key_type: type(s) required for dict keys
+    :type key_type: type|basestring|(type|basestring)
+    :param value_type: type(s) required for dict values
+    :type value_type: type|basestring|(type|basestring)
     :param wrapper_function: calls this optional function on all values before added to the list
     :type wrapper_function: FunctionType
     :param unwrapper_function: calls this optional function on all values when retrieved from the
@@ -144,24 +140,16 @@ class StrictDict(OrderedDict):
     :type unwrapper_function: FunctionType
     """
 
-    def __init__(self, items=None, key_class=None, value_class=None, wrapper_function=None,
+    def __init__(self, items=None, key_type=None, value_type=None, wrapper_function=None,
                  unwrapper_function=None):
         super(StrictDict, self).__init__()
         if isinstance(items, StrictDict):
-            self.key_class = items.key_class
-            self.value_class = items.value_class
+            self.key_type = items.key_type
+            self.value_type = items.value_type
             self.wrapper_function = items.wrapper_function
             self.unwrapper_function = items.unwrapper_function
-        if isinstance(key_class, basestring):
-            key_class = import_symbol(key_class)
-            if not isclass(key_class):
-                raise ValueError(u'{} is not a type'.format(key_class))
-        if isinstance(value_class, basestring):
-            value_class = import_symbol(value_class)
-            if not isclass(value_class):
-                raise ValueError(u'{} is not a type'.format(value_class))
-        self.key_class = key_class
-        self.value_class = value_class
+        self.key_type = _convert_type(key_type)
+        self.value_type = _convert_type(value_type)
         self.wrapper_function = wrapper_function
         self.unwrapper_function = unwrapper_function
         if items:
@@ -169,18 +157,27 @@ class StrictDict(OrderedDict):
                 self[k] = v
 
     def __getitem__(self, key):
-        if (self.key_class is not None) and (not isinstance(key, self.key_class)):
-            raise TypeError(u'key must be a "{}": {!r}'.format(type_name(self.key_class), key))
+        if (self.key_type is not None) and (not isinstance(key, self.key_type)):
+            raise TypeError(u'key must be a "{}": {!r}'.format(type_name(self.key_type), key))
         value = super(StrictDict, self).__getitem__(key)
         if self.unwrapper_function is not None:
             value = self.unwrapper_function(value)
         return value
 
     def __setitem__(self, key, value, **_):
-        if (self.key_class is not None) and (not isinstance(key, self.key_class)):
-            raise TypeError(u'key must be a "{}": {!r}'.format(type_name(self.key_class), key))
-        if (self.value_class is not None) and (not isinstance(value, self.value_class)):
-            raise TypeError(u'value must be a "{}": {!r}'.format(type_name(self.value_class), value))
+        if (self.key_type is not None) and (not isinstance(key, self.key_type)):
+            raise TypeError(u'key must be a "{}": {!r}'.format(type_name(self.key_type), key))
+        if (self.value_type is not None) and (not isinstance(value, self.value_type)):
+            raise TypeError(u'value must be a "{}": {!r}'.format(type_name(self.value_type), value))
         if self.wrapper_function is not None:
             value = self.wrapper_function(value)
         return super(StrictDict, self).__setitem__(key, value)
+
+def _convert_type(the_type):
+    if isinstance(the_type, tuple):
+        return tuple(_convert_type(v) for v in the_type)
+    elif isinstance(the_type, basestring):
+        the_type = import_symbol(the_type)
+    if not isclass(the_type):
+        raise ValueError(u'{} is not a type'.format(the_type))
+    return the_type

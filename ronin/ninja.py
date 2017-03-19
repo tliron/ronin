@@ -264,7 +264,7 @@ class NinjaFile(object):
 
             with _Writer(f, columns, strict) as w:
                 ctx.current.writer = w
-                ctx.current.phase_outputs = StrictDict(key_class=basestring, value_class=list)
+                ctx.current.phase_outputs = StrictDict(key_type=basestring, value_type=list)
                 ctx.current.project = self._project
                 ctx.current.project_outputs[self._project] = ctx.current.phase_outputs
                 

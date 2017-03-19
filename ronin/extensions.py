@@ -16,6 +16,7 @@ from .contexts import current_context
 from .utils.types import verify_type
 from .utils.collections import StrictList
 from .utils.strings import stringify
+from types import FunctionType
 
 class Extension(object):
     """
@@ -28,7 +29,7 @@ class Extension(object):
     """
     
     def __init__(self):
-        self.extensions = StrictList(value_class=Extension)
+        self.extensions = StrictList(value_type=Extension)
 
     def apply_to_phase(self, phase):
         pass
@@ -44,7 +45,7 @@ class ExplicitExtension(Extension):
     An extension with explicitly stated data to support gcc-like executors.
     """
     
-    def __init__(self, inputs=[], include_paths=None, defines=None, library_paths=None, libraries=None):
+    def __init__(self, inputs=None, include_paths=None, defines=None, library_paths=None, libraries=None):
         """
         :param inputs: input paths; note that these should be *absolute* paths
         :type inputs: [basestring|FunctionType]
@@ -52,7 +53,7 @@ class ExplicitExtension(Extension):
         :type include_paths: [basestring|FunctionType]
         :param defines: defines in a (name, value) tuple format; use None for value if the define
                         does not have a value
-        :type defines: (basestring|FunctionType, basestring|FunctionType)
+        :type defines: [(basestring|FunctionType, basestring|FunctionType)]
         :param library_paths: include paths; note that these should be *absolute* paths
         :type library_paths: [basestring|FunctionType]
         :param libraries: library names
@@ -60,11 +61,11 @@ class ExplicitExtension(Extension):
         """
         
         super(ExplicitExtension, self).__init__()
-        self.inputs = inputs or []
-        self.include_paths = include_paths or []
+        self.inputs = StrictList(inputs, value_type=(basestring, FunctionType))
+        self.include_paths = StrictList(include_paths, value_type=(basestring, FunctionType))
         self.defines = defines or []
-        self.library_paths = library_paths or []
-        self.libraries = libraries or []
+        self.library_paths = StrictList(library_paths, value_type=(basestring, FunctionType))
+        self.libraries = StrictList(libraries, value_type=(basestring, FunctionType))
 
     def apply_to_phase(self, phase):
         phase.inputs += self.inputs
