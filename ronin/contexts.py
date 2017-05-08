@@ -146,11 +146,11 @@ def configure_context(root_path=None,
                 if '=' not in value:
                     error(u"'--set' argument is not formatted as 'ns.k=v': '{}'".format(value))
                     sys.exit(1)
-                k, v = value.split('=', 2)
+                k, v = value.split('=', 1)
                 if '.' not in k:
                     error(u"'--set' argument is not formatted as 'ns.k=v': '{}'".format(value))
                     sys.exit(1)
-                namespace, k = k.split('.', 2)
+                namespace, k = k.split('.', 1)
                 namespace = getattr(ctx, namespace)
                 setattr(namespace, k, v)
         
@@ -240,7 +240,7 @@ class Context(object):
         
         if '.' not in name:
             return default
-        namespace_name, name = name.split('.', 2)
+        namespace_name, name = name.split('.', 1)
         try:
             namespace = getattr(self, namespace_name)
             return getattr(namespace, name)
