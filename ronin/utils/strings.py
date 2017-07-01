@@ -17,9 +17,11 @@
 from ..contexts import current_context
 import re
 
+
 _ENCODING = 'utf-8'
 
 UNESCAPED_STRING_RE = re.compile(r'(?<!\\) ')
+
 
 def stringify(value):
     """
@@ -51,6 +53,7 @@ def stringify(value):
         except UnicodeDecodeError:
             return str(value).decode(_ENCODING)
 
+
 def stringify_list(values):
     """
     Calls :func:`stringify` on all elements. Return values of None are preserved.
@@ -63,6 +66,7 @@ def stringify_list(values):
     
     return [stringify(v) for v in values]
 
+
 def stringify_dict(values):
     """
     Calls :func:`stringify` on all dict values. Return values of None are preserved.
@@ -74,6 +78,7 @@ def stringify_dict(values):
     """
     
     return {k: stringify(v) for k, v in values.iteritems()}
+
 
 def bool_stringify(value):
     """
@@ -100,6 +105,7 @@ def bool_stringify(value):
             value = str(value).decode(_ENCODING)
         return value.lower() == 'true'
 
+
 def join_later(values, separator=' '):
     """
     Creates a lambda that calls :func:`stringify_list` and joins the results on ``separator``.
@@ -113,6 +119,7 @@ def join_later(values, separator=' '):
     """
     
     return lambda _: stringify(separator).join(stringify_list(values))
+
 
 def format_later(the_format, *args, **kwargs):
     """

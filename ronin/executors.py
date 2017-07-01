@@ -16,20 +16,21 @@ from .utils.strings import stringify, join_later
 from .utils.collections import StrictList
 from StringIO import StringIO
 
+
 class Executor(object):
     """
     Base class for executors.
     
     :ivar command: command
-    :vartype command: basestring|FunctionType
+    :vartype command: basestring or ~types.FunctionType
     :ivar command_types: command types supported (used by extensions)
-    :vartype command_types: [basestring]
+    :vartype command_types: [:obj:`basestring`]
     :ivar output_extension: when calculating outputs, change extension to this
-    :vartype output_extension: basestring|FunctionType
+    :vartype output_extension: basestring or ~types.FunctionType
     :ivar output_prefix: when calculating outputs, prefix this to filename
-    :vartype output_prefix: basestring|FunctionType
+    :vartype output_prefix: basestring or ~types.FunctionType
     :ivar hooks: called when generating the Ninja file
-    :vartype hooks: [FunctionType]
+    :vartype hooks: [:obj:`~types.FunctionType`]
     """
     
     def __init__(self):
@@ -58,6 +59,7 @@ class Executor(object):
 
     def add_input(self, value):
         pass
+
 
 class ExecutorWithArguments(Executor):
     """

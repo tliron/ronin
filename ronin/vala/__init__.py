@@ -23,7 +23,9 @@ from ..utils.platform import which
 from ..utils.paths import join_path_later
 from ..utils.strings import format_later
 
+
 DEFAULT_VALAC_COMMAND = 'valac'
+
 
 def configure_vala(valac_command=None):
     """
@@ -35,6 +37,7 @@ def configure_vala(valac_command=None):
     
     with current_context(False) as ctx:
         ctx.vala.valac_command = valac_command or DEFAULT_VALAC_COMMAND
+
 
 class ValaExecutor(ExecutorWithArguments):
     """
@@ -48,7 +51,8 @@ class ValaExecutor(ExecutorWithArguments):
         """
         
         super(ValaExecutor, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'vala.valac_command', DEFAULT_VALAC_COMMAND))
+        self.command = lambda ctx: which(ctx.fallback(command, 'vala.valac_command',
+                                                      DEFAULT_VALAC_COMMAND))
         self.add_argument_unfiltered('$in')
 
     def set_output_directory(self, *value):
@@ -109,7 +113,8 @@ class ValaExecutor(ExecutorWithArguments):
 
     def enable_cc_warnings(self):
         self.remove_cc_argument('-w')
-        
+      
+ 
 class ValaBuild(ValaExecutor):
     """
     `Vala <https://wiki.gnome.org/Projects/Vala>`__ single-phase build executor. Behind the scenes
@@ -127,8 +132,9 @@ class ValaBuild(ValaExecutor):
         super(ValaBuild, self).__init__(command)
         self.command_types = ['vala', 'vala_build']
         self.add_argument_unfiltered('--output=$out')
-        self.disable_cc_warnings() # you pretty much always want this due to how valac creates C code
+        self.disable_cc_warnings() # valac creates C code riddled with warnings...
         self.hooks.append(_debug_hook)
+
 
 class ValaApi(ValaExecutor):
     """
@@ -150,6 +156,7 @@ class ValaApi(ValaExecutor):
         self.output_type = 'source'
         self.output_extension = 'vapi'
         self.add_argument_unfiltered('--fast-vapi=$out')
+
 
 class ValaTranspile(ValaExecutor):
     """
@@ -183,6 +190,7 @@ class ValaTranspile(ValaExecutor):
         self.create_c_code()
         self.hooks.append(_transpile_hook)
 
+
 class ValaGccCompile(GccCompile):
     """
     Identical to :class:`ronin.gcc.GccCompile`, just with a default configuration most suitable for
@@ -191,7 +199,8 @@ class ValaGccCompile(GccCompile):
     
     def __init__(self, command=None, ccache=True, platform=None):
         """
-        :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's ``gcc.gcc_command``
+        :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's
+         ``gcc.gcc_command``
         :type command: basestring|FunctionType
         :param ccache: whether to use ccache; defaults to True
         :type ccache: bool
@@ -204,6 +213,7 @@ class ValaGccCompile(GccCompile):
         self.disable_warning('incompatible-pointer-types')
         self.disable_warning('discarded-qualifiers')
         self.disable_warning('format-extra-args')
+
 
 class ValaPackage(Extension):
     """
@@ -218,8 +228,8 @@ class ValaPackage(Extension):
         :param name: package name
         :type name: basestring|FunctionType
         :param c: set to True (default) to automatically include a :class:`ronin.pkg_config.Package`
-                  of the same name (used by gcc-compatible phases), False to disable, or provide
-                  any arbitrary extension
+         of the same name (used by gcc-compatible phases), False to disable, or provide any
+         arbitrary extension
         :type c: bool|:class:`ronin.extensions.Extension`
         :param c_compile_arguments: arguments to add to gcc-compatible compile executors
         :type c_compile_arguments: [basestring|FunctionType]
@@ -257,10 +267,12 @@ class ValaPackage(Extension):
         for arg in self.c_link_arguments:
             executor.add_argument(arg)
 
+
 def _debug_hook(executor):
     with current_context() as ctx:
         if ctx.get('build.debug', False):
             executor.enable_debug()
+
 
 def _transpile_hook(executor):
     # valac is so complicated:
@@ -281,13 +293,16 @@ def _transpile_hook(executor):
     phase.vars['output_path'] = _vala_output_path_var
     phase.vars['fast_vapis'] = _vala_fast_vapis_var(executor.apis)
 
+
 def _vala_base_path_var(output, inputs):
     with current_context() as ctx:
         return ctx.current.phase.input_path
-        
+
+
 def _vala_output_path_var(output, inputs):
     with current_context() as ctx:
         return ctx.current.phase.output_path
+
 
 def _vala_fast_vapis_var(apis):
     def var(output, inputs):

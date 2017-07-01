@@ -18,6 +18,7 @@ from .utils.collections import StrictList
 from .utils.strings import stringify
 from types import FunctionType
 
+
 class Extension(object):
     """
     Base class for extensions.
@@ -40,6 +41,7 @@ class Extension(object):
             if fn:
                 fn(executor)
 
+
 class ExplicitExtension(Extension):
     """
     An extension with explicitly stated data to support gcc-like executors.
@@ -48,16 +50,17 @@ class ExplicitExtension(Extension):
     def __init__(self, inputs=None, include_paths=None, defines=None, library_paths=None, libraries=None):
         """
         :param inputs: input paths; note that these should be *absolute* paths
-        :type inputs: [basestring|FunctionType]
+        :type inputs: [:obj:`basestring` or :obj:`~types.FunctionType`]
         :param include_paths: include paths; note that these should be *absolute* paths
-        :type include_paths: [basestring|FunctionType]
+        :type include_paths: [:obj:`basestring` or :obj:`~types.FunctionType`]
         :param defines: defines in a (name, value) tuple format; use None for value if the define
-                        does not have a value
-        :type defines: [(basestring|FunctionType, basestring|FunctionType)]
+         does not have a value
+        :type defines: [(:obj:`basestring` or :obj:`~types.FunctionType`, :obj:`basestring` or
+         :obj:`~types.FunctionType`)]
         :param library_paths: include paths; note that these should be *absolute* paths
-        :type library_paths: [basestring|FunctionType]
+        :type library_paths: [:obj:`basestring` or :obj:`~types.FunctionType`]
         :param libraries: library names
-        :type libraries: [basestring|FunctionType]
+        :type libraries: [:obj:`basestring` or :obj:`~types.FunctionType`]
         """
         
         super(ExplicitExtension, self).__init__()
@@ -82,6 +85,7 @@ class ExplicitExtension(Extension):
         for library in self.libraries:
             executor.add_library(library)
 
+
 class OutputsExtension(Extension):
     """
     An extension that pulls in outputs from another build phase.
@@ -90,9 +94,9 @@ class OutputsExtension(Extension):
     def __init__(self, project, phase_name):
         """
         :param project: project
-        :type project: :class:`ronin.projects.Project`
+        :type project: ~ronin.projects.Project
         :param phase_name: phase name in project
-        :type phase_name: basestring|FunctionType
+        :type phase_name: basestring or ~types.FunctionType
         """
         
         super(OutputsExtension, self).__init__()

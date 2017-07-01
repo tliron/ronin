@@ -45,6 +45,7 @@ from .types import type_name, import_symbol
 from collections import OrderedDict
 from inspect import isclass
 
+
 def dedup(values):
     """
     Removes duplicate items from a list. Note that it does not change the original list.
@@ -57,19 +58,21 @@ def dedup(values):
     
     return list(OrderedDict.fromkeys(values))
 
+
 class StrictList(list):
     """
-    A list that raises :class:`TypeError` exceptions when objects of the wrong type are inserted.
+    A list that raises :class:`~exceptions.TypeError` exceptions when objects of the wrong type are
+    inserted.
     
     :param items: initial list
     :type items: list
     :param value_type: type(s) required for list values
-    :type value_type: type|basestring|(type|basestring)
+    :type value_type: :obj:`type` or :obj:`basestring` or (:obj:`type` or :obj:`basestring`)
     :param wrapper_function: calls this optional function on all values before added to the list
-    :type wrapper_function: FunctionType
+    :type wrapper_function: ~types.FunctionType
     :param unwrapper_function: calls this optional function on all values when retrieved from the
-                               list
-    :type unwrapper_function: FunctionType
+     list
+    :type unwrapper_function: ~types.FunctionType
     """
 
     def __init__(self, items=None, value_type=None, wrapper_function=None, unwrapper_function=None):
@@ -122,22 +125,23 @@ class StrictList(list):
         value = self._wrap(value)
         return super(StrictList, self).insert(index, value)
 
+
 class StrictDict(OrderedDict):
     """
-    An ordered dict that raises :class:`TypeError` exceptions when keys or values of the wrong type
-    are used.
+    An ordered dict that raises :class:`~exceptions.TypeError` exceptions when keys or values of the
+    wrong type are used.
     
     :param items: initial dict
     :type items: dict
     :param key_type: type(s) required for dict keys
-    :type key_type: type|basestring|(type|basestring)
+    :type key_type: :obj:`type` or :obj:`basestring` or (:obj:`type` or :obj:`basestring`)
     :param value_type: type(s) required for dict values
-    :type value_type: type|basestring|(type|basestring)
+    :type value_type: :obj:`type` or :obj:`basestring` or (:obj:`type` or :obj:`basestring`)
     :param wrapper_function: calls this optional function on all values before added to the list
-    :type wrapper_function: FunctionType
+    :type wrapper_function: ~types.FunctionType
     :param unwrapper_function: calls this optional function on all values when retrieved from the
-                               list
-    :type unwrapper_function: FunctionType
+     list
+    :type unwrapper_function: ~types.FunctionType
     """
 
     def __init__(self, items=None, key_type=None, value_type=None, wrapper_function=None,
@@ -172,6 +176,7 @@ class StrictDict(OrderedDict):
         if self.wrapper_function is not None:
             value = self.wrapper_function(value)
         return super(StrictDict, self).__setitem__(key, value)
+
 
 def _convert_type(the_type):
     if isinstance(the_type, tuple):

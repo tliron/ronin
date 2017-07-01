@@ -15,14 +15,16 @@
 # limitations under the License.
 
 from .contexts import current_context
-from .utils.platform import host_platform, platform_executable_extension, platform_shared_library_extension, platform_shared_library_prefix
+from .utils.platform import host_platform, platform_executable_extension, \
+    platform_shared_library_extension, platform_shared_library_prefix
 from .utils.strings import stringify
 from .utils.paths import join_path
 from .utils.collections import StrictDict, StrictList
 
+
 class Project(object):
     """
-    A container for an interrelated set of build phase (see :class:`ronin.phases.Phase`).
+    A container for an interrelated set of build phase (see :class:`~ronin.phases.Phase`).
     
     Every project is equivalent to a single Ninja file. Projects by default inherit properties from
     the current context, but can override any of them.
@@ -31,15 +33,15 @@ class Project(object):
     at least one to do something useful. Actually, due the dynamic nature of Rōnin build scripts, an
     entirely different number and nature of projects may be created by each run of a script.
     
-    After setting up projects, they are usually handed over to :func:`ronin.cli.cli`. Though, you
-    can also use the :class:`ronin.ninja.NinjaFile` class directly instead.
+    After setting up projects, they are usually handed over to :func:`~ronin.cli.cli`. Though, you
+    can also use the :class:`~ronin.ninja.NinjaFile` class directly instead.
     
     :ivar phases: phases
-    :vartype phases: {basestring: :class:`ronin.phases.Phase`}
+    :vartype phases: {:obj:`basestring`: :class:`~ronin.phases.Phase`}
     :ivar hooks: called when generating the Ninja file
-    :vartype hooks: [FunctionType]
+    :vartype hooks: [:obj:`~types.FunctionType`]
     :ivar run: executed in order after a successful build
-    :vartype run: {int: [basestring|FunctionType]}
+    :vartype run: {:obj:`int`: [:obj:`basestring` or :obj:`~types.FunctionType`]}
     """
     
     def __init__(self,
@@ -54,24 +56,24 @@ class Project(object):
                  phases=None):
         """
         :param name: project name
-        :type name: basestring|FunctionType
+        :type name: basestring or ~types.FunctionType
         :param version: project version
-        :type version: basestring|FunctionType
-        :param variant: override project variant; defaults to the context's ``projects.default_variant``
-                        or :func:`ronin.utils.platform.host_platform`
-        :type variant: basestring|FunctionType
+        :type version: basestring or ~types.FunctionType
+        :param variant: override project variant; defaults to the context's
+         ``projects.default_variant`` or :func:`~ronin.utils.platform.host_platform`
+        :type variant: basestring or ~types.FunctionType
         :param input_path: override input path; defaults to the context's ``paths.input_path``
-        :type input_path: basestring|FunctionType
+        :type input_path: basestring or ~types.FunctionType
         :param input_path_relative: override input path (relative)
-        :type input_path_relative: basestring|FunctionType
+        :type input_path_relative: basestring or ~types.FunctionType
         :param output_path: override output path generation
-        :type output_path: basestring|FunctionType
+        :type output_path: basestring or ~types.FunctionType
         :param output_path_relative: override output path generation (relative)
-        :type output_path_relative: basestring|FunctionType
+        :type output_path_relative: basestring or ~types.FunctionType
         :param file_name: override Ninja file name; defaults to the context's ``ninja.file_name``
-        :type file_name: basestring|FunctionType
+        :type file_name: basestring or ~types.FunctionType
         :param phases: project phases
-        :type phases: {basestring: :class:`ronin.phases.Phase`}
+        :type phases: {:obj:`basestring`: :class:`~ronin.phases.Phase`}
         """
         
         self.name = name
@@ -84,14 +86,16 @@ class Project(object):
         self.phases = StrictDict(phases, key_type=basestring, value_type='ronin.phases.Phase')
         self.hooks = StrictList(value_type='types.FunctionType')
         self.run = StrictDict(key_type=int, value_type=list)
-        self._variant = variant or (lambda ctx: ctx.get('projects.default_variant', host_platform()))
+        self._variant = variant or (lambda ctx: ctx.get('projects.default_variant',
+                                                        host_platform()))
 
     def __unicode__(self):
         name = stringify(self.name)
         version = stringify(self.version)
         variant = stringify(self.variant)
         if version and variant:
-            return u'{name} {version} ({variant})'.format(name=name, version=version, variant=variant)
+            return u'{name} {version} ({variant})'.format(name=name, version=version,
+                                                          variant=variant)
         elif version and not variant:
             return u'{name} {version}'.format(name=name, version=version)
         elif variant and not version:
@@ -104,7 +108,7 @@ class Project(object):
         """
         Project variant.
         
-        :rtype: basestring
+        :type: :obj:`basestring`
         """
         
         return stringify(self._variant)
@@ -114,7 +118,7 @@ class Project(object):
         """
         True if :attr:`variant` is a Windows platform.
         
-        :rtype: bool
+        :type: :obj:`bool`
         """
 
         return self.variant in ('win64', 'win32')
@@ -124,7 +128,7 @@ class Project(object):
         """
         True if :attr:`variant` is a Linux platform.
         
-        :rtype: bool
+        :type: :obj:`bool`
         """
 
         return self.variant in ('linux64', 'linux32')
@@ -134,9 +138,9 @@ class Project(object):
         """
         The executable extension for the :attr:`variant`.
         
-        See: :func:`ronin.utils.platform.platform_executable_extension`.
+        See: :func:`~ronin.utils.platform.platform_executable_extension`.
         
-        :rtype: basestring
+        :type: :obj:`basestring`
         """
         
         return platform_executable_extension(self.variant)
@@ -146,9 +150,9 @@ class Project(object):
         """
         The shared library extension for the :attr:`variant`.
         
-        See: :func:`ronin.utils.platform.platform_shared_library_extension`.
+        See: :func:`~ronin.utils.platform.platform_shared_library_extension`.
         
-        :rtype: basestring
+        :type: :obj:`basestring`
         """
 
         return platform_shared_library_extension(self.variant)
@@ -158,9 +162,9 @@ class Project(object):
         """
         The shared library prefix for the :attr:`variant`.
         
-        See: :func:`ronin.utils.platform.platform_shared_library_prefix`.
+        See: :func:`~ronin.utils.platform.platform_shared_library_prefix`.
         
-        :rtype: basestring
+        :type: :obj:`basestring`
         """
 
         return platform_shared_library_prefix(self.variant)
@@ -170,8 +174,7 @@ class Project(object):
         """
         The set ``input_path``, or the context's ``paths.input``.
         
-        :returns: input path
-        :rtype: basestring 
+        :type: :obj:`basestring`
         """
         
         input_path = stringify(self._input_path)
@@ -190,8 +193,7 @@ class Project(object):
         The set ``output_path``, or the context's ``paths.output`` joined to the project's
         ``output_path_relative`` and :attr:`variant`.
         
-        :returns: output path
-        :rtype: basestring 
+        :type: :obj:`basestring`
         """
         
         output_path = stringify(self._output_path)
@@ -210,7 +212,7 @@ class Project(object):
         context's ``paths.[output_type]_relative``.
         
         :param output_type: output type
-        :type output_type: basestring|FunctionType
+        :type output_type: basestring or ~types.FunctionType
         :returns: output path for output the type
         :rtype: basestring 
         """
@@ -219,7 +221,8 @@ class Project(object):
         with current_context() as ctx:
             output_path = ctx.get('paths.{}'.format(output_type))
         if output_path is None:
-            output_path = join_path(self.output_path, ctx.get('paths.{}_relative'.format(output_type)))
+            output_path = join_path(self.output_path,
+                                    ctx.get('paths.{}_relative'.format(output_type)))
         return output_path
 
     def get_phase_name(self, phase):
@@ -227,8 +230,8 @@ class Project(object):
         The name of the phase if it's in the project.
         
         :param phase: phase
-        :type phase: :class:`ronin.phases.Phase`
-        :returns: phase name or None
+        :type phase: ~ronin.phases.Phase
+        :returns: phase name or ``None``
         :rtype: basestring
         """
         
@@ -243,12 +246,12 @@ class Project(object):
         project.
         
         :param value: phase name or phase
-        :type value: basestring|FunctionType|:class:`Phase`
+        :type value: basestring or ~types.FunctionType or Phase
         :param attr: name of attribute from which the value was taken (for error messages)
-        :type value: basestring
+        :type attr: basestring
         :returns: phase name, phase
-        :rtype: basestring, :class:`Phase`
-        :raises ValueError: if phase not found in project
+        :rtype: (:obj:`basestring`, :class:`Phase`)
+        :raises ~exceptions.ValueError: if phase not found in project
         """
         from .phases import Phase
         if isinstance(value, Phase):

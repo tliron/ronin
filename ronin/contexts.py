@@ -23,42 +23,44 @@ from StringIO import StringIO
 from collections import OrderedDict
 import threading, sys, inspect, os
 
+
 _thread_locals = threading.local()
+
 
 def new_context(**kwargs):
     """
     Creates a new context and calls :func:`configure_context` on it.
-    
     If there already is a context in this thread, our new context will be a child of that context.
 
     :param root_path: the root of the input/output directory structure; defaults to the directory
-                      in which the calling script resides
-    :type root_path: basestring|FunctionType
+     in which the calling script resides
+    :type root_path: basestring or ~types.FunctionType
     :param input_path_relative: the default input path relative to the root; defaults to the root
-                                itself
-    :type input_path_relative: basestring|FunctionType
+     itself
+    :type input_path_relative: basestring or ~types.FunctionType
     :param output_path_relative: the default base output path relative to the root; defaults to
-                                 'build'
-    :type output_path_relative: basestring|FunctionType
+     'build'
+    :type output_path_relative: basestring or ~types.FunctionType
     :param binary_path_relative: the default binary output base path relative to the output path;
-                                 defaults to 'bin'
-    :type binary_path_relative: basestring|FunctionType
+     defaults to 'bin'
+    :type binary_path_relative: basestring or ~types.FunctionType
     :param object_path_relative: the default object output base path relative to the output path;
-                                 defaults to 'obj'
-    :type object_path_relative: basestring|FunctionType
+     defaults to 'obj'
+    :type object_path_relative: basestring or ~types.FunctionType
     :param source_path_relative: the default source output base path relative to the output path;
-                                 defaults to 'src'
-    :type source_path_relative: basestring|FunctionType
+     defaults to 'src'
+    :type source_path_relative: basestring or ~types.FunctionType
     :param name: optional name to use for descriptions
-    :type name: basestring|FunctionType
+    :type name: basestring or ~types.FunctionType
     :param frame: how many call frames to wind back to in order to find the calling script
-    :type frame: integer
+    :type frame: int
     """
     
     ctx = new_child_context()
     with ctx:
         configure_context(frame=2, **kwargs)
     return ctx
+
 
 def new_child_context():
     """
@@ -72,6 +74,7 @@ def new_child_context():
     
     ctx = Context._peek_thread_local()
     return Context(ctx)
+
 
 def current_context(immutable=True):
     """
@@ -90,6 +93,7 @@ def current_context(immutable=True):
         raise NoContextException()
     return Context(ctx, True) if immutable else ctx
 
+
 def configure_context(root_path=None,
                       input_path_relative=None,
                       output_path_relative=None,
@@ -102,27 +106,27 @@ def configure_context(root_path=None,
     Configures the current context for builds.
     
     :param root_path: the root of the input/output directory structure; defaults to the directory
-                      in which the calling script resides
-    :type root_path: basestring|FunctionType
+     in which the calling script resides
+    :type root_path: basestring or ~types.FunctionType
     :param input_path_relative: the default input path relative to the root; defaults to the root
-                                itself
-    :type input_path_relative: basestring|FunctionType
+     itself
+    :type input_path_relative: basestring or ~types.FunctionType
     :param output_path_relative: the default base output path relative to the root; defaults to
-                                 'build'
-    :type output_path_relative: basestring|FunctionType
+     'build'
+    :type output_path_relative: basestring or ~types.FunctionType
     :param binary_path_relative: the default binary output base path relative to the output path;
-                                 defaults to 'bin'
-    :type binary_path_relative: basestring|FunctionType
+     defaults to 'bin'
+    :type binary_path_relative: basestring or ~types.FunctionType
     :param object_path_relative: the default object output base path relative to the output path;
-                                 defaults to 'obj'
-    :type object_path_relative: basestring|FunctionType
+     defaults to 'obj'
+    :type object_path_relative: basestring or ~types.FunctionType
     :param source_path_relative: the default source output base path relative to the output path;
-                                 defaults to 'src'
-    :type source_path_relative: basestring|FunctionType
+     defaults to 'src'
+    :type source_path_relative: basestring or ~types.FunctionType
     :param name: optional name to use for descriptions
-    :type name: basestring|FunctionType
+    :type name: basestring or ~types.FunctionType
     :param frame: how many call frames to wind back to in order to find the calling script
-    :type frame: integer
+    :type frame: int
     """
 
     from .utils.paths import join_path, base_path
@@ -163,6 +167,7 @@ def configure_context(root_path=None,
         ctx.paths.binary_relative = binary_path_relative or 'bin'
         ctx.paths.object_relative = object_path_relative or 'obj'
         ctx.paths.source_relative = object_path_relative or 'src'
+
 
 class Context(object):
     """
@@ -221,7 +226,8 @@ class Context(object):
 
     def __setattr__(self, name, value):
         if name not in self._LOCAL:
-            raise IncorrectUseOfContextException('namespaces cannot be assigned values: "{}"'.format(name))
+            raise IncorrectUseOfContextException(
+                'namespaces cannot be assigned values: "{}"'.format(name))
         super(Context, self).__setattr__(name, value)
 
     def get(self, name, default=None):
@@ -264,7 +270,7 @@ class Context(object):
     
     def append_to_import_path(self, name, default=None):
         """
-        Convenience method to append a property in the context, if it exists, to ``sys.path``.
+        Convenience method to append a property in the context, if it exists, to :obj:`sys.path`.
         
         :param name: name in the format "key.property"
         :type name: basestring
@@ -334,6 +340,7 @@ class Context(object):
         except AttributeError:
             return None
 
+
 class ContextException(Exception):
     """
     Base class for context exceptions.
@@ -341,6 +348,7 @@ class ContextException(Exception):
 
     def __init__(self, message=None):
         super(ContextException, self).__init__(message)
+
 
 class NoContextException(ContextException):
     """
@@ -350,6 +358,7 @@ class NoContextException(ContextException):
     def __init__(self, message=None):
         super(NoContextException, self).__init__(message)
 
+
 class NotInContextException(ContextException):
     """
     Attempted to access a property that is not in the context.
@@ -357,6 +366,7 @@ class NotInContextException(ContextException):
 
     def __init__(self, message=None):
         super(NotInContextException, self).__init__(message)
+
 
 class ImmutableContextException(ContextException):
     """
@@ -366,6 +376,7 @@ class ImmutableContextException(ContextException):
     def __init__(self, message=None):
         super(ImmutableContextException, self).__init__(message)
 
+
 class IncorrectUseOfContextException(ContextException):
     """
     Attempted to access a namespace instead of a property.
@@ -373,6 +384,7 @@ class IncorrectUseOfContextException(ContextException):
 
     def __init__(self, message=None):
         super(IncorrectUseOfContextException, self).__init__(message)
+
 
 class _Namespace(object):
     """
@@ -419,6 +431,7 @@ class _Namespace(object):
                 pass
         super(_Namespace, self).__setattr__(name, value)
 
+
 class _ContextStack(object):
     """
     Manages a stack of :class:`Context` instances.
@@ -435,6 +448,7 @@ class _ContextStack(object):
 
     def pop(self):
         return self._stack.pop() if len(self._stack) else None
+
 
 class _ArgumentParser(ArgumentParser):
     def __init__(self, name, frame):

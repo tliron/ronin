@@ -19,7 +19,9 @@ from ..utils.platform import which
 from subprocess import check_output, CalledProcessError
 import os
 
+
 DEFAULT_PKG_CONFIG_COMMAND = 'pkg-config'
+
 
 def configure_pkg_config(pkg_config_command=None,
                          pkg_config_path=None):
@@ -28,14 +30,15 @@ def configure_pkg_config(pkg_config_command=None,
     /pkg-config/>`__ support.
     
     :param pkg_config_command: ``pkg-config`` command; defaults to "pkg-config"
-    :type pkg_config_command: basestring|FunctionType
+    :type pkg_config_command: basestring or ~types.FunctionType
     :param pkg_config_path: ``pkg-config`` path
-    :type pkg_config_path: basestring|FunctionType
+    :type pkg_config_path: basestring or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
         ctx.pkg_config.pkg_config_command = pkg_config_command or DEFAULT_PKG_CONFIG_COMMAND
         ctx.pkg_config.path = pkg_config_path
+
 
 class Package(Extension):
     """
@@ -48,11 +51,12 @@ class Package(Extension):
     def __init__(self, name, command=None, path=None, static=False):
         """
         :param name: package name
-        :type name: basestring|FunctionType
-        :param command: ``pkg-config`` command; defaults to the context's ``pkg_config.pkg_config_command`` 
-        :type command: basestring|FunctionType
+        :type name: basestring or ~types.FunctionType
+        :param command: ``pkg-config`` command; defaults to the context's
+         ``pkg_config.pkg_config_command`` 
+        :type command: basestring or ~types.FunctionType
         :param path: ``pkg-config`` path; defaults to the context's ``pkg_config.path``
-        :type path: basestring|FunctionType
+        :type path: basestring or ~types.FunctionType
         :param static: set to True to use static library linking
         :type static: bool
         """
@@ -77,7 +81,8 @@ class Package(Extension):
         try:
             with current_context() as ctx:
                 default = os.environ.get('PKG_CONFIG', DEFAULT_PKG_CONFIG_COMMAND)
-                pkg_config_command = which(ctx.fallback(self.command, 'pkg_config.pkg_config_command', default))
+                pkg_config_command = which(ctx.fallback(self.command,
+                                                        'pkg_config.pkg_config_command', default))
                 pkg_config_path = stringify(ctx.fallback(self.path, 'pkg_config.path'))
                 if pkg_config_path is not None:
                     os.environ['PKG_CONFIG_PATH'] = pkg_config_path
@@ -96,6 +101,7 @@ class Package(Extension):
             if original_pkg_config_path is not None:
                 os.environ['PKG_CONFIG_PATH'] = original_pkg_config_path
 
+
 def _add_cflags_to_executor(executor, args):
     for value in args:
         if value.startswith('-I'):
@@ -107,6 +113,7 @@ def _add_cflags_to_executor(executor, args):
                 executor.define(k, v)
             else:
                 executor.define(value)
+
 
 def _add_libs_to_executor(executor, args):
     for value in args:

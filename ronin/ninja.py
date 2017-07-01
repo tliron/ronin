@@ -31,24 +31,27 @@ from datetime import datetime
 from textwrap import wrap
 import sys, os, io
 
+
 # See:
 # https://ninja-build.org/manual.html#_ninja_file_reference
 # https://github.com/ninja-build/ninja/blob/master/misc/ninja_syntax.py
+
 
 DEFAULT_NAME = 'build'
 DEFAULT_ENCODING = 'utf-8'
 DEFAULT_COLUMNS = 100
 
+
 def configure_ninja(ninja_command=None, encoding=None, file_name=None, columns=None, strict=None):
     """
     :param ninja_command: ``ninja`` command; defaults to "ninja"
-    :type ninja_command: basestring|FunctionType
+    :type ninja_command: basestring or ~types.FunctionType
     :param encoding: Ninja file encoding; defaults to "utf-8"
-    :type encoding: basestring|FunctionType
+    :type encoding: basestring or ~types.FunctionType
     :param file_name: Ninja filename (without ".ninja" extension); defaults to "build"
-    :type file_name: basestring|FunctionType
+    :type file_name: basestring or ~types.FunctionType
     :param columns: number of columns in Ninja file; defaults to 100
-    :type columns: integer
+    :type columns: int
     :param strict: strict column mode; defaults to False
     :type strict: bool
     """
@@ -60,12 +63,13 @@ def configure_ninja(ninja_command=None, encoding=None, file_name=None, columns=N
         ctx.ninja.file_columns = columns
         ctx.ninja.file_strict = strict
 
+
 def escape(value):
     """
     Escapes special characters for literal inclusion in a Ninja file.
     
     :param value: literal value to escape
-    :type value: basestring|FunctionType
+    :type value: basestring or ~types.FunctionType
     :returns: escaped value
     :rtype: basestring
     """
@@ -73,18 +77,20 @@ def escape(value):
     value = stringify(value)
     return value.replace('$', '$$')
 
+
 def pathify(value):
     """
     Escapes special characters for inclusion in a Ninja file where paths are expected.
     
     :param value: path value to escape
-    :type value: basestring|FunctionType
+    :type value: basestring or ~types.FunctionType
     :returns: escaped value
     :rtype: basestring
     """
     
     value = stringify(value)
     return value.replace('$ ', '$$ ').replace(' ', '$ ').replace(':', '$:')
+
 
 class NinjaFile(object):
     """
@@ -94,16 +100,16 @@ class NinjaFile(object):
     def __init__(self, project, command=None, encoding=None, file_name=None, columns=None, strict=None):
         """
         :param project: project
-        :type project: :class:`ronin.projects.Project`
+        :type project: ~ronin.projects.Project
         :param command: Ninja command; defaults to the context's ``ninja.command``
-        :type command: basestring|FunctionType
+        :type command: basestring or ~types.FunctionType
         :param encoding: Ninja file encoding; defaults to the context's ``ninja.encoding``
-        :type encoding: basestring|FunctionType
+        :type encoding: basestring or ~types.FunctionType
         :param file_name: Ninja filename (without ".ninja" extension); defaults to the context's
-                          ``ninja.file_name``
-        :type file_name: basestring|FunctionType
+         ``ninja.file_name``
+        :type file_name: basestring or ~types.FunctionType
         :param columns: number of columns in Ninja file; defaults to the context's ``ninja.columns``
-        :type columns: integer
+        :type columns: int
         :param strict: strict column mode; defaults to the context's ``ninja.strict``
         :type strict: bool
         """
@@ -131,8 +137,7 @@ class NinjaFile(object):
         The Ninja file name, not including the path. The ``file_name`` if set, or else the project's
         ``file_name``, or else ``ninja.file_name`` in the context.
         
-        :returns: Ninja file name
-        :rtype: basestring
+        :type: :obj:`basestring`
         """
         
         file_name = stringify(self._file_name)
@@ -154,8 +159,7 @@ class NinjaFile(object):
         """
         Full path to the Ninja file. A join of the project's ``output_path`` and :attr:`file_name`. 
         
-        :returns: full path to Ninja file
-        :rtype: basestring
+        :type: :obj:`basestring`
         """
         
         return join_path(self._project.output_path, self.file_name)
@@ -197,7 +201,7 @@ class NinjaFile(object):
         Calls :meth:`generate` and runs Ninja as a subprocess in build mode.
         
         :returns: subprocess exit code
-        :rtype: integer
+        :rtype: int
         """
 
         self.generate()
@@ -220,7 +224,7 @@ class NinjaFile(object):
         Also makes sure to clean any temporary state for the project in the context.
         
         :returns: subprocess exit code
-        :rtype: integer
+        :rtype: int
         """
         
         with current_context() as ctx:
@@ -393,8 +397,10 @@ class NinjaFile(object):
             
         return phase_names
 
+
 _MINIMUM_COLUMNS_STRICT = 30 # lesser than this can lead to breakage
 _INDENT = '  '
+
 
 class _Writer(object):
     def __init__(self, f, columns, strict):

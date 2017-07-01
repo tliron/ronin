@@ -28,7 +28,7 @@ It's also easy to integrate your favorite
 **Python as the DSL** for build scripts. Many build systems invent their own DSLs, but Rōnin
 intentionally uses a language that already exists. There's no hidden cost to this design choice:
 build scripts are pretty much as concise and coherent as any specialized DSL. You _don't_ need to be
-an expert in Python to use Rōnin, but there's power is at your fingertips if you need it.
+an expert in Python to use Rōnin, but its power is at your fingertips if you need it.
 
 Rōnin supports **Unicode** throughout: Ninja files are created in UTF-8 by default and you can
 include Unicode characters in your build scripts.

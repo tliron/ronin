@@ -19,6 +19,7 @@ from ..contexts import current_context
 from subprocess import check_output, CalledProcessError
 import sys, platform
 
+
 DEFAULT_WHICH_COMMAND = '/usr/bin/which'
 
 DEFAULT_PLATFORM_PREFIXES = {
@@ -27,12 +28,13 @@ DEFAULT_PLATFORM_PREFIXES = {
     'win64': 'x86_64-w64-mingw32-',
     'win32': 'i686-w64-mingw32-'}
 
+
 def configure_platform(prefixes=None, which_command=None):
     """
     Configures the current context's platform support.
     
     :param prefixes: overrides for the default platform prefixes; unspecified keys will remain
-                     unchanged from their defaults
+     unchanged from their defaults
     :type prefixes: {basestring: basestring|FunctionType}
     :param which_command: absolute path to :func:`which` command; defaults to "/usr/bin/which"
     :type which_command: basestring|FunctionType
@@ -43,6 +45,7 @@ def configure_platform(prefixes=None, which_command=None):
         if platform_prefixes:
             ctx.platform.prefixes.update(prefixes)
         ctx.platform.which_command = which_command or DEFAULT_WHICH_COMMAND
+
 
 def platform_command(command, platform):
     """
@@ -58,6 +61,7 @@ def platform_command(command, platform):
 
     command = stringify(command)
     return '{}{}'.format(platform_prefix(platform), command)
+
 
 def platform_executable_extension(platform):
     """
@@ -75,6 +79,7 @@ def platform_executable_extension(platform):
         return 'exe'
     return None
 
+
 def platform_shared_library_extension(platform):
     """
     The shared library extension for the platform, e.g. ``dll`` for windows and ``so`` for other
@@ -91,6 +96,7 @@ def platform_shared_library_extension(platform):
         return 'dll'
     return 'so'
 
+
 def platform_shared_library_prefix(platform):
     """
     The shared library extension for the platform, e.g. ``lib`` for \*nix and None for Windows.
@@ -106,6 +112,7 @@ def platform_shared_library_prefix(platform):
         return None
     return 'lib'
 
+
 def platform_prefixes():
     """
     The current context's ``platform.prefixes`` or the defaults. See also
@@ -117,6 +124,7 @@ def platform_prefixes():
     
     with current_context() as ctx:
         return ctx.get('platform.prefixes', DEFAULT_PLATFORM_PREFIXES)
+
 
 def platform_prefix(platform):
     """
@@ -131,6 +139,7 @@ def platform_prefix(platform):
     platform = stringify(platform)
     return stringify(platform_prefixes().get(platform, ''))
 
+
 def host_platform():
     """
     The platform for the host machine on which we are running. A combination of
@@ -142,6 +151,7 @@ def host_platform():
     
     return '{}{:d}'.format(host_operating_system_prefix(), host_bits())
 
+
 def host_operating_system_prefix():
     """
     The operating system prefix for the host machine on which we are running.
@@ -152,6 +162,7 @@ def host_operating_system_prefix():
 
     operating_system = sys.platform
     return _OPERATING_SYSTEMS_PREFIXES.get(operating_system, operating_system)
+
 
 def host_bits():
     """
@@ -166,6 +177,7 @@ def host_bits():
     machine = platform.machine() # i386, x86_64, AMD64
     return 64 if machine.endswith('64') else 32
 
+
 def which(command, exception=True):
     """
     Finds the absolute path to a command on this host machine.
@@ -176,11 +188,12 @@ def which(command, exception=True):
     :param command: command
     :type command: basestring|FunctionType
     :param exception: set to False in order to return None upon failure, instead of raising an
-                      exception
+     exception
     :type exception: bool
     :returns: absolute path to command
     :rtype: basestring
-    :raises WhichException: if ``exception`` is True and could not find command
+    :raises ~ronin.utils.platform.WhichException: if ``exception`` is True and could not find
+     command
     """
 
     command = stringify(command)
@@ -199,6 +212,7 @@ def which(command, exception=True):
             raise WhichException(u"could not find '{}'".format(command))
         return None
 
+
 class WhichException(Exception):
     """
     :func:`which` could not find the command.
@@ -206,6 +220,7 @@ class WhichException(Exception):
 
     def __init__(self, message=None):
         super(WhichException, self).__init__(message)
+
 
 # See: https://docs.python.org/2/library/sys.html#sys.platform
 _OPERATING_SYSTEMS_PREFIXES = {

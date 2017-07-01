@@ -73,6 +73,6 @@ setup(
               'ronin.vala'],
     
     install_requires=[
-        'blessings==1.6',
-        'colorama==0.3.7',
-        'glob2==0.5'])
+        'blessings>=1.6, <2.0',
+        'colorama>=0.3.9, <2.0.0',
+        'glob2>=0.5, <=2.0'])

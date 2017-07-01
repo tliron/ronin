@@ -18,18 +18,21 @@ from ..utils.platform import which
 from ..utils.paths import join_path_later
 from ..utils.strings import format_later
 
+
 DEFAULT_MOC_COMMAND = 'moc'
+
 
 def configure_qt(moc_command=None):
     """
     Configures the current context's `Qt <https://www.qt.io/>`__ support.
     
     :param moc_command: ``moc`` command; defaults to "moc"
-    :type moc_command: basestring|FunctionType
+    :type moc_command: basestring or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
         ctx.qt.moc_command = moc_command or DEFAULT_MOC_COMMAND
+
 
 class QtMetaObjectCompile(ExecutorWithArguments):
     """
@@ -42,11 +45,12 @@ class QtMetaObjectCompile(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``moc`` command; defaults to the context's ``qt.moc_command``
-        :type command: basestring|FunctionType
+        :type command: basestring or ~types.FunctionType
         """
         
         super(QtMetaObjectCompile, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'qt.moc_command', DEFAULT_MOC_COMMAND))
+        self.command = lambda ctx: which(ctx.fallback(command, 'qt.moc_command',
+                                                      DEFAULT_MOC_COMMAND))
         self.command_types = ['gcc_compile']
         self.output_type = 'source'
         self.output_extension = 'cpp'

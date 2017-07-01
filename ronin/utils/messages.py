@@ -17,6 +17,7 @@
 from blessings import Terminal
 import colorama, atexit
 
+
 colorama.init()
 
 def _restore_terminal():
@@ -25,6 +26,7 @@ def _restore_terminal():
 atexit.register(_restore_terminal)
 
 terminal = Terminal()
+
 
 def announce(message, prefix=u'rōnin', color='green'):
     """
@@ -39,6 +41,7 @@ def announce(message, prefix=u'rōnin', color='green'):
     if color:
         prefix = getattr(terminal, color)(prefix)
     print u'{}: {}'.format(prefix, message)
+
 
 def error(message):
     """
@@ -57,6 +60,7 @@ def error(message):
             announce(the_type, color='red')
     else:
         announce(u'Error: {}'.format(message), color='red')
+
 
 def warning(message):
     """

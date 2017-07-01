@@ -14,6 +14,7 @@
 
 from inspect import isclass
 
+
 def import_symbol(name):
     """
     Imports a symbol based on its fully qualified name.
@@ -29,6 +30,7 @@ def import_symbol(name):
         module_name, name = name.rsplit('.', 1)
         return getattr(__import__(module_name, fromlist=[name], level=0), name)
     raise ImportError('import not found: {}'.format(name))
+
 
 def type_name(the_type):
     """
@@ -48,6 +50,7 @@ def type_name(the_type):
     name = unicode(the_type.__name__)
     return name if module == '__builtin__' else u'{}.{}'.format(module, name)
 
+
 def verify_type(value, the_type):
     """
     Raises :class:`TypeError` if the value is not an instance of the type.
@@ -56,7 +59,7 @@ def verify_type(value, the_type):
     :param the_type: type or type name
     :type the_type: type|basestring
     :raises TypeError: if ``value`` is not an instance of ``the_type``
-    :raises ValueError: if ``the_type`` is invalid
+    :raises ~exceptions.ValueError: if ``the_type`` is invalid
     :raises ImportError: if could not import the module
     :raises AttributeError: if could not find the symbol in the module
     """
@@ -67,7 +70,9 @@ def verify_type(value, the_type):
             raise ValueError(u'{} is not a type'.format(the_type))
     
     if not isinstance(value, the_type):
-        raise TypeError(u'not an instance of {}: {}'.format(type_name(the_type), type_name(type(value)))) 
+        raise TypeError(u'not an instance of {}: {}'.format(type_name(the_type),
+                                                            type_name(type(value)))) 
+
 
 def verify_subclass(value, the_type):
     """
@@ -77,7 +82,7 @@ def verify_subclass(value, the_type):
     :param the_type: type or type name
     :type the_type: type|basestring
     :raises TypeError: if ``value`` is not a subclass of ``the_type``
-    :raises ValueError: if ``the_type`` is invalid
+    :raises ~exceptions.ValueError: if ``the_type`` is invalid
     :raises ImportError: if could not import the module
     :raises AttributeError: if could not find the symbol in the module
     """
@@ -88,7 +93,9 @@ def verify_subclass(value, the_type):
             raise ValueError(u'{} is not a type'.format(the_type))
     
     if not issubclass(value, the_type):
-        raise TypeError(u'not a subclass of {}: {}'.format(type_name(the_type), type_name(type(value))))
+        raise TypeError(u'not a subclass of {}: {}'.format(type_name(the_type),
+                                                           type_name(type(value))))
+
 
 def verify_type_or_subclass(value, the_type):
     """
@@ -98,7 +105,7 @@ def verify_type_or_subclass(value, the_type):
     :param the_type: type or type name
     :type the_type: type|basestring
     :raises TypeError: if ``value`` is not an instance or subclass of ``the_type``
-    :raises ValueError: if ``the_type`` is invalid
+    :raises ~exceptions.ValueError: if ``the_type`` is invalid
     :raises ImportError: if could not import the module
     :raises AttributeError: if could not find the symbol in the module
     """

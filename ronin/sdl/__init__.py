@@ -19,7 +19,9 @@ from ..utils.strings import stringify, bool_stringify, UNESCAPED_STRING_RE
 from ..utils.platform import which
 from subprocess import check_output, CalledProcessError
 
+
 DEFAULT_SDL_CONFIG_COMMAND = 'sdl2-config'
+
 
 def configure_sdl(config_command=None,
                   static=None,
@@ -29,13 +31,13 @@ def configure_sdl(config_command=None,
     Configures the current context's `SDL <https://www.libsdl.org/>`__ support.
     
     :param config_command: config command; defaults to "sdl2-config"
-    :type config_command: basestring|FunctionType
+    :type config_command: basestring or ~types.FunctionType
     :param static: whether to link statically; defaults to False
     :type static: bool
     :param prefix: sdl-config prefix
-    :type prefix: basestring|FunctionType
+    :type prefix: basestring or ~types.FunctionType
     :param exec_prefix: sdl-config exec-prefix
-    :type exec_prefix: basestring|FunctionType
+    :type exec_prefix: basestring or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
@@ -44,25 +46,26 @@ def configure_sdl(config_command=None,
         ctx.sdl.prefix = prefix
         ctx.sdl.exec_prefix = exec_prefix
 
+
 class SDL(Extension):
     """
     The `SDL <https://www.libsdl.org/>`__ library, configured using the sdl2-config tool that
     comes with SDL's development distribution. Supports gcc-like executors.
     
-    Note that you may also use :class:`ronin.pkg_config.Package` to use SDL. However, this tool
+    Note that you may also use :class:`~ronin.pkg_config.Package` to use SDL. However, this tool
     offers some special options you might need.
     """
     
     def __init__(self, command=None, static=None, prefix=None, exec_prefix=None):
         """
         :param command: ``sdl-config`` command; defaults to the context's ``sdl.config_command``
-        :type command: basestring|FunctionType
+        :type command: basestring or ~types.FunctionType
         :param static: whether to link statically; defaults to the context's ``sdl.config_static``
         :type static: bool
         :param prefix: sdl-config prefix; defaults to the context's ``sdl.prefix``
-        :type prefix: basestring|FunctionType
+        :type prefix: basestring or ~types.FunctionType
         :param exec_prefix: sdl-config exec-prefix; defaults to the context's ``sdl.exec_prefix``
-        :type exec_prefix: basestring|FunctionType
+        :type exec_prefix: basestring or ~types.FunctionType
         """
         
         super(SDL, self).__init__()
@@ -77,11 +80,13 @@ class SDL(Extension):
     def apply_to_executor_gcc_link(self, executor):
         with current_context() as ctx:
             sdl_config_static = bool_stringify(ctx.fallback(self.static, 'sdl.static', False))
-        _add_libs_to_executor(executor, self._parse('--static-libs' if sdl_config_static else '--libs'))
+        _add_libs_to_executor(executor, self._parse('--static-libs'
+                                                    if sdl_config_static else '--libs'))
 
     def _parse(self, flags):
         with current_context() as ctx:
-            sdl_config_command = which(ctx.fallback(self.command, 'sdl.config_command', DEFAULT_SDL_CONFIG_COMMAND))
+            sdl_config_command = which(ctx.fallback(self.command, 'sdl.config_command',
+                                                    DEFAULT_SDL_CONFIG_COMMAND))
             sdl_config_prefix = stringify(ctx.fallback(self.prefix, 'sdl.prefix'))
             sdl_config_exec_prefix = stringify(ctx.fallback(self.exec_prefix, 'sdl.exec_prefix'))
         

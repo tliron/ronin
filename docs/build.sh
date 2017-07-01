@@ -22,4 +22,4 @@ BUILD="$HERE/build"
 rm -rf "$BUILD"
 
 pip install --upgrade --requirement "$HERE/requirements.txt"
-sphinx-build -b html "$HERE" "$BUILD"
+sphinx-build -j "$(nproc --all)" -b html "$HERE" "$BUILD"

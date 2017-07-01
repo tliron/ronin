@@ -16,18 +16,21 @@ from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
 
+
 DEFAULT_COPY_COMMAND = 'cp'
+
 
 def configure_files(copy_command=None):
     """
     Configures the current context's files support.
     
     :param copy_command: copy command; defaults to "cp"
-    :type copy_command: basestring|FunctionType
+    :type copy_command: basestring or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
         ctx.files.copy_command = copy_command or DEFAULT_COPY_COMMAND
+
 
 class Copy(ExecutorWithArguments):
     """
@@ -42,10 +45,11 @@ class Copy(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``cp`` command; default's to context's ``files.copy_command``
-        :type command: basestring|FunctionType
+        :type command: basestring or ~types.FunctionType
         """
         
         super(Copy, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'files.copy_command', DEFAULT_COPY_COMMAND))
+        self.command = lambda ctx: which(ctx.fallback(command, 'files.copy_command',
+                                                      DEFAULT_COPY_COMMAND))
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('$out')

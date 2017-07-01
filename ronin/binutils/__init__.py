@@ -19,17 +19,19 @@ from ..utils.platform import which, platform_command
 
 DEFAULT_WINDRES_COMMAND = 'windres'
 
+
 def configure_binutils(windres_command=None):
     """
     Configures the current context's `binutils <https://sourceware.org/binutils/docs/binutils/>`__
     support.
     
     :param windres_command: ``windres`` command; defaults to "windres"
-    :type windres_command: basestring|FunctionType
+    :type windres_command: basestring or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
         ctx.binutils.windres_command = windres_command or DEFAULT_WINDRES_COMMAND
+
 
 def which_windres(command, platform, exception=True):
     """
@@ -38,31 +40,33 @@ def which_windres(command, platform, exception=True):
     Behind the scenes uses :func:`windres_platform_command`.
     
     :param command: ``windres`` command
-    :type command: basestring|FunctionType
+    :type command: basestring or ~types.FunctionType
     :param platform: target platform or project
-    :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
+    :type platform: basestring or ~types.FunctionType or ~ronin.projects.Project
     :param exception: set to False in order to return None upon failure, instead of raising an
-                      exception
+     exception
     :type exception: bool
     :returns: absolute path to command
     :rtype: basestring
-    :raises WhichException: if ``exception`` is True and could not find command
+    :raises ~ronin.utils.platform.WhichException: if ``exception`` is True and could not find
+     command
     """
     
     if platform:
         command = windres_platform_command(command, platform)
     return which(command, exception=exception)
 
+
 def windres_platform_command(command, platform):
     """
     Finds the ``windres`` command name for a specific target platform. 
     
-    Behind the scenes uses :func:`ronin.utils.platform.platform_command`.
+    Behind the scenes uses :func:`~ronin.utils.platform.platform_command`.
 
     :param command: ``windres`` command
-    :type command: basestring|FunctionType
+    :type command: basestring or ~types.FunctionType
     :param platform: target platform or project
-    :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
+    :type platform: basestring or ~types.FunctionType or ~ronin.projects.Project
     :returns: command
     :rtype: basestring
     """
@@ -70,6 +74,7 @@ def windres_platform_command(command, platform):
     if isinstance(platform, Project):
         platform = platform.variant
     return platform_command(command, platform)
+
 
 class WindRes(ExecutorWithArguments):
     """
@@ -80,15 +85,16 @@ class WindRes(ExecutorWithArguments):
     def __init__(self, command=None, extension=None, platform=None):
         """
         :param command: ``windres`` command; default's to context's ``binutils.windres_command``
-        :type command: basestring|FunctionType
-        :extension extension: output extensions; defaults to 'o'
-        :type extension: basestring|FunctionType
+        :type command: basestring or ~types.FunctionType
+        :param extension: output extensions; defaults to 'o'
+        :type extension: basestring or ~types.FunctionType
         :param platform: target platform or project
-        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
+        :type platform: basestring or ~types.FunctionType or ~ronin.projects.Project
         """
         
         super(WindRes, self).__init__()
-        self.command = lambda ctx: which_windres(ctx.fallback(command, 'binutils.windres_command', DEFAULT_WINDRES_COMMAND),
+        self.command = lambda ctx: which_windres(ctx.fallback(command, 'binutils.windres_command',
+                                                              DEFAULT_WINDRES_COMMAND),
                                                  platform)
         self.output_type = 'object'
         self.output_extension = extension or 'o'

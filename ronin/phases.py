@@ -25,9 +25,10 @@ from types import FunctionType
 from inspect import isclass
 import os
 
+
 class Phase(object):
     """
-    A build phase within a project (see :class:`ronin.projects.Project`).
+    A build phase within a project (see :class:`~ronin.projects.Project`).
     
     Each phase is equivalent to a single ``rule`` statement within a Ninja file together with the
     ``build`` statements that make use of it. Phases can be interrelated in complex ways: indeed,
@@ -49,9 +50,9 @@ class Phase(object):
     automatically be added to that project. You can do this manually instead.
 
     :ivar vars: custom Ninja variables
-    :vartype vars: {basestring: FunctionType|basestring}
+    :vartype vars: {:obj:`basestring`: :obj:`~types.FunctionType` or :obj:`basestring`}
     :ivar hooks: called when generating the Ninja file
-    :vartype hooks: [FunctionType]
+    :vartype hooks: [:obj:`~types.FunctionType`]
     """
     
     def __init__(self,
@@ -78,57 +79,55 @@ class Phase(object):
                  build_if_from=None):
         """
         :param project: project to which this phase will be added (if set must also set ``name``)
-        :type project: :class:`ronin.projects.Project`
+        :type project: ~ronin.projects.Project
         :param name: name in project to which this phase will be added (if set must also set
-                     ``project``)
-        :type name: basestring|FunctionType
+         ``project``)
+        :type name: basestring or ~types.FunctionType
         :param executor: executor
-        :type executor: :class:`ronin.executors.Executor`
+        :type executor: ~ronin.executors.Executor
         :param description: Ninja description; may include Ninja variables, such as ``$out``;
-                            defaults to "[phase name] $out"
-        :type description: basestring|FunctionType
+         defaults to "[phase name] $out"
+        :type description: basestring or ~types.FunctionType
         :param inputs: input paths; note that these should be *absolute* paths
-        :type inputs: [basestring|FunctionType]
+        :type inputs: [:obj:`basestring` or :obj:`~types.FunctionType`]
         :param inputs_from: names or instances of other phases in the project, the outputs of which
-                            we add to this phase's ``inputs``
-        :type inputs_from: [basestring|FunctionType|:class:`Phase`]
+         we add to this phase's ``inputs``
+        :type inputs_from: [:obj:`basestring` or :obj:`~types.FunctionType` or :class:`Phase`]
         :param extensions: extensions
-        :type extensions: [:class:`ronin.extensions.Extension`]
+        :type extensions: ~ronin.extensions.Extension
         :param output: specifies that the phase has a *single* output; note that actual path of the
-                       output will be based on this parameter but not identical to it, for example
-                       "lib" might be added as a prefix, ".dll" as an extension, etc., according to
-                       the executor and/or project variant
-        :type output: basestring|FunctionType
+         output will be based on this parameter but not identical to it, for example "lib" might be
+         added as a prefix, ".dll" as an extension, etc., according to the executor and/or project
+         variant
+        :type output: basestring or ~types.FunctionType
         :param output_path: override project's ``output_path``; otherwise will be based on the
-                            executor's ``output_type``
-        :type output_path: basestring|FunctionType
+         executor's ``output_type``
+        :type output_path: basestring or ~types.FunctionType
         :param output_path_relative: joined to the context's ``paths.output``
-        :type output_path_relative: basestring|FunctionType
+        :type output_path_relative: basestring or ~types.FunctionType
         :param output_strip_prefix: stripped from outputs if they begin with this
-        :type output_strip_prefix: basestring|FunctionType
+        :type output_strip_prefix: basestring or ~types.FunctionType
         :param output_strip_prefix_from: name or instance of other phase in project, from which the
-                                         output path is used as this phase's ``output_strip_prefix``
-        :type output_strip_prefix_from: basestring|FunctionType|:class:`Phase`
+         output path is used as this phase's ``output_strip_prefix``
+        :type output_strip_prefix_from: basestring or ~types.FunctionType or Phase
         :param output_transform: called on all outputs
+        :type output_transform: ~types.FunctionType
         :param run_output: set to non-zero to run the output after a successful build in sequence
         :type  run_output: int
         :param run_command: arguments for the run command; use "{output}" to insert output 
-        :type run_command: [basestring|FunctionType]
-        :type output_transform: FunctionType
+        :type run_command: [:obj:`basestring` or :obj:`~types.FunctionType`]
         :param rebuild_on: similar to ``inputs`` but used as "implicit dependencies" in Ninja
-                           (single pipe), meaning that the ``build`` will be re-triggered when these
-                           files change
-        :type rebuild_on: [basestring|FunctionType]
+         (single pipe), meaning that the ``build`` will be re-triggered when these files change
+        :type rebuild_on: [:obj:`basestring` or :obj:`~types.FunctionType`]
         :param rebuild_on_from: names or instances of other phases in the project, the outputs of
-                                which we add to this phase's ``rebuild_on``
-        :type rebuild_on_from: [basestring|FunctionType|:class:`Phase`]
+         which we add to this phase's ``rebuild_on``
+        :type rebuild_on_from: [:obj:`basestring` or :obj:`~types.FunctionType` or :class:`Phase`]
         :param build_if: similar to ``inputs`` but used as "order dependencies" in Ninja (double
-                         pipe), meaning that the ``build`` will be triggered only after these files
-                         are built
-        :type build_if: [basestring|FunctionType]
+         pipe), meaning that the ``build`` will be triggered only after these files are built
+        :type build_if: [:obj:`basestring` or :obj:`~types.FunctionType`]
         :param build_if_from: names or instances of other phases in the project, the outputs of
-                              which we add to this phase's ``build_if``
-        :type build_if_from: [basestring|FunctionType|:class:`Phase`]
+         which we add to this phase's ``build_if``
+        :type build_if_from: [:obj:`basestring` or :obj:`~types.FunctionType` or :class:`Phase`]
         """
         
         if project:
@@ -146,7 +145,8 @@ class Phase(object):
         self.executor = executor
         self.description = description
         self.inputs = StrictList(inputs, value_type=(basestring, FunctionType))
-        self.inputs_from = StrictList(inputs_from, value_type=(basestring, FunctionType, 'ronin.phases.Phase'))
+        self.inputs_from = StrictList(inputs_from, value_type=(basestring, FunctionType,
+                                                               'ronin.phases.Phase'))
         self.input_path = input_path
         self.input_path_relative = input_path_relative
         self.extensions = StrictList(extensions, value_type='ronin.extensions.Extension')
@@ -159,9 +159,11 @@ class Phase(object):
         self.run_output = run_output
         self.run_command = StrictList(run_command, value_type=(basestring, FunctionType))
         self.rebuild_on = StrictList(rebuild_on, value_type=(basestring, FunctionType))
-        self.rebuild_on_from = StrictList(rebuild_on_from, value_type=(basestring, FunctionType, 'ronin.phases.Phase'))
+        self.rebuild_on_from = StrictList(rebuild_on_from, value_type=(basestring, FunctionType,
+                                                                       'ronin.phases.Phase'))
         self.build_if = StrictList(build_if, value_type=(basestring, FunctionType))
-        self.build_if_from = StrictList(build_if_from, value_type=(basestring, FunctionType, 'ronin.phases.Phase'))
+        self.build_if_from = StrictList(build_if_from, value_type=(basestring, FunctionType,
+                                                                   'ronin.phases.Phase'))
         self.vars = StrictDict(key_type=basestring, value_type=(basestring, FunctionType))
         self.hooks = StrictList(value_type=FunctionType)
 
@@ -209,8 +211,7 @@ class Phase(object):
         The set ``input_path``, or the context's ``paths.input`` joined to ``input_path_relative``,
         or the project's ``input_path``.
         
-        :returns: input path
-        :rtype: basestring
+        :type: :obj:`basestring`
         """
         
         input_path = stringify(self._input_path)
@@ -234,8 +235,7 @@ class Phase(object):
         ``output_path_relative``, or the project's ``output_path`` for the executor's
         ``output_type``.
         
-        :returns: input path
-        :rtype: basestring
+        :type: :obj:`basestring`
         """
 
         output_path = stringify(self._output_path)
@@ -258,10 +258,10 @@ class Phase(object):
         extension from the executor and finally the calling the ``output_transform`` function.
         
         :param inputs: inputs
-        :type inputs: [basestring]
+        :type inputs: [:obj:`basestring`]
         :returns: (True if "single-output", outputs); length of ``outputs`` will always be 1 in
-                  "single-output" mode, otherwise it will be the same length as ``inputs``
-        :rtype: (bool, [:class:`Output`])
+         "single-output" mode, otherwise it will be the same length as ``inputs``
+        :rtype: (:obj:`bool`, [:class:`Output`])
         """
         
         # Paths
@@ -296,7 +296,8 @@ class Phase(object):
             # Strip prefix
             if self.output_strip_prefix_from:
                 with current_context() as ctx:
-                    _, p = ctx.current.project.get_phase_for(self.output_strip_prefix_from, 'output_strip_prefix_from')
+                    _, p = ctx.current.project.get_phase_for(self.output_strip_prefix_from,
+                                                             'output_strip_prefix_from')
                     if p:
                         output_strip_prefix = p.output_path
                     else:
@@ -333,6 +334,7 @@ class Phase(object):
             return False, outputs
         else:
             return False, []
+
 
 class Output(object):
     """

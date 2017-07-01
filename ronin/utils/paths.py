@@ -17,6 +17,7 @@ from ..contexts import current_context
 from glob2 import glob as glob2
 import os
 
+
 def join_path(*segments):
     """
     Joins the path segments into a single path tring. No attempt is made to make it an absolute
@@ -39,6 +40,7 @@ def join_path(*segments):
         segments = [segments[0]] + [fix(v) for v in segments[1:]]
     return os.path.join(*segments)
 
+
 def join_path_later(*segments):
     """
     Like :func:`join_path`, but deferred.
@@ -50,6 +52,7 @@ def join_path_later(*segments):
     """
     
     return lambda _: join_path(*segments)
+
 
 def base_path(path):
     """
@@ -63,6 +66,7 @@ def base_path(path):
     
     path = stringify(path)
     return os.path.dirname(os.path.realpath(path))
+
 
 def input_path(*segments):
     """
@@ -79,6 +83,7 @@ def input_path(*segments):
     with current_context() as ctx:
         return join_path(ctx.get('paths.input'), *segments)
 
+
 def glob(pattern, path=None, hidden=False, dirs=False):
     """
     Returns a list of real path strings matching the pattern. If ``path`` is not specified,
@@ -93,7 +98,7 @@ def glob(pattern, path=None, hidden=False, dirs=False):
     :param pattern: pattern; calls :func:`ronin.utils.strings.stringify` on it
     :type pattern: basestring|FunctionType
     :param path: join the pattern to this path (when None, defaults to the context's
-                 ``paths.input``); calls :func:`ronin.utils.strings.stringify` on it
+     ``paths.input``); calls :func:`ronin.utils.strings.stringify` on it
     :type path: basestring|FunctionType
     :param hidden: set to True to include hidden files
     :type hidden: bool
@@ -111,6 +116,7 @@ def glob(pattern, path=None, hidden=False, dirs=False):
         paths = [v for v in paths if not os.path.isdir(v)]
     return paths
 
+
 def change_extension(path, new_extension):
     """
     Changes the file extension to a new one.
@@ -120,7 +126,7 @@ def change_extension(path, new_extension):
     :param path: path; calls :func:`ronin.utils.strings.stringify` on it
     :type path: basestring|FunctionType
     :param new_extension: the new extension (if None, will return the path unchanged); calls
-                          :func:`ronin.utils.strings.stringify` on it
+     :func:`ronin.utils.strings.stringify` on it
     :type new_extension: basestring|FunctionType
     :returns: path with new extension
     :rtype: basestring

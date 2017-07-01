@@ -24,6 +24,7 @@ from traceback import print_exc
 from subprocess import check_call, CalledProcessError
 import sys
 
+
 def cli(*projects):
     """
     Delegates control to the Rōnin CLI on one or more projects.
@@ -32,7 +33,7 @@ def cli(*projects):
     be used as the last call of your build script.
     
     :param projects: projects
-    :type projects: [:class:`ronin.projects.Project`] 
+    :type projects: [:class:`~ronin.projects.Project`] 
     """
     
     try:

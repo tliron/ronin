@@ -18,22 +18,25 @@ from ..utils.platform import which
 from ..utils.paths import join_path
 from multiprocessing import cpu_count
 
+
 DEFAULT_RUSTC_COMMAND = 'rustc'
 DEFAULT_CARGO_COMMAND = 'cargo'
+
 
 def configure_rust(rustc_command=None, cargo_command=None):
     """
     Configures the current context's `Rust <https://www.rust-lang.org/>`__ support.
     
     :param rustc_command: ``rustc`` command; defaults to "rustc"
-    :type rustc_command: basestring|FunctionType
+    :type rustc_command: basestring or ~types.FunctionType
     :param cargo_command: ``cargo`` command; defaults to "cargo"
-    :type cargo_command: basestring|FunctionType
+    :type cargo_command: basestring or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
         ctx.rust.rustc_command = rustc_command or DEFAULT_RUSTC_COMMAND
         ctx.rust.cargo_command = cargo_command or DEFAULT_CARGO_COMMAND
+
 
 class RustBuild(ExecutorWithArguments):
     """
@@ -46,17 +49,19 @@ class RustBuild(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``rustc`` command; defaults to the context's ``rust.rustc_command``
-        :type command: basestring|FunctionType
+        :type command: basestring or ~types.FunctionType
         """
         
         super(RustBuild, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'rust.rustc_command', DEFAULT_RUSTC_COMMAND))
+        self.command = lambda ctx: which(ctx.fallback(command, 'rust.rustc_command',
+                                                      DEFAULT_RUSTC_COMMAND))
         self.add_argument_unfiltered('$in')
         self.add_argument_unfiltered('-o', '$out')
         self.hooks.append(_build_debug_hook)
 
     def enable_debug(self):
         self.add_argument('-g')
+
 
 class CargoBuild(ExecutorWithArguments):
     """
@@ -72,13 +77,14 @@ class CargoBuild(ExecutorWithArguments):
     def __init__(self, command=None, jobs=None):
         """
         :param command: ``cargo`` command; defaults to the context's ``rust.cargo_command``
-        :type command: basestring|FunctionType
-        :param jobs: number of jobs; defaults to cpu_count + 1
-        :type jobs: integer
+        :type command: basestring or ~types.FunctionType
+        :param jobs: number of jobs; defaults to CPU count + 1
+        :type jobs: int
         """
 
         super(CargoBuild, self).__init__()
-        self.command = lambda ctx: which(ctx.fallback(command, 'rust.cargo_command', DEFAULT_CARGO_COMMAND))
+        self.command = lambda ctx: which(ctx.fallback(command, 'rust.cargo_command',
+                                                      DEFAULT_CARGO_COMMAND))
         self.add_argument('build')
         self.add_argument_unfiltered('--manifest-path', '$in')
         if jobs is None:
@@ -93,15 +99,19 @@ class CargoBuild(ExecutorWithArguments):
     def jobs(self, value):
         self.add_argument('--jobs', value)
 
+
 def _build_debug_hook(executor):
     with current_context() as ctx:
         if ctx.get('build.debug', False):
             executor.enable_debug()
 
+
 def _cargo_output_path_hook(executor):
     with current_context() as ctx:
         debug = ctx.get('build.debug', False)
-        ctx.current.phase.output_path = join_path(ctx.paths.root, 'target', 'debug' if debug else 'release')
+        ctx.current.phase.output_path = join_path(ctx.paths.root, 'target',
+                                                  'debug' if debug else 'release')
+
 
 def _cargo_debug_hook(executor):
     with current_context() as ctx:
