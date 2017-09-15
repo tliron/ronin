@@ -146,7 +146,10 @@ def configure_context(root_path=None,
             ctx.projects.default_variant = ctx.cli.args.variant
         
         if ctx.cli.args.set:
-            for value in ctx.cli.args.set:
+            values = []
+            for v in ctx.cli.args.set:
+                values += v
+            for value in values:
                 if '=' not in value:
                     error(u"'--set' argument is not formatted as 'ns.k=v': '{}'".format(value))
                     sys.exit(1)
@@ -463,5 +466,5 @@ class _ArgumentParser(ArgumentParser):
         self.add_flag_argument('test', help_true='enable testing', help_false='disable testing')
         self.add_flag_argument('run', help_true='enable running', help_false='disable running')
         self.add_argument('--variant', help='override default project variant (defaults to host platform, e.g. "linux64")')
-        self.add_argument('--set', nargs='*', metavar='ns.k=v', help='set values in the context')
+        self.add_argument('--set', nargs='*', action='append', metavar='ns.k=v', help='set values in the context')
         self.add_flag_argument('verbose', help_true='enable verbose output', help_false='disable verbose output')
