@@ -21,7 +21,7 @@
 # 3) Because our program already has a "main" function, we're linking it separately as a shared
 #    library so that we can use a different "main" function that runs the tests. If you're testing
 #    a library, you obviously don't need this separate step.
-# 4) We're setting integer values to "run_input=" in order to make sure that tests run before
+# 4) We're setting integer values to "run_output=" in order to make sure that tests run before
 #    the program.
 #
 

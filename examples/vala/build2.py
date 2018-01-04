@@ -17,12 +17,13 @@
 #
 # The API phase generates ".vapi" files for each ".vala" file. This is required for the transpile
 # phase, where we create a ".c" file for each ".vala" file, but we cannot do it in isolation and
-# need to reference the ".vapi" files corresponding to each of the *other* ".vala" files. Got it? 
+# need to reference the ".vapi" files corresponding to each of the *other* ".vala" files. That's
+# why the API phase needs to come first. 
 #
 # The compile/link phases are more straightforward, though note that behind the scenes we are using
 # pkg_config.Package to translate the Vala package into a library that gcc can use. In most cases
 # the name of the Vala package is specifically made to be the same as what is used in
-# pkg_config.Package, but we've seen quite a few exceptions. Check the documentation for
+# pkg_config.Package, but we've seen quite a few exceptions in the wild. Check the documentation for
 # ValaPackage to make sure you configure your packages correctly for four-phase builds.
 #
 

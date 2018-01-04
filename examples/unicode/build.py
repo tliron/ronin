@@ -13,9 +13,11 @@
 # Rōnin supports Unicode.
 #
 # Note the magic "coding" comment at the top of this file, which tells Python to read the file in
-# that encoding. Furthermore, we need to use the "u" prefix for literal strings that contain
-# Unicode characters. That's pretty much all you need to do: the Ninja file is always created in
-# UTF-8 by default. (To change its encoding, set "ninja.encoding" in the context.)
+# that encoding. Furthermore, in Python 2 we need to use the "u" prefix for literal strings that
+# contain Unicode characters (unnecessary in Python 3).
+#
+# That's pretty much all you need to do: the Ninja file is created in UTF-8 by default.
+# (To change its encoding, set "ninja.encoding" in the context.)
 #
 
 from ronin.cli import cli
@@ -30,10 +32,10 @@ with new_context() as ctx:
     project = Project(u'浪人 gcc Unicode Example')
 
     Phase(project=project,
-          name='build', # cannot be Unicode!
+          name='build', # Ninja limitation: phase names cannot be Unicode!
           executor=GccBuild(),
           inputs=glob(u'ソース/**/*.c'),
-          output='長さ',
+          output=u'長さ',
           run_output=1 if ctx.build.run else 0)
 
     cli(project)

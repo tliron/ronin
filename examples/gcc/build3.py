@@ -59,7 +59,7 @@ with new_context(root_path=base_path(__file__),
     link.executor = GccLink()
     link.inputs_from.append(comp)
     link.extensions += extensions
-    link.output = 'example_1'
+    link.output = 'example_3'
     if ctx.build.run:
         link.run_output = 1
     project.phases['link'] = link

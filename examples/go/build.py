@@ -13,7 +13,7 @@
 #
 # Go supports classic two-phase builds, but there are two caveats:
 #
-# If your Go program compromises several packages, then you need a separate compile phase for each
+# If your Go program comprises several packages, then you need a separate compile phase for each
 # package. If the package comprises several files, they need to be combined into a single "output="
 # in the phase. Its value should be the same path you want to use for "import" in Go. This means
 # that your source directory structure does not matter. Then, use the GoPackage extension on phases
@@ -39,7 +39,7 @@ with new_context() as ctx:
     
     extensions = [GoPackage(project, 'compile_functions')]
     
-    # Compile main
+    # Compile main package
     Phase(project=project,
           name='compile_main',
           executor=GoCompile(),
@@ -47,7 +47,7 @@ with new_context() as ctx:
           extensions=extensions,
           output='main')
 
-    # Compile functions
+    # Compile functions package
     Phase(project=project,
           name='compile_functions',
           executor=GoCompile(),

@@ -9,8 +9,14 @@
 #
 #   Ubuntu: sudo apt install gcc ccache gcc-multilib mingw-w64
 #
+# The gcc executors all support cross-compilation via "platform=", which could be the name of the
+# platform variant ("linux64", etc.). But you can also use a project, as in this case. 
+#
 # To test various builds, try "--variant linux64", "--variant linux32", "--variant win64",
-# "--variant win32" in the command line. On Linux and OSX you can run the Windows builds using WINE.
+# "--variant win32" in the command line. The project will configure itself according to the selected
+# variant.
+#
+# Note that on Linux and MacOS you can run the Windows builds using WINE.
 #
 
 from ronin.cli import cli

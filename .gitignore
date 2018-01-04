@@ -5,6 +5,7 @@
 **/build1/
 **/build2/
 **/build3/
+**/install/
 **/.ninja*
 
 env/

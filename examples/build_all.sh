@@ -3,6 +3,7 @@
 HERE=$(dirname "$(readlink -f "$0")")
 
 "$HERE/cross/build.py" "$@"
+"$HERE/cross/build.py" --variant linux32 "$@"
 "$HERE/gcc/build1.py" "$@"
 "$HERE/gcc/build2.py" "$@"
 "$HERE/gcc/build3.py" "$@"

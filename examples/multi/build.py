@@ -44,7 +44,7 @@ with new_context() as ctx:
           output='foo')
     
     # Main
-    main = Project('Multi-Project Example: Main', file_name='main')
+    main = Project('gcc Multi-Project Example: Main', file_name='main')
     executor = GccBuild()
     executor.add_include_path(input_path('src/foo'))
     executor.linker_rpath_origin() # to load the .so file from executable's directory
