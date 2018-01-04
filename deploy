@@ -1,15 +1,15 @@
-VERSION=1.0.3
+VERSION=1.1.1
 
 sudo apt install pandoc
 pip install pypandoc
 
-./setup.py sdist bdist_wheel
+./setup.py sdist bdist_wheel --universal
 
 gpg --detach-sign -a dist/ronin-$VERSION.tar.gz
-gpg --detach-sign -a dist/ronin-$VERSION-py2-none-any.whl
+gpg --detach-sign -a dist/ronin-$VERSION-py2.py3-none-any.whl
 
 twine upload \
 	dist/ronin-$VERSION.tar.gz \
 	dist/ronin-$VERSION.tar.gz.asc \
-	dist/ronin-$VERSION-py2-none-any.whl \
-	dist/ronin-$VERSION-py2-none-any.whl.asc
+	dist/ronin-$VERSION-py2.py3-none-any.whl \
+	dist/ronin-$VERSION-py2.py3-none-any.whl.asc

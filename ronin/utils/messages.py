@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .compat import to_unicode
 from blessings import Terminal
 import colorama, atexit
 
@@ -40,7 +41,7 @@ def announce(message, prefix=u'rōnin', color='green'):
     
     if color:
         prefix = getattr(terminal, color)(prefix)
-    print u'{}: {}'.format(prefix, message)
+    print(u'{}: {}'.format(prefix, message))
 
 
 def error(message):
@@ -53,7 +54,7 @@ def error(message):
     
     if isinstance(message, BaseException):
         the_type = type(message).__name__
-        message = unicode(message)
+        message = to_unicode(message)
         if message:
             announce(u'{}: {}'.format(the_type, message), color='red')
         else:

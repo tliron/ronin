@@ -1,4 +1,4 @@
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,8 @@
 
 from .utils.strings import stringify, join_later
 from .utils.collections import StrictList
-from StringIO import StringIO
+from .utils.compat import basestr
+from io import StringIO
 
 
 class Executor(object):
@@ -35,7 +36,7 @@ class Executor(object):
     
     def __init__(self):
         self.command = None
-        self.command_types = StrictList(value_type=basestring)
+        self.command_types = StrictList(value_type=basestr)
         self.output_extension = None
         self.output_prefix = None
         self.output_type = 'binary'
@@ -83,8 +84,8 @@ class ExecutorWithArguments(Executor):
             else:
                 arguments.remove(argument)
         if arguments:
-            f.write(' ')
-            f.write(' '.join(arguments))
+            f.write(u' ')
+            f.write(u' '.join(arguments))
 
     def add_argument(self, *value):
         self._argument(True, True, *value)

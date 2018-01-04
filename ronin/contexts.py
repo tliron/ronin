@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ from .utils.types import verify_type
 from .utils.argparse import ArgumentParser
 from .utils.messages import error
 from .utils.collections import StrictList, StrictDict
-from StringIO import StringIO
+from .utils.compat import basestr
+from io import StringIO
 from collections import OrderedDict
 import threading, sys, inspect, os
 
@@ -197,10 +198,14 @@ class Context(object):
             verify_type(parent, Context)
         self._parent = parent
         self._immutable = immutable
-        self._namespaces = StrictDict(key_type=basestring, value_type=_Namespace)
+        self._namespaces = StrictDict(key_type=basestr, value_type=_Namespace)
         self._exit_hooks = StrictList(value_type='types.FunctionType')
     
+    def __str__(self):
+        return self.__unicode__()
+
     def __unicode__(self):
+        # Python 2
         f = StringIO()
         try:
             self._write(f)
@@ -296,7 +301,7 @@ class Context(object):
 
     def _write(self, f):
         from .utils.strings import stringify
-        for k, v in self._all.iteritems():
+        for k, v in self._all.items():
             if not k.startswith('_'):
                 v = stringify(v)
                 f.write(u'{}={}\n'.format(k, v))
@@ -457,14 +462,22 @@ class _ArgumentParser(ArgumentParser):
     def __init__(self, name, frame):
         from .utils.strings import stringify
         name = stringify(name)
-        description = (u'Build {} using Rōnin {}'.format(name, VERSION)) if name is not None else u'Build using Rōnin {}'.format(VERSION)
+        description = u'Build {} using Rōnin {}'.format(name, VERSION) if name is not None else \
+                      u'Build using Rōnin {}'.format(VERSION)
         prog = os.path.basename(inspect.getfile(sys._getframe(frame)))
         super(_ArgumentParser, self).__init__(description=description, prog=prog)
-        self.add_argument('operation', nargs='*', default=['build'], help='"build", "clean", "ninja"')
-        self.add_flag_argument('debug', help_true='enable debug build', help_false='disable debug build')
-        self.add_flag_argument('install', help_true='enable installing', help_false='disable installing')
-        self.add_flag_argument('test', help_true='enable testing', help_false='disable testing')
+        self.add_argument('operation', nargs='*', default=['build'],
+                          help='"build", "clean", "ninja"')
+        self.add_flag_argument('debug', help_true='enable debug build',
+                               help_false='disable debug build')
+        self.add_flag_argument('install', help_true='enable installing',
+                               help_false='disable installing')
+        self.add_flag_argument('test', help_true='enable testing',help_false='disable testing')
         self.add_flag_argument('run', help_true='enable running', help_false='disable running')
-        self.add_argument('--variant', help='override default project variant (defaults to host platform, e.g. "linux64")')
-        self.add_argument('--set', nargs='*', action='append', metavar='ns.k=v', help='set values in the context')
-        self.add_flag_argument('verbose', help_true='enable verbose output', help_false='disable verbose output')
+        self.add_argument(
+            '--variant',
+            help='override default project variant (defaults to host platform, e.g. "linux64")')
+        self.add_argument('--set', nargs='*', action='append', metavar='ns.k=v',
+                          help='set values in the context')
+        self.add_flag_argument('verbose', help_true='enable verbose output',
+                               help_false='disable verbose output')

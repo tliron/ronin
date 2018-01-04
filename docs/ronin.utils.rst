@@ -1,5 +1,5 @@
 ..
-   Copyright 2016-2017 Tal Liron
+   Copyright 2016-2018 Tal Liron
    
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,11 @@
 ******************************
 
 .. automodule:: ronin.utils.collections
+
+:mod:`ronin.utils.compat`
+*************************
+
+.. automodule:: ronin.utils.compat
 
 :mod:`ronin.utils.messages`
 ***************************

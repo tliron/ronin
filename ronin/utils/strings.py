@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .compat import to_unicode
 from ..contexts import current_context
 import re
 
@@ -49,7 +50,7 @@ def stringify(value):
         return stringify(value)
     else:
         try:
-            return unicode(value)
+            return to_unicode(value)
         except UnicodeDecodeError:
             return str(value).decode(_ENCODING)
 
@@ -77,7 +78,7 @@ def stringify_dict(values):
     :rtype: {object: basestring}
     """
     
-    return {k: stringify(v) for k, v in values.iteritems()}
+    return {k: stringify(v) for k, v in values.items()}
 
 
 def bool_stringify(value):
@@ -100,7 +101,7 @@ def bool_stringify(value):
         if isinstance(value, bool):
             return value
         try:
-            value = unicode(value)
+            value = to_unicode(value)
         except UnicodeDecodeError:
             value = str(value).decode(_ENCODING)
         return value.lower() == 'true'

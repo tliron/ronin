@@ -1,4 +1,4 @@
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .compat import basestr, to_unicode
 from inspect import isclass
 
 
@@ -46,8 +47,8 @@ def type_name(the_type):
 
     if isinstance(the_type, tuple):
         return u'|'.join([type_name(v) for v in the_type])    
-    module = unicode(the_type.__module__)
-    name = unicode(the_type.__name__)
+    module = to_unicode(the_type.__module__)
+    name = to_unicode(the_type.__name__)
     return name if module == '__builtin__' else u'{}.{}'.format(module, name)
 
 
@@ -64,7 +65,7 @@ def verify_type(value, the_type):
     :raises AttributeError: if could not find the symbol in the module
     """
     
-    if isinstance(the_type, basestring):
+    if isinstance(the_type, basestr):
         the_type = import_symbol(the_type)
         if not isclass(the_type):
             raise ValueError(u'{} is not a type'.format(the_type))

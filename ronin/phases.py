@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ from .utils.types import verify_type, verify_type_or_subclass
 from .utils.paths import join_path, change_extension
 from .utils.strings import stringify
 from .utils.collections import StrictList, StrictDict
+from .utils.compat import basestr
 from types import FunctionType
 from inspect import isclass
 import os
@@ -144,8 +145,8 @@ class Phase(object):
             raise ValueError('"run_command" cannot be set when "output" is None')
         self.executor = executor
         self.description = description
-        self.inputs = StrictList(inputs, value_type=(basestring, FunctionType))
-        self.inputs_from = StrictList(inputs_from, value_type=(basestring, FunctionType,
+        self.inputs = StrictList(inputs, value_type=(basestr, FunctionType))
+        self.inputs_from = StrictList(inputs_from, value_type=(basestr, FunctionType,
                                                                'ronin.phases.Phase'))
         self.input_path = input_path
         self.input_path_relative = input_path_relative
@@ -157,14 +158,14 @@ class Phase(object):
         self.output_strip_prefix_from = output_strip_prefix_from
         self.output_transform = output_transform
         self.run_output = run_output
-        self.run_command = StrictList(run_command, value_type=(basestring, FunctionType))
-        self.rebuild_on = StrictList(rebuild_on, value_type=(basestring, FunctionType))
-        self.rebuild_on_from = StrictList(rebuild_on_from, value_type=(basestring, FunctionType,
+        self.run_command = StrictList(run_command, value_type=(basestr, FunctionType))
+        self.rebuild_on = StrictList(rebuild_on, value_type=(basestr, FunctionType))
+        self.rebuild_on_from = StrictList(rebuild_on_from, value_type=(basestr, FunctionType,
                                                                        'ronin.phases.Phase'))
-        self.build_if = StrictList(build_if, value_type=(basestring, FunctionType))
-        self.build_if_from = StrictList(build_if_from, value_type=(basestring, FunctionType,
+        self.build_if = StrictList(build_if, value_type=(basestr, FunctionType))
+        self.build_if_from = StrictList(build_if_from, value_type=(basestr, FunctionType,
                                                                    'ronin.phases.Phase'))
-        self.vars = StrictDict(key_type=basestring, value_type=(basestring, FunctionType))
+        self.vars = StrictDict(key_type=basestr, value_type=(basestr, FunctionType))
         self.hooks = StrictList(value_type=FunctionType)
 
     def apply(self):

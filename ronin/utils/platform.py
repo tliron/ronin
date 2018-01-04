@@ -1,4 +1,4 @@
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -201,12 +201,12 @@ def which(command, exception=True):
         with current_context() as ctx:
             which_command = ctx.get('platform.which_command', DEFAULT_WHICH_COMMAND)
             which_command = stringify(which_command)
-        command = check_output([which_command, command]).strip()
-        if not command:
+        found_command = check_output([which_command, command])
+        if not found_command:
             if exception:
                 raise WhichException(u"could not find '{}'".format(command))
             return None
-        return command
+        return found_command.decode().strip()
     except CalledProcessError:
         if exception:
             raise WhichException(u"could not find '{}'".format(command))

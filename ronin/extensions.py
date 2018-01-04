@@ -1,4 +1,4 @@
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 from .contexts import current_context
 from .utils.types import verify_type
 from .utils.collections import StrictList
+from .utils.compat import basestr
 from .utils.strings import stringify
 from types import FunctionType
 
@@ -47,7 +48,8 @@ class ExplicitExtension(Extension):
     An extension with explicitly stated data to support gcc-like executors.
     """
     
-    def __init__(self, inputs=None, include_paths=None, defines=None, library_paths=None, libraries=None):
+    def __init__(self, inputs=None, include_paths=None, defines=None, library_paths=None,
+                 libraries=None):
         """
         :param inputs: input paths; note that these should be *absolute* paths
         :type inputs: [:obj:`basestring` or :obj:`~types.FunctionType`]
@@ -64,11 +66,11 @@ class ExplicitExtension(Extension):
         """
         
         super(ExplicitExtension, self).__init__()
-        self.inputs = StrictList(inputs, value_type=(basestring, FunctionType))
-        self.include_paths = StrictList(include_paths, value_type=(basestring, FunctionType))
+        self.inputs = StrictList(inputs, value_type=(basestr, FunctionType))
+        self.include_paths = StrictList(include_paths, value_type=(basestr, FunctionType))
         self.defines = defines or []
-        self.library_paths = StrictList(library_paths, value_type=(basestring, FunctionType))
-        self.libraries = StrictList(libraries, value_type=(basestring, FunctionType))
+        self.library_paths = StrictList(library_paths, value_type=(basestr, FunctionType))
+        self.libraries = StrictList(libraries, value_type=(basestr, FunctionType))
 
     def apply_to_phase(self, phase):
         phase.inputs += self.inputs

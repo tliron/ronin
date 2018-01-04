@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from .ninja import NinjaFile
 from .utils.strings import stringify_list
 from .utils.types import verify_type
 from .utils.messages import announce, error
+from .utils.compat import to_unicode
 from traceback import print_exc
 from subprocess import check_call, CalledProcessError
 import sys
@@ -44,7 +45,7 @@ def cli(*projects):
 
         with current_context() as ctx:
             if ctx.get('cli.verbose', False):
-                sys.stdout.write(unicode(ctx))
+                sys.stdout.write(to_unicode(ctx))
             operations = ctx.cli.args.operation
 
         for operation in operations:

@@ -33,20 +33,22 @@ an expert in Python to use Rōnin, but its power is at your fingertips if you ne
 Rōnin supports **Unicode** throughout: Ninja files are created in UTF-8 by default and you can
 include Unicode characters in your build scripts.
 
+Python 3 is recommended, but Rōnin can also run on Python 2.7.
+
 Download
 --------
 
-Available on [PyPI](https://pypi.python.org/pypi/ronin), so you can install with `pip`,
-`easy_install`, or `setuptools`. On Debian/Ubuntu: 
+The latest release is available on [PyPI](https://pypi.python.org/pypi/ronin), so you can install
+with `pip`, `easy_install`, or `setuptools`. On Debian/Ubuntu: 
 
-	sudo apt install python-setuptools
-	sudo -H easy_install pip
-	sudo -H pip2 install ronin
+	sudo apt install python3-pip
+	sudo -H pip3 install ronin
 
 Since Ninja is just one small self-contained executable, it's easy to get it by downloading the
 [latest release](https://github.com/ninja-build/ninja/releases). Just make sure it's in your
 execution path, or run your build script with `--set ninja.command=` and give it the full path to
-`ninja`. Older versions (they work fine) are also available on Debian/Ubuntu:
+`ninja`. Older versions (they work fine) may also be available in your operating system.
+On Debian/Ubuntu:
 
 	sudo apt install ninja-build 
 
@@ -57,6 +59,9 @@ An undocumented system is a broken system. We strive for coherent, comprehensive
 documentation.
 
 A detailed user manual is available on the [wiki](https://github.com/tliron/ronin/wiki).
+
+If you prefer to learn by example,
+[there are many](https://github.com/tliron/ronin/tree/master/examples).
 
 Rich API docs available on [Read the Docs](http://ronin.readthedocs.io/en/latest/).
 
@@ -98,8 +103,6 @@ FAQ
 * _Why require Ninja, a binary, instead of building everything in 100% Python?_ Because it's silly
   to reinvent wheels, especially when the wheels are so good. Ninja is a one-trick pony that does
   its job extremely well. But it's just too low-level for most users, hence the need for a frontend.
-* _Why not Python 3?_ Many, many deployed systems are still locked in Python 2 for various reasons.
-  We want to be able to build on them.
 * _Why Ninja? It's already yesterday's news! There are even faster builders._ Eh, if you ignore the
   initial configuration phase, and are properly multithreading your build (`-j` flag in Make), then
   the time you wait for the build to finish ends up depending on your compiler, not the build

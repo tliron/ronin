@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Rōnin'
-copyright = u'2016-2017, Tal Liron' # @ReservedAssignment
+copyright = u'2016-2018, Tal Liron' # @ReservedAssignment
 author = u'Tal Liron'
 
 # The version info for the project you're documenting, acts as replacement for

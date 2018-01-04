@@ -1,4 +1,4 @@
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@
 from __future__ import absolute_import # so we can import 'collections'
 
 from .types import type_name, import_symbol
+from .compat import basestr
 from collections import OrderedDict
 from inspect import isclass
 
@@ -181,7 +182,7 @@ class StrictDict(OrderedDict):
 def _convert_type(the_type):
     if isinstance(the_type, tuple):
         return tuple(_convert_type(v) for v in the_type)
-    elif isinstance(the_type, basestring):
+    elif isinstance(the_type, basestr):
         the_type = import_symbol(the_type)
     if not isclass(the_type):
         raise ValueError(u'{} is not a type'.format(the_type))

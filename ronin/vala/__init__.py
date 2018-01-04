@@ -1,4 +1,4 @@
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -223,7 +223,8 @@ class ValaPackage(Extension):
     and gcc executors. 
     """
     
-    def __init__(self, name=None, vapi_paths=None, c=True, c_compile_arguments=None, c_link_arguments=None):
+    def __init__(self, name=None, vapi_paths=None, c=True, c_compile_arguments=None,
+                 c_link_arguments=None):
         """
         :param name: package name
         :type name: basestring|FunctionType

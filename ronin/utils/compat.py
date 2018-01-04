@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+try:
+    # Python 2
+    basestr = basestring
+except NameError:
+    # Python 3
+    basestr = str
 
-HERE=$(dirname "$(readlink -f "$0")")
-BUILD="$HERE/build"
-
-rm -rf "$BUILD"
-
-pip install --upgrade --requirement "$HERE/requirements.txt"
-sphinx-build -j "$(nproc --all)" -b html "$HERE" "$BUILD"
+try:
+    # Python 2
+    to_unicode = unicode
+except NameError:
+    # Python 3
+    to_unicode = str

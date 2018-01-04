@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from .utils.platform import host_platform, platform_executable_extension, \
 from .utils.strings import stringify
 from .utils.paths import join_path
 from .utils.collections import StrictDict, StrictList
+from .utils.compat import basestr
 
 
 class Project(object):
@@ -83,13 +84,17 @@ class Project(object):
         self.output_path = output_path
         self.output_path_relative = output_path_relative
         self.file_name = file_name
-        self.phases = StrictDict(phases, key_type=basestring, value_type='ronin.phases.Phase')
+        self.phases = StrictDict(phases, key_type=basestr, value_type='ronin.phases.Phase')
         self.hooks = StrictList(value_type='types.FunctionType')
         self.run = StrictDict(key_type=int, value_type=list)
         self._variant = variant or (lambda ctx: ctx.get('projects.default_variant',
                                                         host_platform()))
 
+    def __str__(self):
+        return self.__unicode__()
+
     def __unicode__(self):
+        # Python 2
         name = stringify(self.name)
         version = stringify(self.version)
         variant = stringify(self.variant)
@@ -235,7 +240,7 @@ class Project(object):
         :rtype: basestring
         """
         
-        for k, v in self.phases.iteritems():
+        for k, v in self.phases.items():
             if v is phase:
                 return k
         return None

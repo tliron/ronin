@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2016-2017 Tal Liron
+# Copyright 2016-2018 Tal Liron
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import os
 
 if version_info < (2, 7):
     exit(u'Rōnin requires Python 2.7+')
-if version_info >= (3, 0):
-    exit(u'Rōnin does not support Python 3')
 
 HERE = os.path.dirname(__file__)
 
@@ -34,9 +32,11 @@ try:
     import pypandoc # @UnresolvedImport
     long_description = pypandoc.convert(os.path.join(HERE, 'README.md'), 'rst')
 except(IOError, ImportError):
-    long_description = open(os.path.join(HERE, 'README.md')).read()
+    with open(os.path.join(HERE, 'README.md')) as f:
+        long_description = f.read()
 
-execfile(os.path.join(HERE, 'ronin', 'version.py'))
+with open(os.path.join(HERE, 'ronin', 'version.py')) as f:
+    exec(f.read())
 
 setup(
     name='ronin',
@@ -50,16 +50,16 @@ setup(
     
     url='https://github.com/tliron/ronin',
 
-    classifiers=[
+    classifiers=(
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Topic :: Software Development :: Build Tools'],
+        'Topic :: Software Development :: Build Tools'),
 
-    packages=['ronin',
+    packages=('ronin',
               'ronin.binutils',
               'ronin.files',
               'ronin.gcc',
@@ -70,9 +70,9 @@ setup(
               'ronin.rust',
               'ronin.sdl',
               'ronin.utils',
-              'ronin.vala'],
+              'ronin.vala'),
     
-    install_requires=[
+    install_requires=(
         'blessings>=1.6, <2.0',
         'colorama>=0.3.9, <2.0.0',
-        'glob2>=0.5, <=2.0'])
+        'glob2>=0.5, <=2.0'))
