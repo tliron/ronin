@@ -12,6 +12,7 @@ env/
 env2/
 out/
 dist/
+ninja
 
 .tox/
 .coverage

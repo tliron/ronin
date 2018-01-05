@@ -1,7 +1,12 @@
+#!/bin/bash
+
 VERSION=1.1.2
 
+HERE=$(dirname "$(readlink -f "$0")")
+cd "$HERE"
+
 sudo apt install pandoc
-pip install pypandoc
+pip install twine pypandoc
 
 ./setup.py sdist bdist_wheel --universal
 

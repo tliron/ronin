@@ -118,7 +118,7 @@ class NinjaFile(object):
         
         verify_type(project, Project)
         self._project = project
-        self.command = command
+        self._command = command
         self.encoding = encoding
         self.file_name = file_name
         self.columns = columns
@@ -136,7 +136,16 @@ class NinjaFile(object):
         finally:
             f.close()
         return v
-    
+
+    @property
+    def command(self):
+        # First check if we have "ninja" in our current directory
+        if os.access('ninja', os.X_OK):
+            return which(os.path.abspath('ninja'))
+
+        with current_context() as ctx:
+            return which(ctx.fallback(self._command, 'ninja.command', 'ninja'))
+
     @property
     def file_name(self):
         """
@@ -213,9 +222,8 @@ class NinjaFile(object):
         self.generate()
         path = self.path
         with current_context() as ctx:
-            command = which(ctx.fallback(self.command, 'ninja.command', 'ninja'))
             verbose = ctx.get('cli.verbose', False)
-        args = [command, '-f', path]
+        args = [self.command, '-f', path]
         if verbose:
             args.append('-v')
         try:
@@ -241,9 +249,7 @@ class NinjaFile(object):
                 
         path = self.path
         if os.path.isfile(path):
-            with current_context() as ctx:
-                command = which(ctx.fallback(self.command, 'ninja.command', 'ninja'))
-            args = [command, '-f', path, '-t', 'clean', '-g']
+            args = [self.command, '-f', path, '-t', 'clean', '-g']
             try:
                 check_call(args)
             except CalledProcessError as ex:

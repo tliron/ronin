@@ -30,27 +30,31 @@ intentionally uses a language that already exists. There's no hidden cost to thi
 build scripts are pretty much as concise and coherent as any specialized DSL. You _don't_ need to be
 an expert in Python to use Rōnin, but its power is at your fingertips if you need it.
 
-Rōnin supports **Unicode** throughout: Ninja files are created in UTF-8 by default and you can
-include Unicode characters in your build scripts.
+Rōnin supports Unicode throughout: Ninja files are created in UTF-8 by default and you can include
+Unicode characters in your build scripts.
 
 Python 3 is recommended, but Rōnin can also run on Python 2.7.
 
 Download
 --------
 
-The latest release is available on [PyPI](https://pypi.python.org/pypi/ronin), so you can install
-with `pip`, `easy_install`, or `setuptools`. On Debian/Ubuntu: 
+The latest release is available on [PyPI](https://pypi.python.org/pypi/ronin). To install on
+Debian/Ubuntu:
 
 	sudo apt install python3-pip
 	sudo -H pip3 install ronin
 
-Since Ninja is just one small self-contained executable, it's easy to get it by downloading the
-[latest release](https://github.com/ninja-build/ninja/releases). Just make sure it's in your
-execution path, or run your build script with `--set ninja.command=` and give it the full path to
-`ninja`. Older versions (they work fine) may also be available in your operating system.
-On Debian/Ubuntu:
+You also need Ninja. To install on Debian/Ubuntu:
 
 	sudo apt install ninja-build 
+
+Note that Ninja is a small self-contained executable, so you might prefer to just download
+[the most recent release](https://github.com/ninja-build/ninja/releases). For Rōnin to be able to
+run it, it must be in either your execution path or the current directory. Or, you can run your
+build script with `--set ninja.command=` and give it the full path to Ninja.
+
+Also note that instead of requiring your users to download Rōnin and Ninja, you can opt to
+[include both with your project](https://github.com/tliron/ronin/wiki/Redistribution).
 
 Documentation
 -------------
@@ -100,28 +104,25 @@ FAQ
   tools. Yes, it introduces a learning curve, but getting familiar with Python is useful for so
   many practical reasons beyond writing build scripts for Rōnin. That said, if someone wants to
   contribute a simple DSL as an optional extra, we will consider!
-* _Why require Ninja, a binary, instead of building everything in 100% Python?_ Because it's silly
+* _Why add Ninja, a binary, as a dependency, instead of using 100% Python?_ Because it's silly
   to reinvent wheels, especially when the wheels are so good. Ninja is a one-trick pony that does
   its job extremely well. But it's just too low-level for most users, hence the need for a frontend.
-* _Why Ninja? It's already yesterday's news! There are even faster builders._ Eh, if you ignore the
-  initial configuration phase, and are properly multithreading your build (`-j` flag in Make), then
-  the time you wait for the build to finish ends up depending on your compiler, not the build
-  system. Ninja was chosen because of its marvelous minimalism, not its speed. Ninja is actually 
-  [not much](http://david.rothlis.net/ninja-benchmark/) 
-  [faster](http://hamelot.io/programming/make-vs-ninja-performance-comparison/)
-  than Make. For a similarly minimalist build system, see [tup](http://gittup.org/tup/).
+  You can use Rōnin to just generate the Ninja file via the `ninja` operation.
+* _Did you choose Ninja because it's fast?_ No. Ninja was chosen because of its marvelous
+  minimalism. Its reputation for speed is unfounded: running Make in parallel mode (the `-j` flag)
+  is [equally](http://david.rothlis.net/ninja-benchmark/) 
+  [fast](http://hamelot.io/programming/make-vs-ninja-performance-comparison/) for most use cases.
+  It's not Make that is slow, but rather the complex Autotools configuration phases added on top of
+  it by many projects. In addition to Ninja, we also considered [tup](http://gittup.org/tup/).
 
 Similar Projects
 ----------------
 
 * [bfg9000](https://github.com/jimporter/bfg9000): "bfg9000 is a cross-platform build configuration
   system with an emphasis on making it easy to define how to build your software."
-* [emk](https://github.com/kmackay/emk): "A Python-based build tool."
-* [Craftr](https://craftr.net/): "Craftr is a next generation build system based on Ninja and Python
-  that features modular and cross-platform build definitions at the flexibility of a Python script
-  and provides access to multiple levels of build automation abstraction."
+* [Craftr](https://github.com/craftr-build/craftr): "Craftr is a modular meta build system that
+   primarily targets Ninja as the build backend."
 * [Meson](http://mesonbuild.com/): "Meson is an open source build system meant to be both extremely
   fast, and, even more importantly, as user friendly as possible."
 * [pyrate](https://github.com/pyrate-build/pyrate-build): "pyrate is a small python based build file
   generator targeting ninja(s)."
-* [Waf](https://waf.io/): "The meta build system."
