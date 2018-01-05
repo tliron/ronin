@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
@@ -28,9 +29,9 @@ def configure_rust(rustc_command=None, cargo_command=None):
     Configures the current context's `Rust <https://www.rust-lang.org/>`__ support.
     
     :param rustc_command: ``rustc`` command; defaults to "rustc"
-    :type rustc_command: basestring or ~types.FunctionType
+    :type rustc_command: str or ~types.FunctionType
     :param cargo_command: ``cargo`` command; defaults to "cargo"
-    :type cargo_command: basestring or ~types.FunctionType
+    :type cargo_command: str or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
@@ -49,7 +50,7 @@ class RustBuild(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``rustc`` command; defaults to the context's ``rust.rustc_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         """
         
         super(RustBuild, self).__init__()
@@ -77,7 +78,7 @@ class CargoBuild(ExecutorWithArguments):
     def __init__(self, command=None, jobs=None):
         """
         :param command: ``cargo`` command; defaults to the context's ``rust.cargo_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         :param jobs: number of jobs; defaults to CPU count + 1
         :type jobs: int
         """

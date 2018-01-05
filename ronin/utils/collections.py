@@ -39,10 +39,10 @@
 #
 # * The original work did not contain a NOTICE file (4d). 
 
+from __future__ import unicode_literals
 from __future__ import absolute_import # so we can import 'collections'
-
 from .types import type_name, import_symbol
-from .compat import basestr
+from .unicode import string
 from collections import OrderedDict
 from inspect import isclass
 
@@ -68,7 +68,7 @@ class StrictList(list):
     :param items: initial list
     :type items: list
     :param value_type: type(s) required for list values
-    :type value_type: :obj:`type` or :obj:`basestring` or (:obj:`type` or :obj:`basestring`)
+    :type value_type: :obj:`type` or :obj:`str` or (:obj:`type` or :obj:`str`)
     :param wrapper_function: calls this optional function on all values before added to the list
     :type wrapper_function: ~types.FunctionType
     :param unwrapper_function: calls this optional function on all values when retrieved from the
@@ -91,7 +91,7 @@ class StrictList(list):
 
     def _wrap(self, value):
         if (self.value_type is not None) and (not isinstance(value, self.value_type)):
-            raise TypeError(u'value must be a "{}": {!r}'.format(type_name(self.value_type), value))
+            raise TypeError('value must be a "{}": {!r}'.format(type_name(self.value_type), value))
         if self.wrapper_function is not None:
             value = self.wrapper_function(value)
         return value
@@ -135,9 +135,9 @@ class StrictDict(OrderedDict):
     :param items: initial dict
     :type items: dict
     :param key_type: type(s) required for dict keys
-    :type key_type: :obj:`type` or :obj:`basestring` or (:obj:`type` or :obj:`basestring`)
+    :type key_type: :obj:`type` or :obj:`str` or (:obj:`type` or :obj:`str`)
     :param value_type: type(s) required for dict values
-    :type value_type: :obj:`type` or :obj:`basestring` or (:obj:`type` or :obj:`basestring`)
+    :type value_type: :obj:`type` or :obj:`str` or (:obj:`type` or :obj:`str`)
     :param wrapper_function: calls this optional function on all values before added to the list
     :type wrapper_function: ~types.FunctionType
     :param unwrapper_function: calls this optional function on all values when retrieved from the
@@ -163,7 +163,7 @@ class StrictDict(OrderedDict):
 
     def __getitem__(self, key):
         if (self.key_type is not None) and (not isinstance(key, self.key_type)):
-            raise TypeError(u'key must be a "{}": {!r}'.format(type_name(self.key_type), key))
+            raise TypeError('key must be a "{}": {!r}'.format(type_name(self.key_type), key))
         value = super(StrictDict, self).__getitem__(key)
         if self.unwrapper_function is not None:
             value = self.unwrapper_function(value)
@@ -171,9 +171,9 @@ class StrictDict(OrderedDict):
 
     def __setitem__(self, key, value, **_):
         if (self.key_type is not None) and (not isinstance(key, self.key_type)):
-            raise TypeError(u'key must be a "{}": {!r}'.format(type_name(self.key_type), key))
+            raise TypeError('key must be a "{}": {!r}'.format(type_name(self.key_type), key))
         if (self.value_type is not None) and (not isinstance(value, self.value_type)):
-            raise TypeError(u'value must be a "{}": {!r}'.format(type_name(self.value_type), value))
+            raise TypeError('value must be a "{}": {!r}'.format(type_name(self.value_type), value))
         if self.wrapper_function is not None:
             value = self.wrapper_function(value)
         return super(StrictDict, self).__setitem__(key, value)
@@ -182,8 +182,14 @@ class StrictDict(OrderedDict):
 def _convert_type(the_type):
     if isinstance(the_type, tuple):
         return tuple(_convert_type(v) for v in the_type)
-    elif isinstance(the_type, basestr):
+    elif isinstance(the_type, string):
         the_type = import_symbol(the_type)
     if not isclass(the_type):
-        raise ValueError(u'{} is not a type'.format(the_type))
+        raise ValueError('{} is not a type'.format(the_type))
+    if the_type is str:
+        try:
+            # Needed for Python 2 so we can support both "str" and "unicode" types
+            the_type = basestring
+        except NameError:
+            pass
     return the_type

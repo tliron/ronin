@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from ..contexts import current_context
 from ..extensions import Extension
 from ..utils.strings import stringify, UNESCAPED_STRING_RE
@@ -30,9 +31,9 @@ def configure_pkg_config(pkg_config_command=None,
     /pkg-config/>`__ support.
     
     :param pkg_config_command: ``pkg-config`` command; defaults to "pkg-config"
-    :type pkg_config_command: basestring or ~types.FunctionType
+    :type pkg_config_command: str or ~types.FunctionType
     :param pkg_config_path: ``pkg-config`` path
-    :type pkg_config_path: basestring or ~types.FunctionType
+    :type pkg_config_path: str or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
@@ -51,12 +52,12 @@ class Package(Extension):
     def __init__(self, name, command=None, path=None, static=False):
         """
         :param name: package name
-        :type name: basestring or ~types.FunctionType
+        :type name: str or ~types.FunctionType
         :param command: ``pkg-config`` command; defaults to the context's
          ``pkg_config.pkg_config_command`` 
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         :param path: ``pkg-config`` path; defaults to the context's ``pkg_config.path``
-        :type path: basestring or ~types.FunctionType
+        :type path: str or ~types.FunctionType
         :param static: set to True to use static library linking
         :type static: bool
         """
@@ -96,7 +97,7 @@ class Package(Extension):
                 output = check_output(args).decode().strip()
                 return UNESCAPED_STRING_RE.split(output)
             except CalledProcessError:
-                raise Exception(u"failed to run: '{}'".format(' '.join(args)))
+                raise Exception("failed to run: '{}'".format(' '.join(args)))
         finally:
             if original_pkg_config_path is not None:
                 os.environ['PKG_CONFIG_PATH'] = original_pkg_config_path

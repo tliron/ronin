@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from ..executors import ExecutorWithArguments
 from ..extensions import Extension
 from ..contexts import current_context
@@ -32,7 +33,7 @@ def configure_vala(valac_command=None):
     Configures the current context's `Vala <https://wiki.gnome.org/Projects/Vala>`__ support.
     
     :param valac_command: valac command; defaults to "valac"
-    :type valac_command: basestring|FunctionType
+    :type valac_command: str|FunctionType
     """
     
     with current_context(False) as ctx:
@@ -47,7 +48,7 @@ class ValaExecutor(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``valac`` command; defaults to the context's ``vala.valac_command``
-        :type command: basestring|FunctionType
+        :type command: str|FunctionType
         """
         
         super(ValaExecutor, self).__init__()
@@ -126,7 +127,7 @@ class ValaBuild(ValaExecutor):
     def __init__(self, command=None):
         """
         :param command: ``valac`` command; defaults to the context's ``vala.valac_command``
-        :type command: basestring|FunctionType
+        :type command: str|FunctionType
         """
         
         super(ValaBuild, self).__init__(command)
@@ -148,7 +149,7 @@ class ValaApi(ValaExecutor):
     def __init__(self, command=None):
         """
         :param command: ``valac`` command; defaults to the context's ``vala.valac_command``
-        :type command: basestring|FunctionType
+        :type command: str|FunctionType
         """
         
         super(ValaApi, self).__init__(command)
@@ -174,9 +175,9 @@ class ValaTranspile(ValaExecutor):
     def __init__(self, command=None, apis=None):
         """
         :param command: ``valac`` command; defaults to the context's ``vala.valac_command``
-        :type command: basestring|FunctionType
+        :type command: str|FunctionType
         :param apis: phases with :class:`ValaApi` executors
-        :type apis: [basestring|:class:`ronin.phases.Phase`]
+        :type apis: [str|:class:`ronin.phases.Phase`]
         """
         
         super(ValaTranspile, self).__init__(command)
@@ -201,11 +202,11 @@ class ValaGccCompile(GccCompile):
         """
         :param command: ``gcc`` (or ``g++``, etc.) command; defaults to the context's
          ``gcc.gcc_command``
-        :type command: basestring|FunctionType
+        :type command: str|FunctionType
         :param ccache: whether to use ccache; defaults to True
         :type ccache: bool
         :param platform: target platform or project
-        :type platform: basestring|FunctionType|:class:`ronin.projects.Project`
+        :type platform: str|FunctionType|:class:`ronin.projects.Project`
         """
 
         super(ValaGccCompile, self).__init__(command, ccache, platform)
@@ -227,15 +228,15 @@ class ValaPackage(Extension):
                  c_link_arguments=None):
         """
         :param name: package name
-        :type name: basestring|FunctionType
+        :type name: str|FunctionType
         :param c: set to True (default) to automatically include a :class:`ronin.pkg_config.Package`
          of the same name (used by gcc-compatible phases), False to disable, or provide any
          arbitrary extension
         :type c: bool|:class:`ronin.extensions.Extension`
         :param c_compile_arguments: arguments to add to gcc-compatible compile executors
-        :type c_compile_arguments: [basestring|FunctionType]
+        :type c_compile_arguments: [str|FunctionType]
         :param c_link_arguments: arguments to add to gcc-compatible link executors
-        :type c_link_arguments: [basestring|FunctionType]
+        :type c_link_arguments: [str|FunctionType]
         """
         
         super(ValaPackage, self).__init__()
@@ -320,5 +321,5 @@ def _vala_fast_vapis_var(apis):
                 _, api_outputs = api.get_outputs(api_inputs)
                 outputs += api_outputs
         
-        return ' '.join([u'--use-fast-vapi={}'.format(pathify(v.file)) for v in outputs])
+        return ' '.join(['--use-fast-vapi={}'.format(pathify(v.file)) for v in outputs])
     return var

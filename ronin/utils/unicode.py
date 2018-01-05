@@ -13,15 +13,15 @@
 # limitations under the License.
 
 try:
-    # Python 2
-    basestr = basestring
+    # Needed for Python 2 so we can support both "str" and "unicode" types
+    string = basestring
 except NameError:
     # Python 3
-    basestr = str
+    string = str
 
 try:
     # Python 2
-    to_unicode = unicode
+    to_str = unicode
 except NameError:
     # Python 3
-    to_unicode = str
+    to_str = str

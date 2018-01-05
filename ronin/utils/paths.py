@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from .strings import stringify, stringify_list
 from ..contexts import current_context
 from glob2 import glob as glob2
@@ -27,9 +28,9 @@ def join_path(*segments):
     path separator character will not cause the path to reset.
 
     :param segments: path segments; calls :func:`ronin.utils.strings.stringify` on each
-    :type segments: [basestring|FunctionType|None]
+    :type segments: [str|FunctionType|None]
     :returns: joined path
-    :rtype: basestring
+    :rtype: str
     """
     
     segments = stringify_list(segments)
@@ -46,7 +47,7 @@ def join_path_later(*segments):
     Like :func:`join_path`, but deferred.
 
     :param segments: path segments; calls :func:`ronin.utils.strings.stringify` on each
-    :type segments: [basestring|FunctionType|None] 
+    :type segments: [str|FunctionType|None] 
     :returns: function that calls :func:`join_path`
     :rtype: FunctionType
     """
@@ -59,9 +60,9 @@ def base_path(path):
     Returns the real base path string of a file. 
 
     :param path: path; calls :func:`ronin.utils.strings.stringify` on it
-    :type path: basestring|FunctionType
+    :type path: str|FunctionType
     :returns: base path of ``path``
-    :rtype: basestring
+    :rtype: str
     """
     
     path = stringify(path)
@@ -75,9 +76,9 @@ def input_path(*segments):
     See :func:`join_path`.
 
     :param segments: path segments; calls :func:`ronin.utils.strings.stringify` on each
-    :type segments: [basestring|FunctionType|None] 
+    :type segments: [str|FunctionType|None] 
     :returns: path joined to ``paths.input``
-    :rtype: basestring
+    :rtype: str
     """
     
     with current_context() as ctx:
@@ -96,16 +97,16 @@ def glob(pattern, path=None, hidden=False, dirs=False):
     "\*\*" correctly.
     
     :param pattern: pattern; calls :func:`ronin.utils.strings.stringify` on it
-    :type pattern: basestring|FunctionType
+    :type pattern: str|FunctionType
     :param path: join the pattern to this path (when None, defaults to the context's
      ``paths.input``); calls :func:`ronin.utils.strings.stringify` on it
-    :type path: basestring|FunctionType
+    :type path: str|FunctionType
     :param hidden: set to True to include hidden files
     :type hidden: bool
     :param dirs: set to True to include directories
     :type dirs: bool
     :returns: zero or more full paths to files (and optionally directories) matching the pattern
-    :rtype: [basestring]
+    :rtype: [str]
     """
 
     if path is None:
@@ -124,12 +125,12 @@ def change_extension(path, new_extension):
     The extension is defined as the segment following the last "." in the path.
     
     :param path: path; calls :func:`ronin.utils.strings.stringify` on it
-    :type path: basestring|FunctionType
+    :type path: str|FunctionType
     :param new_extension: the new extension (if None, will return the path unchanged); calls
      :func:`ronin.utils.strings.stringify` on it
-    :type new_extension: basestring|FunctionType
+    :type new_extension: str|FunctionType
     :returns: path with new extension
-    :rtype: basestring
+    :rtype: str
     """
     
     path = stringify(path)
@@ -139,4 +140,4 @@ def change_extension(path, new_extension):
     dot = path.rfind('.')
     if dot != -1:
         path = path[:dot]
-    return u'{}.{}'.format(path, new_extension)
+    return '{}.{}'.format(path, new_extension)

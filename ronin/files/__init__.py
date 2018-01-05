@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
@@ -25,7 +26,7 @@ def configure_files(copy_command=None):
     Configures the current context's files support.
     
     :param copy_command: copy command; defaults to "cp"
-    :type copy_command: basestring or ~types.FunctionType
+    :type copy_command: str or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
@@ -45,7 +46,7 @@ class Copy(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``cp`` command; default's to context's ``files.copy_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         """
         
         super(Copy, self).__init__()

@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .compat import to_unicode
+from __future__ import unicode_literals
+from .unicode import to_str
 from ..contexts import current_context
 import re
 
@@ -37,9 +38,9 @@ def stringify(value):
     passed around instead of strings.
     
     :param value: value or None
-    :type value: basestring|FunctionType
+    :type value: str|FunctionType
     :returns: stringified value or None
-    :rtype: basestring
+    :rtype: str
     """
     
     if value is None:
@@ -50,7 +51,7 @@ def stringify(value):
         return stringify(value)
     else:
         try:
-            return to_unicode(value)
+            return to_str(value)
         except UnicodeDecodeError:
             return str(value).decode(_ENCODING)
 
@@ -62,7 +63,7 @@ def stringify_list(values):
     :param values: values
     :type values: []
     :returns: values
-    :rtype: [basestring]
+    :rtype: [str]
     """
     
     return [stringify(v) for v in values]
@@ -75,7 +76,7 @@ def stringify_dict(values):
     :param values: values
     :type values: {}
     :returns: values
-    :rtype: {object: basestring}
+    :rtype: {object: str}
     """
     
     return {k: stringify(v) for k, v in values.items()}
@@ -86,7 +87,7 @@ def bool_stringify(value):
     Like :func:`stringify`, except checks if the return value equals, ignoring case, to ``true``. 
     
     :param value: value
-    :type value: basestring|FunctionType
+    :type value: str|FunctionType
     :returns: True if the stringified value is ``true``
     :rtype: bool
     """
@@ -101,7 +102,7 @@ def bool_stringify(value):
         if isinstance(value, bool):
             return value
         try:
-            value = to_unicode(value)
+            value = to_str(value)
         except UnicodeDecodeError:
             value = str(value).decode(_ENCODING)
         return value.lower() == 'true'
@@ -114,7 +115,7 @@ def join_later(values, separator=' '):
     :param values: values
     :type values: []
     :param separator: separator
-    :type separator: basestring|FunctionType
+    :type separator: str|FunctionType
     :returns: lambda returning the joined string
     :rtype: FunctionType
     """
@@ -128,7 +129,7 @@ def format_later(the_format, *args, **kwargs):
     and then ``.format`` their results on ``the_format``.
     
     :param the_format: format string
-    :type the_format: basestring|FunctionType
+    :type the_format: str|FunctionType
     :param values: values
     :type values: []
     :returns: lambda returning the formatted string

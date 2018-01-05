@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .compat import to_unicode
+from __future__ import unicode_literals
+from .unicode import to_str
 from blessings import Terminal
 import colorama, atexit
 
@@ -29,19 +30,19 @@ atexit.register(_restore_terminal)
 terminal = Terminal()
 
 
-def announce(message, prefix=u'rōnin', color='green'):
+def announce(message, prefix='rōnin', color='green'):
     """
     Writes a message to the terminal with a colored prefix.
     
     :param message: message
-    :type message: basestring
+    :type message: str
     :param color: color name
-    :type color: basestring
+    :type color: str
     """
     
     if color:
         prefix = getattr(terminal, color)(prefix)
-    print(u'{}: {}'.format(prefix, message))
+    print('{}: {}'.format(prefix, message))
 
 
 def error(message):
@@ -49,18 +50,18 @@ def error(message):
     Writes an error message to the terminal with a red prefix.
     
     :param message: message or exception
-    :type message: basestring or BaseException subclass instance
+    :type message: str or BaseException subclass instance
     """
     
     if isinstance(message, BaseException):
         the_type = type(message).__name__
-        message = to_unicode(message)
+        message = to_str(message)
         if message:
-            announce(u'{}: {}'.format(the_type, message), color='red')
+            announce('{}: {}'.format(the_type, message), color='red')
         else:
             announce(the_type, color='red')
     else:
-        announce(u'Error: {}'.format(message), color='red')
+        announce('Error: {}'.format(message), color='red')
 
 
 def warning(message):
@@ -68,7 +69,7 @@ def warning(message):
     Writes a warning message to the terminal with a yellow prefix.
     
     :param message: message
-    :type message: basestring
+    :type message: str
     """
 
-    announce(u'Warning: {}'.format(message), color='yellow')
+    announce('Warning: {}'.format(message), color='yellow')

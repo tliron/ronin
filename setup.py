@@ -15,12 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup
 from sys import version_info
-import os
 
 if version_info < (2, 7):
     exit(u'Rōnin requires Python 2.7+')
+
+from setuptools import setup
+import os, io
 
 HERE = os.path.dirname(__file__)
 
@@ -32,10 +33,10 @@ try:
     import pypandoc # @UnresolvedImport
     long_description = pypandoc.convert(os.path.join(HERE, 'README.md'), 'rst')
 except(IOError, ImportError):
-    with open(os.path.join(HERE, 'README.md')) as f:
+    with io.open(os.path.join(HERE, 'README.md')) as f:
         long_description = f.read()
 
-with open(os.path.join(HERE, 'ronin', 'version.py')) as f:
+with io.open(os.path.join(HERE, 'ronin', 'version.py')) as f:
     exec(f.read())
 
 setup(

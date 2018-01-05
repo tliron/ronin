@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from .contexts import current_context, new_child_context
 from .projects import Project
 from .phases import Phase
@@ -22,7 +23,6 @@ from .utils.paths import join_path
 from .utils.strings import stringify, stringify_list
 from .utils.platform import which
 from .utils.collections import dedup, StrictDict
-from .utils.compat import basestr
 from .utils.types import verify_type
 from .utils.messages import announce
 from io import StringIO
@@ -46,11 +46,11 @@ DEFAULT_COLUMNS = 100
 def configure_ninja(ninja_command=None, encoding=None, file_name=None, columns=None, strict=None):
     """
     :param ninja_command: ``ninja`` command; defaults to "ninja"
-    :type ninja_command: basestring or ~types.FunctionType
+    :type ninja_command: str or ~types.FunctionType
     :param encoding: Ninja file encoding; defaults to "utf-8"
-    :type encoding: basestring or ~types.FunctionType
+    :type encoding: str or ~types.FunctionType
     :param file_name: Ninja filename (without ".ninja" extension); defaults to "build"
-    :type file_name: basestring or ~types.FunctionType
+    :type file_name: str or ~types.FunctionType
     :param columns: number of columns in Ninja file; defaults to 100
     :type columns: int
     :param strict: strict column mode; defaults to False
@@ -70,9 +70,9 @@ def escape(value):
     Escapes special characters for literal inclusion in a Ninja file.
     
     :param value: literal value to escape
-    :type value: basestring or ~types.FunctionType
+    :type value: str or ~types.FunctionType
     :returns: escaped value
-    :rtype: basestring
+    :rtype: str
     """
     
     value = stringify(value)
@@ -84,9 +84,9 @@ def pathify(value):
     Escapes special characters for inclusion in a Ninja file where paths are expected.
     
     :param value: path value to escape
-    :type value: basestring or ~types.FunctionType
+    :type value: str or ~types.FunctionType
     :returns: escaped value
-    :rtype: basestring
+    :rtype: str
     """
     
     value = stringify(value)
@@ -104,12 +104,12 @@ class NinjaFile(object):
         :param project: project
         :type project: ~ronin.projects.Project
         :param command: Ninja command; defaults to the context's ``ninja.command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         :param encoding: Ninja file encoding; defaults to the context's ``ninja.encoding``
-        :type encoding: basestring or ~types.FunctionType
+        :type encoding: str or ~types.FunctionType
         :param file_name: Ninja filename (without ".ninja" extension); defaults to the context's
          ``ninja.file_name``
-        :type file_name: basestring or ~types.FunctionType
+        :type file_name: str or ~types.FunctionType
         :param columns: number of columns in Ninja file; defaults to the context's ``ninja.columns``
         :type columns: int
         :param strict: strict column mode; defaults to the context's ``ninja.strict``
@@ -143,7 +143,7 @@ class NinjaFile(object):
         The Ninja file name, not including the path. The ``file_name`` if set, or else the project's
         ``file_name``, or else ``ninja.file_name`` in the context.
         
-        :type: :obj:`basestring`
+        :type: :obj:`str`
         """
         
         file_name = stringify(self._file_name)
@@ -153,7 +153,7 @@ class NinjaFile(object):
             with current_context() as ctx:
                 file_name = stringify(ctx.get('ninja.file_name', DEFAULT_NAME))
         if file_name is not None:
-            file_name = u'{}.ninja'.format(file_name)
+            file_name = '{}.ninja'.format(file_name)
         return file_name
     
     @file_name.setter
@@ -165,7 +165,7 @@ class NinjaFile(object):
         """
         Full path to the Ninja file. A join of the project's ``output_path`` and :attr:`file_name`. 
         
-        :type: :obj:`basestring`
+        :type: :obj:`str`
         """
         
         return join_path(self._project.output_path, self.file_name)
@@ -187,7 +187,7 @@ class NinjaFile(object):
         
         output_path = self._project.output_path
         path = self.path
-        announce(u"Generating '{}'".format(path))
+        announce("Generating '{}'".format(path))
         if not os.path.isdir(output_path):
             makedirs(output_path)
         with io.open(path, 'w', encoding=self.encoding) as f:
@@ -274,20 +274,20 @@ class NinjaFile(object):
 
             with _Writer(f, columns, strict) as w:
                 ctx.current.writer = w
-                ctx.current.phase_outputs = StrictDict(key_type=basestr, value_type=list)
+                ctx.current.phase_outputs = StrictDict(key_type=str, value_type=list)
                 ctx.current.project = self._project
                 ctx.current.project_outputs[self._project] = ctx.current.phase_outputs
                 
                 # Header
-                w.comment(u'Ninja file for {}'.format(self._project))
-                w.comment(u'Generated by Rōnin on {}'
+                w.comment('Ninja file for {}'.format(self._project))
+                w.comment('Generated by Rōnin on {}'
                           .format(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')))
                 if columns is not None:
-                    w.comment(u'Columns: {:d} ({})'
+                    w.comment('Columns: {:d} ({})'
                               .format(columns, 'strict' if strict else 'non-strict'))
                 
                 w.line()
-                w.line(u'builddir = {}'.format(pathify(self._project.output_path)))
+                w.line('builddir = {}'.format(pathify(self._project.output_path)))
                 
                 # Rules
                 for phase_name, phase in self._project.phases.items():
@@ -315,26 +315,26 @@ class NinjaFile(object):
         # Rule
         rule_name = phase_name.replace(' ', '_')
         w.line()
-        w.line(u'rule {}'.format(rule_name))
+        w.line('rule {}'.format(rule_name))
         
         # Description
         description = stringify(phase.description)
         if description is None:
-            description = u'{} $out'.format(phase_name)
-        w.line(u'description = {}'.format(description), 1)
+            description = '{} $out'.format(phase_name)
+        w.line('description = {}'.format(description), 1)
 
         # Command
         verify_type(phase.executor, Executor)
         command = phase.command_as_str(escape)
-        w.line(u'command = {}'.format(command), 1)
+        w.line('command = {}'.format(command), 1)
         
         # Deps
         deps_file = stringify(phase.executor._deps_file)
         if deps_file:
-            w.line(u'depfile = {}'.format(deps_file), 1)
+            w.line('depfile = {}'.format(deps_file), 1)
             deps_type = stringify(phase.executor._deps_type)
             if deps_type:
-                w.line(u'deps = {}'.format(deps_type), 1)
+                w.line('deps = {}'.format(deps_type), 1)
 
         # Implicit dependencies
         implicit_dependencies = phase.rebuild_on
@@ -342,10 +342,10 @@ class NinjaFile(object):
             implicit_dependencies += [v.file for v in phase_outputs[n]]
         implicit_dependencies = dedup(implicit_dependencies)
         if implicit_dependencies:
-            implicit_dependencies = u' | {}'.format(' '.join(pathify(v)
-                                                             for v in implicit_dependencies))
+            implicit_dependencies = ' | {}'.format(' '.join(pathify(v)
+                                                            for v in implicit_dependencies))
         else:
-            implicit_dependencies = u''
+            implicit_dependencies = ''
 
         # Order dependencies
         order_dependencies = phase.build_if
@@ -353,9 +353,9 @@ class NinjaFile(object):
             order_dependencies += [v.file for v in phase_outputs[n]]
         order_dependencies = dedup(order_dependencies)
         if order_dependencies:
-            order_dependencies = u' || {}'.format(' '.join(pathify(v) for v in order_dependencies))
+            order_dependencies = ' || {}'.format(' '.join(pathify(v) for v in order_dependencies))
         else:
-            order_dependencies = u''
+            order_dependencies = ''
             
         # Inputs
         inputs = stringify_list(phase.inputs)
@@ -370,9 +370,9 @@ class NinjaFile(object):
         phase_outputs[phase_name] = outputs
         
         def build(output, inputs):
-            line = u'build {}: {}'.format(pathify(output.file), rule_name)
+            line = 'build {}: {}'.format(pathify(output.file), rule_name)
             if inputs:
-                line += u' ' + u' '.join([pathify(v) for v in inputs])
+                line += ' ' + ' '.join([pathify(v) for v in inputs])
             line += implicit_dependencies
             line += order_dependencies
             w.line(line)
@@ -381,7 +381,7 @@ class NinjaFile(object):
             for var_name, var in phase.vars.items():
                 if hasattr(var, '__call__'):
                     var = var(output, inputs)
-                w.line(u'{} = {}'.format(var_name, var), 1)
+                w.line('{} = {}'.format(var_name, var), 1)
     
         if combine_inputs:
             w.line()
@@ -397,7 +397,7 @@ class NinjaFile(object):
         for value in getattr(phase, attr):
             p_name, p = self._project.get_phase_for(value, attr)
             if p is phase:
-                raise ValueError(u'{} contains self'.format(attr))
+                raise ValueError('{} contains self'.format(attr))
 
             phase_names.append(p_name)
             
@@ -426,7 +426,7 @@ class _Writer(object):
     def line(self, line='', indent=0):
         indentation = _INDENT * indent
         if self._columns is None:
-            self._f.write(u'{}{}\n'.format(indentation, line))
+            self._f.write('{}{}\n'.format(indentation, line))
         else:
             leading_space_length = len(indentation)
             broken = False
@@ -451,7 +451,7 @@ class _Writer(object):
 
                 if space != -1:
                     # Break at space
-                    self._f.write(u'{}{} $\n'.format(indentation, line[:space]))
+                    self._f.write('{}{} $\n'.format(indentation, line[:space]))
                     line = line[space + 1:]
                     if not broken:
                         # Indent                               
@@ -461,21 +461,21 @@ class _Writer(object):
                 elif self._strict:
                     # Break anywhere
                     width += 1
-                    self._f.write(u'{}{}$\n'.format(indentation, line[:width]))
+                    self._f.write('{}{}$\n'.format(indentation, line[:width]))
                     line = line[width:]
                 else:
                     break
 
-            self._f.write(u'{}{}\n'.format(indentation, line))
+            self._f.write('{}{}\n'.format(indentation, line))
 
     def comment(self, line):
         if self._columns is None:
-            self._f.write(u'# {}\n'.format(line))
+            self._f.write('# {}\n'.format(line))
         else:
             width = self._columns - 2
             lines = wrap(line, width, break_long_words=self._strict, break_on_hyphens=False)
             for line in lines:
-                self._f.write(u'# {}\n'.format(line))
+                self._f.write('# {}\n'.format(line))
 
     @staticmethod        
     def _is_unescaped(line, i):

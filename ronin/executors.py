@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from .utils.strings import stringify, join_later
 from .utils.collections import StrictList
-from .utils.compat import basestr
 from io import StringIO
 
 
@@ -23,20 +23,20 @@ class Executor(object):
     Base class for executors.
     
     :ivar command: command
-    :vartype command: basestring or ~types.FunctionType
+    :vartype command: str or ~types.FunctionType
     :ivar command_types: command types supported (used by extensions)
-    :vartype command_types: [:obj:`basestring`]
+    :vartype command_types: [:obj:`str`]
     :ivar output_extension: when calculating outputs, change extension to this
-    :vartype output_extension: basestring or ~types.FunctionType
+    :vartype output_extension: str or ~types.FunctionType
     :ivar output_prefix: when calculating outputs, prefix this to filename
-    :vartype output_prefix: basestring or ~types.FunctionType
+    :vartype output_prefix: str or ~types.FunctionType
     :ivar hooks: called when generating the Ninja file
     :vartype hooks: [:obj:`~types.FunctionType`]
     """
     
     def __init__(self):
         self.command = None
-        self.command_types = StrictList(value_type=basestr)
+        self.command_types = StrictList(value_type=str)
         self.output_extension = None
         self.output_prefix = None
         self.output_type = 'binary'
@@ -84,8 +84,8 @@ class ExecutorWithArguments(Executor):
             else:
                 arguments.remove(argument)
         if arguments:
-            f.write(u' ')
-            f.write(u' '.join(arguments))
+            f.write(' ')
+            f.write(' '.join(arguments))
 
     def add_argument(self, *value):
         self._argument(True, True, *value)

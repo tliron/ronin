@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from .version import VERSION
 from .utils.types import verify_type
 from .utils.argparse import ArgumentParser
 from .utils.messages import error
 from .utils.collections import StrictList, StrictDict
-from .utils.compat import basestr
 from io import StringIO
 from collections import OrderedDict
 import threading, sys, inspect, os
@@ -35,24 +35,24 @@ def new_context(**kwargs):
 
     :param root_path: the root of the input/output directory structure; defaults to the directory
      in which the calling script resides
-    :type root_path: basestring or ~types.FunctionType
+    :type root_path: str or ~types.FunctionType
     :param input_path_relative: the default input path relative to the root; defaults to the root
      itself
-    :type input_path_relative: basestring or ~types.FunctionType
+    :type input_path_relative: str or ~types.FunctionType
     :param output_path_relative: the default base output path relative to the root; defaults to
      'build'
-    :type output_path_relative: basestring or ~types.FunctionType
+    :type output_path_relative: str or ~types.FunctionType
     :param binary_path_relative: the default binary output base path relative to the output path;
      defaults to 'bin'
-    :type binary_path_relative: basestring or ~types.FunctionType
+    :type binary_path_relative: str or ~types.FunctionType
     :param object_path_relative: the default object output base path relative to the output path;
      defaults to 'obj'
-    :type object_path_relative: basestring or ~types.FunctionType
+    :type object_path_relative: str or ~types.FunctionType
     :param source_path_relative: the default source output base path relative to the output path;
      defaults to 'src'
-    :type source_path_relative: basestring or ~types.FunctionType
+    :type source_path_relative: str or ~types.FunctionType
     :param name: optional name to use for descriptions
-    :type name: basestring or ~types.FunctionType
+    :type name: str or ~types.FunctionType
     :param frame: how many call frames to wind back to in order to find the calling script
     :type frame: int
     """
@@ -108,24 +108,24 @@ def configure_context(root_path=None,
     
     :param root_path: the root of the input/output directory structure; defaults to the directory
      in which the calling script resides
-    :type root_path: basestring or ~types.FunctionType
+    :type root_path: str or ~types.FunctionType
     :param input_path_relative: the default input path relative to the root; defaults to the root
      itself
-    :type input_path_relative: basestring or ~types.FunctionType
+    :type input_path_relative: str or ~types.FunctionType
     :param output_path_relative: the default base output path relative to the root; defaults to
      'build'
-    :type output_path_relative: basestring or ~types.FunctionType
+    :type output_path_relative: str or ~types.FunctionType
     :param binary_path_relative: the default binary output base path relative to the output path;
      defaults to 'bin'
-    :type binary_path_relative: basestring or ~types.FunctionType
+    :type binary_path_relative: str or ~types.FunctionType
     :param object_path_relative: the default object output base path relative to the output path;
      defaults to 'obj'
-    :type object_path_relative: basestring or ~types.FunctionType
+    :type object_path_relative: str or ~types.FunctionType
     :param source_path_relative: the default source output base path relative to the output path;
      defaults to 'src'
-    :type source_path_relative: basestring or ~types.FunctionType
+    :type source_path_relative: str or ~types.FunctionType
     :param name: optional name to use for descriptions
-    :type name: basestring or ~types.FunctionType
+    :type name: str or ~types.FunctionType
     :param frame: how many call frames to wind back to in order to find the calling script
     :type frame: int
     """
@@ -152,11 +152,11 @@ def configure_context(root_path=None,
                 values += v
             for value in values:
                 if '=' not in value:
-                    error(u"'--set' argument is not formatted as 'ns.k=v': '{}'".format(value))
+                    error("'--set' argument is not formatted as 'ns.k=v': '{}'".format(value))
                     sys.exit(1)
                 k, v = value.split('=', 1)
                 if '.' not in k:
-                    error(u"'--set' argument is not formatted as 'ns.k=v': '{}'".format(value))
+                    error("'--set' argument is not formatted as 'ns.k=v': '{}'".format(value))
                     sys.exit(1)
                 namespace, k = k.split('.', 1)
                 namespace = getattr(ctx, namespace)
@@ -170,7 +170,7 @@ def configure_context(root_path=None,
         ctx.paths.output = join_path(root_path, output_path_relative or 'build')
         ctx.paths.binary_relative = binary_path_relative or 'bin'
         ctx.paths.object_relative = object_path_relative or 'obj'
-        ctx.paths.source_relative = object_path_relative or 'src'
+        ctx.paths.source_relative = source_path_relative or 'src'
 
 
 class Context(object):
@@ -198,7 +198,7 @@ class Context(object):
             verify_type(parent, Context)
         self._parent = parent
         self._immutable = immutable
-        self._namespaces = StrictDict(key_type=basestr, value_type=_Namespace)
+        self._namespaces = StrictDict(key_type=str, value_type=_Namespace)
         self._exit_hooks = StrictList(value_type='types.FunctionType')
     
     def __str__(self):
@@ -247,7 +247,7 @@ class Context(object):
         Note that if the value is defined and is None, then None is returned and *not* ``default``.
         
         :param name: name in the format "ns.k"
-        :type name: basestring
+        :type name: str
         :param default: default value
         :returns: value, default, or None
         """
@@ -267,7 +267,7 @@ class Context(object):
 
         :param value: value
         :param name: name in the format "key.property"
-        :type name: basestring
+        :type name: str
         :param default: default value
         :returns: value, default, or None
         """
@@ -281,7 +281,7 @@ class Context(object):
         Convenience method to append a property in the context, if it exists, to :obj:`sys.path`.
         
         :param name: name in the format "key.property"
-        :type name: basestring
+        :type name: str
         :param default: default value
         """
         
@@ -304,7 +304,7 @@ class Context(object):
         for k, v in self._all.items():
             if not k.startswith('_'):
                 v = stringify(v)
-                f.write(u'{}={}\n'.format(k, v))
+                f.write('{}={}\n'.format(k, v))
 
     def _push_thread_local(self):
         """
@@ -426,7 +426,7 @@ class _Namespace(object):
         if name in self._LOCAL:
             raise RuntimeError('namespace not initialized?')
         if self._context._parent is None:
-            raise NotInContextException(u'{}.{}'.format(self._name, name))
+            raise NotInContextException('{}.{}'.format(self._name, name))
         parent = getattr(self._context._parent, self._name)
         return getattr(parent, name)
 
@@ -462,8 +462,8 @@ class _ArgumentParser(ArgumentParser):
     def __init__(self, name, frame):
         from .utils.strings import stringify
         name = stringify(name)
-        description = u'Build {} using Rōnin {}'.format(name, VERSION) if name is not None else \
-                      u'Build using Rōnin {}'.format(VERSION)
+        description = 'Build {} using Rōnin {}'.format(name, VERSION) if name is not None else \
+                      'Build using Rōnin {}'.format(VERSION)
         prog = os.path.basename(inspect.getfile(sys._getframe(frame)))
         super(_ArgumentParser, self).__init__(description=description, prog=prog)
         self.add_argument('operation', nargs='*', default=['build'],

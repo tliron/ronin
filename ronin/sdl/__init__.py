@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from ..contexts import current_context
 from ..extensions import Extension
 from ..pkg_config import _add_cflags_to_executor, _add_libs_to_executor
@@ -31,13 +32,13 @@ def configure_sdl(config_command=None,
     Configures the current context's `SDL <https://www.libsdl.org/>`__ support.
     
     :param config_command: config command; defaults to "sdl2-config"
-    :type config_command: basestring or ~types.FunctionType
+    :type config_command: str or ~types.FunctionType
     :param static: whether to link statically; defaults to False
     :type static: bool
     :param prefix: sdl-config prefix
-    :type prefix: basestring or ~types.FunctionType
+    :type prefix: str or ~types.FunctionType
     :param exec_prefix: sdl-config exec-prefix
-    :type exec_prefix: basestring or ~types.FunctionType
+    :type exec_prefix: str or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
@@ -59,13 +60,13 @@ class SDL(Extension):
     def __init__(self, command=None, static=None, prefix=None, exec_prefix=None):
         """
         :param command: ``sdl-config`` command; defaults to the context's ``sdl.config_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         :param static: whether to link statically; defaults to the context's ``sdl.config_static``
         :type static: bool
         :param prefix: sdl-config prefix; defaults to the context's ``sdl.prefix``
-        :type prefix: basestring or ~types.FunctionType
+        :type prefix: str or ~types.FunctionType
         :param exec_prefix: sdl-config exec-prefix; defaults to the context's ``sdl.exec_prefix``
-        :type exec_prefix: basestring or ~types.FunctionType
+        :type exec_prefix: str or ~types.FunctionType
         """
         
         super(SDL, self).__init__()
@@ -92,12 +93,12 @@ class SDL(Extension):
         
         args = [sdl_config_command, flags]
         if sdl_config_prefix is not None:
-            args.append(u'--prefix={}'.format(sdl_config_prefix))
+            args.append('--prefix={}'.format(sdl_config_prefix))
         if sdl_config_exec_prefix is not None:
-            args.append(u'--exec-prefix={}'.format(sdl_config_exec_prefix))
+            args.append('--exec-prefix={}'.format(sdl_config_exec_prefix))
         
         try:
             output = check_output(args).decode().strip()
             return UNESCAPED_STRING_RE.split(output)
         except CalledProcessError:
-            raise Exception(u"failed to run: '{}'".format(' '.join(args)))
+            raise Exception("failed to run: '{}'".format(' '.join(args)))

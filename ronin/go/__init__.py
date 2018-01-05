@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from ..executors import ExecutorWithArguments
 from ..extensions import Extension
 from ..contexts import current_context
@@ -31,7 +32,7 @@ def configure_go(go_command=None):
     Configures the current context's `Go <https://golang.org/>`__ support.
     
     :param go_command: ``go`` command; defaults to "go"
-    :type go_command: basestring or ~types.FunctionType
+    :type go_command: str or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
@@ -46,7 +47,7 @@ class GoExecutor(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``go`` command; defaults to the context's ``go.go_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         """
         
         super(GoExecutor, self).__init__()
@@ -65,7 +66,7 @@ class GoCompile(GoExecutor):
     def __init__(self, command=None):
         """
         :param command: ``go`` command; defaults to the context's ``go.go_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         """
 
         super(GoCompile, self).__init__(command)
@@ -107,7 +108,7 @@ class GoCompile(GoExecutor):
         self.add_argument('-nolocalimports')
 
     def disable_unsafe_imports(self):
-        self.add_argument('-u')
+        self.add_argument('-')
 
     def disable_errors_limit(self):
         self.add_argument('-e')
@@ -127,9 +128,9 @@ class GoLink(GoExecutor):
     def __init__(self, command=None, platform=None):
         """
         :param command: ``go`` command; defaults to the context's ``go.go_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         :param platform: target platform or project
-        :type platform: basestring or ~types.FunctionType or ~ronin.projects.Project
+        :type platform: str or ~types.FunctionType or ~ronin.projects.Project
         """
 
         super(GoLink, self).__init__(command)
@@ -190,7 +191,7 @@ class GoPackage(Extension):
         :param project: project
         :type project: ~ronin.projects.Project
         :param phase_name: phase name in project
-        :type phase_name: basestring or ~types.FunctionType
+        :type phase_name: str or ~types.FunctionType
         """
         
         super(GoPackage, self).__init__()

@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from .executors import Executor
 from .extensions import Extension
 from .contexts import current_context
@@ -21,7 +22,6 @@ from .utils.types import verify_type, verify_type_or_subclass
 from .utils.paths import join_path, change_extension
 from .utils.strings import stringify
 from .utils.collections import StrictList, StrictDict
-from .utils.compat import basestr
 from types import FunctionType
 from inspect import isclass
 import os
@@ -51,7 +51,7 @@ class Phase(object):
     automatically be added to that project. You can do this manually instead.
 
     :ivar vars: custom Ninja variables
-    :vartype vars: {:obj:`basestring`: :obj:`~types.FunctionType` or :obj:`basestring`}
+    :vartype vars: {:obj:`str`: :obj:`~types.FunctionType` or :obj:`str`}
     :ivar hooks: called when generating the Ninja file
     :vartype hooks: [:obj:`~types.FunctionType`]
     """
@@ -83,52 +83,52 @@ class Phase(object):
         :type project: ~ronin.projects.Project
         :param name: name in project to which this phase will be added (if set must also set
          ``project``)
-        :type name: basestring or ~types.FunctionType
+        :type name: str or ~types.FunctionType
         :param executor: executor
         :type executor: ~ronin.executors.Executor
         :param description: Ninja description; may include Ninja variables, such as ``$out``;
          defaults to "[phase name] $out"
-        :type description: basestring or ~types.FunctionType
+        :type description: str or ~types.FunctionType
         :param inputs: input paths; note that these should be *absolute* paths
-        :type inputs: [:obj:`basestring` or :obj:`~types.FunctionType`]
+        :type inputs: [:obj:`str` or :obj:`~types.FunctionType`]
         :param inputs_from: names or instances of other phases in the project, the outputs of which
          we add to this phase's ``inputs``
-        :type inputs_from: [:obj:`basestring` or :obj:`~types.FunctionType` or :class:`Phase`]
+        :type inputs_from: [:obj:`str` or :obj:`~types.FunctionType` or :class:`Phase`]
         :param extensions: extensions
         :type extensions: ~ronin.extensions.Extension
         :param output: specifies that the phase has a *single* output; note that actual path of the
          output will be based on this parameter but not identical to it, for example "lib" might be
          added as a prefix, ".dll" as an extension, etc., according to the executor and/or project
          variant
-        :type output: basestring or ~types.FunctionType
+        :type output: str or ~types.FunctionType
         :param output_path: override project's ``output_path``; otherwise will be based on the
          executor's ``output_type``
-        :type output_path: basestring or ~types.FunctionType
+        :type output_path: str or ~types.FunctionType
         :param output_path_relative: joined to the context's ``paths.output``
-        :type output_path_relative: basestring or ~types.FunctionType
+        :type output_path_relative: str or ~types.FunctionType
         :param output_strip_prefix: stripped from outputs if they begin with this
-        :type output_strip_prefix: basestring or ~types.FunctionType
+        :type output_strip_prefix: str or ~types.FunctionType
         :param output_strip_prefix_from: name or instance of other phase in project, from which the
          output path is used as this phase's ``output_strip_prefix``
-        :type output_strip_prefix_from: basestring or ~types.FunctionType or Phase
+        :type output_strip_prefix_from: str or ~types.FunctionType or Phase
         :param output_transform: called on all outputs
         :type output_transform: ~types.FunctionType
         :param run_output: set to non-zero to run the output after a successful build in sequence
         :type  run_output: int
         :param run_command: arguments for the run command; use "{output}" to insert output 
-        :type run_command: [:obj:`basestring` or :obj:`~types.FunctionType`]
+        :type run_command: [:obj:`str` or :obj:`~types.FunctionType`]
         :param rebuild_on: similar to ``inputs`` but used as "implicit dependencies" in Ninja
          (single pipe), meaning that the ``build`` will be re-triggered when these files change
-        :type rebuild_on: [:obj:`basestring` or :obj:`~types.FunctionType`]
+        :type rebuild_on: [:obj:`str` or :obj:`~types.FunctionType`]
         :param rebuild_on_from: names or instances of other phases in the project, the outputs of
          which we add to this phase's ``rebuild_on``
-        :type rebuild_on_from: [:obj:`basestring` or :obj:`~types.FunctionType` or :class:`Phase`]
+        :type rebuild_on_from: [:obj:`str` or :obj:`~types.FunctionType` or :class:`Phase`]
         :param build_if: similar to ``inputs`` but used as "order dependencies" in Ninja (double
          pipe), meaning that the ``build`` will be triggered only after these files are built
-        :type build_if: [:obj:`basestring` or :obj:`~types.FunctionType`]
+        :type build_if: [:obj:`str` or :obj:`~types.FunctionType`]
         :param build_if_from: names or instances of other phases in the project, the outputs of
          which we add to this phase's ``build_if``
-        :type build_if_from: [:obj:`basestring` or :obj:`~types.FunctionType` or :class:`Phase`]
+        :type build_if_from: [:obj:`str` or :obj:`~types.FunctionType` or :class:`Phase`]
         """
         
         if project:
@@ -145,8 +145,8 @@ class Phase(object):
             raise ValueError('"run_command" cannot be set when "output" is None')
         self.executor = executor
         self.description = description
-        self.inputs = StrictList(inputs, value_type=(basestr, FunctionType))
-        self.inputs_from = StrictList(inputs_from, value_type=(basestr, FunctionType,
+        self.inputs = StrictList(inputs, value_type=(str, FunctionType))
+        self.inputs_from = StrictList(inputs_from, value_type=(str, FunctionType,
                                                                'ronin.phases.Phase'))
         self.input_path = input_path
         self.input_path_relative = input_path_relative
@@ -158,14 +158,14 @@ class Phase(object):
         self.output_strip_prefix_from = output_strip_prefix_from
         self.output_transform = output_transform
         self.run_output = run_output
-        self.run_command = StrictList(run_command, value_type=(basestr, FunctionType))
-        self.rebuild_on = StrictList(rebuild_on, value_type=(basestr, FunctionType))
-        self.rebuild_on_from = StrictList(rebuild_on_from, value_type=(basestr, FunctionType,
+        self.run_command = StrictList(run_command, value_type=(str, FunctionType))
+        self.rebuild_on = StrictList(rebuild_on, value_type=(str, FunctionType))
+        self.rebuild_on_from = StrictList(rebuild_on_from, value_type=(str, FunctionType,
                                                                        'ronin.phases.Phase'))
-        self.build_if = StrictList(build_if, value_type=(basestr, FunctionType))
-        self.build_if_from = StrictList(build_if_from, value_type=(basestr, FunctionType,
+        self.build_if = StrictList(build_if, value_type=(str, FunctionType))
+        self.build_if_from = StrictList(build_if_from, value_type=(str, FunctionType,
                                                                    'ronin.phases.Phase'))
-        self.vars = StrictDict(key_type=basestr, value_type=(basestr, FunctionType))
+        self.vars = StrictDict(key_type=str, value_type=(str, FunctionType))
         self.hooks = StrictList(value_type=FunctionType)
 
     def apply(self):
@@ -191,7 +191,7 @@ class Phase(object):
         Applies all extensions to the executor and calls its ``command_as_str``.
         
         :returns: command as string
-        :rtype: basestring
+        :rtype: str
         """
         
         def apply_extensions(extensions):
@@ -212,7 +212,7 @@ class Phase(object):
         The set ``input_path``, or the context's ``paths.input`` joined to ``input_path_relative``,
         or the project's ``input_path``.
         
-        :type: :obj:`basestring`
+        :type: :obj:`str`
         """
         
         input_path = stringify(self._input_path)
@@ -236,7 +236,7 @@ class Phase(object):
         ``output_path_relative``, or the project's ``output_path`` for the executor's
         ``output_type``.
         
-        :type: :obj:`basestring`
+        :type: :obj:`str`
         """
 
         output_path = stringify(self._output_path)
@@ -259,7 +259,7 @@ class Phase(object):
         extension from the executor and finally the calling the ``output_transform`` function.
         
         :param inputs: inputs
-        :type inputs: [:obj:`basestring`]
+        :type inputs: [:obj:`str`]
         :returns: (True if "single-output", outputs); length of ``outputs`` will always be 1 in
          "single-output" mode, otherwise it will be the same length as ``inputs``
         :rtype: (:obj:`bool`, [:class:`Output`])
@@ -345,9 +345,9 @@ class Output(object):
     def __init__(self, path, the_file):
         """
         :param path: absolute path
-        :type path: basestring
+        :type path: str
         :param the_file: file name
-        :type the_file: basestring
+        :type the_file: str
         """
         
         self.path = path

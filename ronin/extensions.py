@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from .contexts import current_context
 from .utils.types import verify_type
 from .utils.collections import StrictList
-from .utils.compat import basestr
 from .utils.strings import stringify
 from types import FunctionType
 
@@ -52,25 +52,25 @@ class ExplicitExtension(Extension):
                  libraries=None):
         """
         :param inputs: input paths; note that these should be *absolute* paths
-        :type inputs: [:obj:`basestring` or :obj:`~types.FunctionType`]
+        :type inputs: [:obj:`str` or :obj:`~types.FunctionType`]
         :param include_paths: include paths; note that these should be *absolute* paths
-        :type include_paths: [:obj:`basestring` or :obj:`~types.FunctionType`]
+        :type include_paths: [:obj:`str` or :obj:`~types.FunctionType`]
         :param defines: defines in a (name, value) tuple format; use None for value if the define
          does not have a value
-        :type defines: [(:obj:`basestring` or :obj:`~types.FunctionType`, :obj:`basestring` or
+        :type defines: [(:obj:`str` or :obj:`~types.FunctionType`, :obj:`str` or
          :obj:`~types.FunctionType`)]
         :param library_paths: include paths; note that these should be *absolute* paths
-        :type library_paths: [:obj:`basestring` or :obj:`~types.FunctionType`]
+        :type library_paths: [:obj:`str` or :obj:`~types.FunctionType`]
         :param libraries: library names
-        :type libraries: [:obj:`basestring` or :obj:`~types.FunctionType`]
+        :type libraries: [:obj:`str` or :obj:`~types.FunctionType`]
         """
         
         super(ExplicitExtension, self).__init__()
-        self.inputs = StrictList(inputs, value_type=(basestr, FunctionType))
-        self.include_paths = StrictList(include_paths, value_type=(basestr, FunctionType))
+        self.inputs = StrictList(inputs, value_type=(str, FunctionType))
+        self.include_paths = StrictList(include_paths, value_type=(str, FunctionType))
         self.defines = defines or []
-        self.library_paths = StrictList(library_paths, value_type=(basestr, FunctionType))
-        self.libraries = StrictList(libraries, value_type=(basestr, FunctionType))
+        self.library_paths = StrictList(library_paths, value_type=(str, FunctionType))
+        self.libraries = StrictList(libraries, value_type=(str, FunctionType))
 
     def apply_to_phase(self, phase):
         phase.inputs += self.inputs
@@ -98,7 +98,7 @@ class OutputsExtension(Extension):
         :param project: project
         :type project: ~ronin.projects.Project
         :param phase_name: phase name in project
-        :type phase_name: basestring or ~types.FunctionType
+        :type phase_name: str or ~types.FunctionType
         """
         
         super(OutputsExtension, self).__init__()

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..extensions import Extension
@@ -31,9 +32,9 @@ def configure_java(javac_command=None, jar_command=None):
     Configures the current context's `Java <https://www.oracle.com/java/>`__ support.
     
     :param javac_command: ``javac`` command; defaults to "javac"
-    :type javac_command: basestring or ~types.FunctionType
+    :type javac_command: str or ~types.FunctionType
     :param jar_command: ``jar`` command; defaults to "jar"
-    :type jar_command: basestring or ~types.FunctionType
+    :type jar_command: str or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
@@ -51,9 +52,9 @@ class JavaCompile(ExecutorWithArguments):
     def __init__(self, command=None, classpath=[]):
         """
         :param command: ``javac`` command; defaults to the context's ``java.javac_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         :param classpath: initial classpath
-        :type classpath: [:obj:`basestring` or :obj:`~types.FunctionType`]
+        :type classpath: [:obj:`str` or :obj:`~types.FunctionType`]
         """
         
         super(JavaCompile, self).__init__()
@@ -84,9 +85,9 @@ class Jar(ExecutorWithArguments):
     def __init__(self, command=None, manifest=None):
         """
         :param command: ``jar`` command; defaults to the context's ``java.jar_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         :param manifest: absolute path to manifest file
-        :type manifest: basestring or ~types.FunctionType
+        :type manifest: str or ~types.FunctionType
         """
         
         super(Jar, self).__init__()
@@ -125,7 +126,7 @@ class JavaClasses(Extension):
         :param project: project
         :type project: ~ronin.projects.Project
         :param phase_name: phase name in project
-        :type phase_name: basestring or ~types.FunctionType
+        :type phase_name: str or ~types.FunctionType
         """
         
         super(JavaClasses, self).__init__()
@@ -173,7 +174,7 @@ def _compile_hook(executor):
 
 def _classpath_hook(executor):
     if executor.classpath:
-        executor.add_argument('-classpath', u':'.join([pathify(v) for v in executor.classpath]))
+        executor.add_argument('-classpath', ':'.join([pathify(v) for v in executor.classpath]))
 
 
 def _java_output_path_var(output, inputs):
@@ -199,8 +200,8 @@ def _java_jar_inputs_var(output, inputs):
 
         if the_file.startswith(path):
             the_file = the_file[path_length:]
-            return u'-C {path} {file}'.format(path=pathify(path), file=pathify(the_file))
+            return '-C {path} {file}'.format(path=pathify(path), file=pathify(the_file))
         else:
             return pathify(the_file)
 
-    return u' '.join([arg(v) for v in outputs])
+    return ' '.join([arg(v) for v in outputs])

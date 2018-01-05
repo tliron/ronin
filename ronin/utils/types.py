@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .compat import basestr, to_unicode
+from __future__ import unicode_literals
+from .unicode import string, to_str
 from inspect import isclass
 
 
@@ -21,7 +22,7 @@ def import_symbol(name):
     Imports a symbol based on its fully qualified name.
     
     :param name: symbol name
-    :type name: basestring
+    :type name: str
     :returns: symbol
     :raises ImportError: if could not import the module
     :raises AttributeError: if could not find the symbol in the module
@@ -42,14 +43,14 @@ def type_name(the_type):
     :param the_type: type(s)
     :type the_type: type|(type)
     :returns: name of type(s)
-    :rtype: basestring
+    :rtype: str
     """
 
     if isinstance(the_type, tuple):
-        return u'|'.join([type_name(v) for v in the_type])    
-    module = to_unicode(the_type.__module__)
-    name = to_unicode(the_type.__name__)
-    return name if module == '__builtin__' else u'{}.{}'.format(module, name)
+        return '|'.join([type_name(v) for v in the_type])    
+    module = to_str(the_type.__module__)
+    name = to_str(the_type.__name__)
+    return name if module == '__builtin__' else '{}.{}'.format(module, name)
 
 
 def verify_type(value, the_type):
@@ -58,21 +59,21 @@ def verify_type(value, the_type):
 
     :param value: value
     :param the_type: type or type name
-    :type the_type: type|basestring
+    :type the_type: type|str
     :raises TypeError: if ``value`` is not an instance of ``the_type``
     :raises ~exceptions.ValueError: if ``the_type`` is invalid
     :raises ImportError: if could not import the module
     :raises AttributeError: if could not find the symbol in the module
     """
     
-    if isinstance(the_type, basestr):
+    if isinstance(the_type, string):
         the_type = import_symbol(the_type)
         if not isclass(the_type):
-            raise ValueError(u'{} is not a type'.format(the_type))
+            raise ValueError('{} is not a type'.format(the_type))
     
     if not isinstance(value, the_type):
-        raise TypeError(u'not an instance of {}: {}'.format(type_name(the_type),
-                                                            type_name(type(value)))) 
+        raise TypeError('not an instance of {}: {}'.format(type_name(the_type),
+                                                           type_name(type(value)))) 
 
 
 def verify_subclass(value, the_type):
@@ -81,21 +82,21 @@ def verify_subclass(value, the_type):
 
     :param value: value
     :param the_type: type or type name
-    :type the_type: type|basestring
+    :type the_type: type|str
     :raises TypeError: if ``value`` is not a subclass of ``the_type``
     :raises ~exceptions.ValueError: if ``the_type`` is invalid
     :raises ImportError: if could not import the module
     :raises AttributeError: if could not find the symbol in the module
     """
 
-    if isinstance(the_type, basestring):
+    if isinstance(the_type, str):
         the_type = import_symbol(the_type)
         if not isclass(the_type):
-            raise ValueError(u'{} is not a type'.format(the_type))
+            raise ValueError('{} is not a type'.format(the_type))
     
     if not issubclass(value, the_type):
-        raise TypeError(u'not a subclass of {}: {}'.format(type_name(the_type),
-                                                           type_name(type(value))))
+        raise TypeError('not a subclass of {}: {}'.format(type_name(the_type),
+                                                          type_name(type(value))))
 
 
 def verify_type_or_subclass(value, the_type):
@@ -104,7 +105,7 @@ def verify_type_or_subclass(value, the_type):
 
     :param value: value
     :param the_type: type or type name
-    :type the_type: type|basestring
+    :type the_type: type|str
     :raises TypeError: if ``value`` is not an instance or subclass of ``the_type``
     :raises ~exceptions.ValueError: if ``the_type`` is invalid
     :raises ImportError: if could not import the module

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 from ..executors import ExecutorWithArguments
 from ..contexts import current_context
 from ..utils.platform import which
@@ -27,7 +28,7 @@ def configure_qt(moc_command=None):
     Configures the current context's `Qt <https://www.qt.io/>`__ support.
     
     :param moc_command: ``moc`` command; defaults to "moc"
-    :type moc_command: basestring or ~types.FunctionType
+    :type moc_command: str or ~types.FunctionType
     """
     
     with current_context(False) as ctx:
@@ -45,7 +46,7 @@ class QtMetaObjectCompile(ExecutorWithArguments):
     def __init__(self, command=None):
         """
         :param command: ``moc`` command; defaults to the context's ``qt.moc_command``
-        :type command: basestring or ~types.FunctionType
+        :type command: str or ~types.FunctionType
         """
         
         super(QtMetaObjectCompile, self).__init__()

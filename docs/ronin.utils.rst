@@ -28,11 +28,6 @@
 
 .. automodule:: ronin.utils.collections
 
-:mod:`ronin.utils.compat`
-*************************
-
-.. automodule:: ronin.utils.compat
-
 :mod:`ronin.utils.messages`
 ***************************
 
@@ -57,3 +52,8 @@
 ************************
 
 .. automodule:: ronin.utils.types
+
+:mod:`ronin.utils.unicode`
+**************************
+
+.. automodule:: ronin.utils.unicode
